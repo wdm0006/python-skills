@@ -1,0 +1,68 @@
+{
+  "name": "python-library-dev",
+  "owner": {
+    "name": "Will McGinnis",
+    "email": "will@mcginniscommawill.com"
+  },
+  "metadata": {
+    "description": "Comprehensive skills for professional Python library development - from project setup to community management",
+    "version": "1.0.0",
+    "homepage": "https://github.com/wdm0006/python-skills",
+    "keywords": ["python", "library", "development", "packaging", "testing", "api-design"]
+  },
+  "plugins": [
+    {
+      "name": "python-library-complete",
+      "description": "Complete Python library development toolkit - all skills for building professional-grade libraries",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/project-setup",
+        "./skills/code-quality",
+        "./skills/testing-strategy",
+        "./skills/security-audit",
+        "./skills/api-design",
+        "./skills/documentation",
+        "./skills/packaging",
+        "./skills/release-management",
+        "./skills/performance",
+        "./skills/cli-development",
+        "./skills/community",
+        "./skills/library-review"
+      ]
+    },
+    {
+      "name": "python-library-foundations",
+      "description": "Core skills for starting Python library projects - setup, quality, and testing",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/project-setup",
+        "./skills/code-quality",
+        "./skills/testing-strategy"
+      ]
+    },
+    {
+      "name": "python-library-distribution",
+      "description": "Skills for packaging, releasing, and distributing Python libraries",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/packaging",
+        "./skills/release-management",
+        "./skills/cli-development"
+      ]
+    },
+    {
+      "name": "python-library-quality",
+      "description": "Quality-focused skills - security, performance, and API design",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/security-audit",
+        "./skills/performance",
+        "./skills/api-design"
+      ]
+    }
+  ]
+}
