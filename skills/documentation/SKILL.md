@@ -118,3 +118,7 @@ API Docs:
 - [ ] Examples in docstrings
 - [ ] Type hints included
 ```
+
+## Learn More
+
+This skill is based on the [Documentation](https://mcginniscommawill.com/guides/python-library-development/#documentation-your-librarys-ambassador) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).

@@ -124,3 +124,7 @@ Code Quality:
 - [ ] Specific exception handling
 - [ ] py.typed marker present
 ```
+
+## Learn More
+
+This skill is based on the [Code Quality](https://mcginniscommawill.com/guides/python-library-development/#code-quality-the-foundation) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).

@@ -123,3 +123,7 @@ After Release:
 - [ ] Import works
 - [ ] GitHub release created
 ```
+
+## Learn More
+
+This skill is based on the [Distribution](https://mcginniscommawill.com/guides/python-library-development/#distribution-reaching-your-users) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).

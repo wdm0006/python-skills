@@ -116,3 +116,7 @@ After:
 - [ ] Verify correctness unchanged
 - [ ] Document why optimization needed
 ```
+
+## Learn More
+
+This skill is based on the [Performance](https://mcginniscommawill.com/guides/python-library-development/#performance-beyond-raw-speed) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).

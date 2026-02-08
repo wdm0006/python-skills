@@ -96,3 +96,7 @@ Create a new project structure:
 ```bash
 python scripts/create_project.py my-library --author "Name"
 ```
+
+## Learn More
+
+This skill is based on the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See the full guide for deeper coverage of project structure, tooling choices, and best practices.

@@ -106,3 +106,7 @@ Testing:
 - [ ] Coverage > 85%
 - [ ] Tests run in CI
 ```
+
+## Learn More
+
+This skill is based on the [Code Quality](https://mcginniscommawill.com/guides/python-library-development/#code-quality-the-foundation) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).

@@ -91,3 +91,7 @@ CI:
 - [ ] Security scan on every PR
 - [ ] Weekly dependency scan
 ```
+
+## Learn More
+
+This skill is based on the [Security](https://mcginniscommawill.com/guides/python-library-development/#security-a-matter-of-trust) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).

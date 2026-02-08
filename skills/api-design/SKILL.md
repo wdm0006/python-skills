@@ -111,3 +111,7 @@ Errors:
 - [ ] Helpful error messages
 - [ ] Documented in docstrings
 ```
+
+## Learn More
+
+This skill is based on the [Ergonomics](https://mcginniscommawill.com/guides/python-library-development/#ergonomics-the-joy-of-good-design) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).

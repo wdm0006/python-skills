@@ -121,3 +121,7 @@ After Release:
 - [ ] GitHub release created
 - [ ] Docs updated
 ```
+
+## Learn More
+
+This skill is based on the [Maintenance](https://mcginniscommawill.com/guides/python-library-development/#maintenance-the-long-game) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).

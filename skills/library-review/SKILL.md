@@ -97,3 +97,7 @@ Recommended:
 - [ ] Security scanning in CI
 - [ ] Contributing guide
 ```
+
+## Learn More
+
+This skill is based on the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See the full guide for detailed quality criteria and best practices across all dimensions of library development.
