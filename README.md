@@ -66,20 +66,20 @@ After installation, you can verify the skills are loaded by running:
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
-| **setting-up-python-libraries** | Project setup with pyproject.toml, uv, ruff, pytest, pre-commit, GitHub Actions |
-| **improving-python-code-quality** | Ruff linting, mypy type checking, Pythonic idioms, refactoring |
-| **testing-python-libraries** | Pytest test suites, fixtures, parametrization, Hypothesis property-based testing |
-| **auditing-python-security** | Security audits with Bandit, pip-audit, Semgrep, detect-secrets |
-| **designing-python-apis** | API design principles, deprecation, breaking changes, error handling |
-| **documenting-python-libraries** | Google-style docstrings, Sphinx setup, ReadTheDocs configuration |
-| **packaging-python-libraries** | pyproject.toml, PyPI publishing, trusted publishing, wheel building |
-| **managing-python-releases** | Semantic versioning, changelogs, release automation, deprecation workflows |
-| **optimizing-python-performance** | Profiling, memory analysis, benchmarking, optimization strategies |
-| **building-python-clis** | Click/Typer CLIs, command groups, shell completion, CLI testing |
-| **building-python-communities** | CONTRIBUTING.md, issue templates, PR templates, GitHub automation |
-| **reviewing-python-libraries** | Comprehensive library reviews across all quality dimensions |
+| Skill | Description | Based On |
+|-------|-------------|----------|
+| **setting-up-python-libraries** | Project setup with pyproject.toml, uv, ruff, pytest, pre-commit, GitHub Actions | [Defining Library Scope](https://mcginniscommawill.com/posts/2025-01-17-defining-library-scope/), [Dependency Management](https://mcginniscommawill.com/posts/2025-01-21-dependency-management/), [Licensing](https://mcginniscommawill.com/posts/2025-01-24-licensing-your-project/), [pyproject.toml Explained](https://mcginniscommawill.com/posts/2025-01-26-pyproject-toml-explained/) |
+| **improving-python-code-quality** | Ruff linting, mypy type checking, Pythonic idioms, refactoring | [Linting & Formatting with Ruff](https://mcginniscommawill.com/posts/2025-01-30-linting-formatting-ruff/), [Understanding McCabe Complexity](https://mcginniscommawill.com/posts/2025-04-24-understanding-mccabe-complexity/), [Adding Type Hints](https://mcginniscommawill.com/posts/2025-04-03-pygeohash-type-hints/) |
+| **testing-python-libraries** | Pytest test suites, fixtures, parametrization, Hypothesis property-based testing | [Testing with Pytest](https://mcginniscommawill.com/posts/2025-02-04-testing-pytest-intro/), [Testing Coverage](https://mcginniscommawill.com/posts/2025-02-09-testing-coverage/), [Testing with Tox](https://mcginniscommawill.com/posts/2025-02-13-testing-tox/), [Testing with Mocking](https://mcginniscommawill.com/posts/2025-02-16-testing-mocking/) |
+| **auditing-python-security** | Security audits with Bandit, pip-audit, Semgrep, detect-secrets | [Avoiding Injection Flaws](https://mcginniscommawill.com/posts/2025-01-18-avoiding-injection-flaws/), [Intro to Bandit](https://mcginniscommawill.com/posts/2025-01-25-intro-to-bandit/), [Dependency Security](https://mcginniscommawill.com/posts/2025-01-27-dependency-security-pip-audit/), [Handling Sensitive Data](https://mcginniscommawill.com/posts/2025-01-29-handling-sensitive-data/), [Secure Coding Practices](https://mcginniscommawill.com/posts/2025-02-02-secure-coding-practices/) |
+| **designing-python-apis** | API design principles, deprecation, breaking changes, error handling | [The Art of API Design](https://mcginniscommawill.com/posts/2025-02-03-art-of-api-design/), [Designing for Developer Joy](https://mcginniscommawill.com/posts/2025-02-06-designing-for-developer-joy/) |
+| **documenting-python-libraries** | Google-style docstrings, Sphinx setup, ReadTheDocs configuration | [Writing Effective Docstrings](https://mcginniscommawill.com/posts/2025-03-06-writing-effective-docstrings/), [Getting Started with Sphinx](https://mcginniscommawill.com/posts/2025-03-15-getting-started-sphinx/), [Automating Docs Deployment](https://mcginniscommawill.com/posts/2025-03-23-automating-docs-deployment/), [Documenting Your Library's API](https://mcginniscommawill.com/posts/2025-03-30-documenting-library-api/) |
+| **packaging-python-libraries** | pyproject.toml, PyPI publishing, trusted publishing, wheel building | [pyproject.toml Explained](https://mcginniscommawill.com/posts/2025-01-26-pyproject-toml-explained/), [Publishing PyGeohash](https://mcginniscommawill.com/posts/2025-04-06-pygeohash-publishing/) |
+| **managing-python-releases** | Semantic versioning, changelogs, release automation, deprecation workflows | [Semantic Versioning](https://mcginniscommawill.com/posts/2025-01-28-semantic-versioning/) |
+| **optimizing-python-performance** | Profiling, memory analysis, benchmarking, optimization strategies | [Performance Benchmarking](https://mcginniscommawill.com/posts/2025-02-22-testing-benchmark/), [Profiling with PyInstrument](https://mcginniscommawill.com/posts/2025-02-25-testing-profiling-pyinstrument/), [Memory Profiling with Memray](https://mcginniscommawill.com/posts/2025-03-01-testing-profiling-memray/) |
+| **building-python-clis** | Click/Typer CLIs, command groups, shell completion, CLI testing | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
+| **building-python-communities** | CONTRIBUTING.md, issue templates, PR templates, GitHub automation | [Building Engaging Community](https://mcginniscommawill.com/posts/2025-01-22-building-engaging-community/), [Inner Source Introduction](https://mcginniscommawill.com/posts/2025-02-11-inner-source-introduction/), [From Silos to Shared Libraries](https://mcginniscommawill.com/posts/2025-02-18-silos-to-shared-libraries/) |
+| **reviewing-python-libraries** | Comprehensive library reviews across all quality dimensions | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 
 ## Plugin Bundles
 

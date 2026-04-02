@@ -99,4 +99,9 @@ python scripts/create_project.py my-library --author "Name"
 
 ## Learn More
 
-This skill is based on the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See the full guide for deeper coverage of project structure, tooling choices, and best practices.
+This skill is based on the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See these posts for deeper coverage:
+
+- [Defining Library Scope](https://mcginniscommawill.com/posts/2025-01-17-defining-library-scope/)
+- [Dependency Management](https://mcginniscommawill.com/posts/2025-01-21-dependency-management/)
+- [Licensing Your Project](https://mcginniscommawill.com/posts/2025-01-24-licensing-your-project/)
+- [pyproject.toml Explained](https://mcginniscommawill.com/posts/2025-01-26-pyproject-toml-explained/)

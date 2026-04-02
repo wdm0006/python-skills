@@ -94,4 +94,12 @@ CI:
 
 ## Learn More
 
-This skill is based on the [Security](https://mcginniscommawill.com/guides/python-library-development/#security-a-matter-of-trust) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).
+This skill is based on the [Security](https://mcginniscommawill.com/guides/python-library-development/#security-a-matter-of-trust) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See these posts for deeper coverage:
+
+- [Avoiding Injection Flaws](https://mcginniscommawill.com/posts/2025-01-18-avoiding-injection-flaws/)
+- [Intro to Bandit](https://mcginniscommawill.com/posts/2025-01-25-intro-to-bandit/)
+- [Advanced Bandit Configuration](https://mcginniscommawill.com/posts/2025-08-22-advanced-bandit-configuration/)
+- [SQL Injection Detection](https://mcginniscommawill.com/posts/2025-08-25-sql-injection-detection-b608/)
+- [Dependency Security with pip-audit](https://mcginniscommawill.com/posts/2025-01-27-dependency-security-pip-audit/)
+- [Handling Sensitive Data](https://mcginniscommawill.com/posts/2025-01-29-handling-sensitive-data/)
+- [Secure Coding Practices](https://mcginniscommawill.com/posts/2025-02-02-secure-coding-practices/)

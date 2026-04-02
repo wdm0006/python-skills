@@ -109,4 +109,9 @@ Testing:
 
 ## Learn More
 
-This skill is based on the [Code Quality](https://mcginniscommawill.com/guides/python-library-development/#code-quality-the-foundation) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).
+This skill is based on the [Code Quality](https://mcginniscommawill.com/guides/python-library-development/#code-quality-the-foundation) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See these posts for deeper coverage:
+
+- [Testing with Pytest](https://mcginniscommawill.com/posts/2025-02-04-testing-pytest-intro/)
+- [Testing Coverage](https://mcginniscommawill.com/posts/2025-02-09-testing-coverage/)
+- [Testing with Tox](https://mcginniscommawill.com/posts/2025-02-13-testing-tox/)
+- [Testing with Mocking](https://mcginniscommawill.com/posts/2025-02-16-testing-mocking/)

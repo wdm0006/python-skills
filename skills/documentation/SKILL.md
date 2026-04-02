@@ -121,4 +121,9 @@ API Docs:
 
 ## Learn More
 
-This skill is based on the [Documentation](https://mcginniscommawill.com/guides/python-library-development/#documentation-your-librarys-ambassador) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).
+This skill is based on the [Documentation](https://mcginniscommawill.com/guides/python-library-development/#documentation-your-librarys-ambassador) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See these posts for deeper coverage:
+
+- [Writing Effective Docstrings](https://mcginniscommawill.com/posts/2025-03-06-writing-effective-docstrings/)
+- [Getting Started with Sphinx](https://mcginniscommawill.com/posts/2025-03-15-getting-started-sphinx/)
+- [Automating Docs Deployment](https://mcginniscommawill.com/posts/2025-03-23-automating-docs-deployment/)
+- [Documenting Your Library's API](https://mcginniscommawill.com/posts/2025-03-30-documenting-library-api/)

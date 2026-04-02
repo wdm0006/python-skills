@@ -118,4 +118,7 @@ Testing:
 
 ## Learn More
 
-This skill is based on the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See the full guide for deeper coverage of CLI patterns and library distribution.
+This skill is based on the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See these posts for related coverage:
+
+- [Makefiles for Python Development](https://mcginniscommawill.com/posts/2025-04-08-makefiles-for-python/)
+- [pyproject.toml Explained](https://mcginniscommawill.com/posts/2025-01-26-pyproject-toml-explained/)

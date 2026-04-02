@@ -122,4 +122,10 @@ Ongoing:
 
 ## Learn More
 
-This skill is based on the [Maintenance](https://mcginniscommawill.com/guides/python-library-development/#maintenance-the-long-game) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).
+This skill is based on the [Maintenance](https://mcginniscommawill.com/guides/python-library-development/#maintenance-the-long-game) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See these posts for deeper coverage:
+
+- [Building Engaging Community](https://mcginniscommawill.com/posts/2025-01-22-building-engaging-community/)
+- [Inner Source Introduction](https://mcginniscommawill.com/posts/2025-02-11-inner-source-introduction/)
+- [Building Internal Library Community](https://mcginniscommawill.com/posts/2025-02-15-building-internal-library-community/)
+- [From Silos to Shared Libraries](https://mcginniscommawill.com/posts/2025-02-18-silos-to-shared-libraries/)
+- [Cursor for Library Maintenance](https://mcginniscommawill.com/posts/2025-03-09-cursor-for-library-maintenance/)

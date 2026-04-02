@@ -119,4 +119,8 @@ After:
 
 ## Learn More
 
-This skill is based on the [Performance](https://mcginniscommawill.com/guides/python-library-development/#performance-beyond-raw-speed) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/).
+This skill is based on the [Performance](https://mcginniscommawill.com/guides/python-library-development/#performance-beyond-raw-speed) section of the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See these posts for deeper coverage:
+
+- [Performance Benchmarking](https://mcginniscommawill.com/posts/2025-02-22-testing-benchmark/)
+- [Profiling with PyInstrument](https://mcginniscommawill.com/posts/2025-02-25-testing-profiling-pyinstrument/)
+- [Memory Profiling with Memray](https://mcginniscommawill.com/posts/2025-03-01-testing-profiling-memray/)

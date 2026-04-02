@@ -100,4 +100,4 @@ Recommended:
 
 ## Learn More
 
-This skill is based on the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). See the full guide for detailed quality criteria and best practices across all dimensions of library development.
+This skill is based on the [Guide to Developing High-Quality Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) by [Will McGinnis](https://mcginniscommawill.com/). The review criteria in this skill draw from all posts in the guide — see the [full guide](https://mcginniscommawill.com/guides/python-library-development/) for detailed quality criteria across every dimension of library development.
