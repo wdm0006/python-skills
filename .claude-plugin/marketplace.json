@@ -28,7 +28,8 @@
         "./skills/performance",
         "./skills/cli-development",
         "./skills/community",
-        "./skills/library-review"
+        "./skills/library-review",
+        "./skills/git-hygiene"
       ]
     },
     {
@@ -61,7 +62,8 @@
       "skills": [
         "./skills/security-audit",
         "./skills/performance",
-        "./skills/api-design"
+        "./skills/api-design",
+        "./skills/git-hygiene"
       ]
     }
   ]
