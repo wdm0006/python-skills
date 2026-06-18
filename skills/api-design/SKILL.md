@@ -59,6 +59,73 @@ raise ValidationError(
 )
 ```
 
+### Fail Loud, Not Silent
+
+The most expensive bugs are the ones where **failure is indistinguishable from
+success**. A caller who gets no error assumes everything worked. These patterns
+all turned a real failure into a silent wrong answer in shipped code — guard
+against every one.
+
+**Don't write the success sentinel on the failure path.** An `except` block that
+sets the same state a successful run would makes failed jobs look complete.
+
+```python
+# BAD — any failure is reported to the user as a finished result.
+try:
+    result = run_job()
+    status = "READY"
+except Exception:
+    status = "READY"        # failure now looks identical to success
+
+# GOOD — distinct terminal states; the UI/caller can react.
+try:
+    result = run_job()
+    status = "READY"
+except Exception:
+    log.exception("job failed")
+    status = "ERROR"
+```
+
+**Don't swallow distinct failures into one generic message.** A broad
+`except Exception` that returns `"error: something went wrong"` (or worse, an
+empty result) collapses parse errors, missing files, and bugs into the same
+opaque string — undebuggable and often mistaken for "no problems found." Catch
+the specific exceptions you can handle; let the rest propagate.
+
+**An empty/partial result is not an error signal.** Returning `[]`, an empty
+`DataFrame`, or "what I fetched before the connection dropped" looks like a valid
+answer. Pagination that returns partial pages on a mid-stream `RequestError`, then
+gets aggregated as if complete, produces silently wrong analytics. Either raise,
+or return an explicit "incomplete" marker the caller must check — never let
+truncation masquerade as the full set.
+
+**A no-op on unexpected input is a silent corruption.** Code that skips columns
+of the wrong type, ignores a key it doesn't recognize, or `continue`s past a file
+it can't parse — with no error and no report — leaves the caller believing the
+operation applied. If you can't act on an input, say so (raise, warn, or return a
+per-item error list); don't quietly do nothing.
+
+**Filtering down to empty must never read as "all clear."** When you narrow a rule
+set, check set, or work list and the filter yields nothing, an "evaluate all →
+0 problems" path reports a perfect score while actually checking nothing. Guard
+the empty case explicitly:
+
+```python
+selected = [r for r in rules if r.category in requested]
+if not selected:                       # empty filter ≠ everything passed
+    raise ValueError(f"no rules match {requested!r}")
+```
+
+**Never fabricate a fallback that looks real.** Substituting sample/random data
+when a fetch fails (so the UI "has something to show") presents invented numbers
+as genuine. Surface the failure instead; a visible error beats a plausible lie.
+
+**Don't discard the real output on a non-zero exit.** A subprocess wrapper that
+returns `f"Error: {stderr}"` whenever `returncode != 0` loses the answer for tools
+that exit non-zero by design and write results to **stdout** — reporting a
+successful run as an empty `"Error: "`. Inspect stdout and the actual exit
+semantics before deciding it failed.
+
 ## Deprecation
 
 ```python
@@ -110,6 +177,9 @@ Errors:
 - [ ] Custom exceptions with context
 - [ ] Helpful error messages
 - [ ] Documented in docstrings
+- [ ] Failures fail loud — no success sentinel on the error path
+- [ ] Empty/partial results never masquerade as a complete answer
+- [ ] No silent no-ops or fabricated fallback data
 ```
 
 ## Learn More
