@@ -31,6 +31,9 @@ Or install specific bundles based on your needs:
 
 # Quality-focused skills (security, performance, API design)
 /plugin install python-library-quality@wdm0006-python-skills
+
+# Opinionated architecture for building Python web apps
+/plugin install python-web-app@wdm0006-python-skills
 ```
 
 ### Alternative: Local Installation
@@ -80,11 +83,12 @@ After installation, you can verify the skills are loaded by running:
 | **building-python-clis** | Click/Typer CLIs, command groups, shell completion, CLI testing | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **building-python-communities** | CONTRIBUTING.md, issue templates, PR templates, GitHub automation | [Building Engaging Community](https://mcginniscommawill.com/posts/2025-01-22-building-engaging-community/), [Inner Source Introduction](https://mcginniscommawill.com/posts/2025-02-11-inner-source-introduction/), [From Silos to Shared Libraries](https://mcginniscommawill.com/posts/2025-02-18-silos-to-shared-libraries/) |
 | **reviewing-python-libraries** | Comprehensive library reviews across all quality dimensions | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
+| **building-python-web-apps** | Opinionated reference architecture for production web apps — FastAPI, async SQLAlchemy/Postgres, Stripe billing, Jinja or SPA frontends, and Dockerized deployment via Terraform | Production web app patterns |
 
 ## Plugin Bundles
 
 ### python-library-complete
-All 12 skills for comprehensive Python library development.
+All library-development skills, plus the web-app architecture skill, for comprehensive Python development.
 
 ### python-library-foundations
 Core skills for starting projects:
@@ -104,6 +108,10 @@ Quality-focused skills:
 - Performance
 - API design
 
+### python-web-app
+Opinionated architecture for building Python web apps:
+- Web app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment)
+
 ## Usage
 
 Once installed, Claude will automatically use these skills when you ask about:
@@ -114,6 +122,7 @@ Once installed, Claude will automatically use these skills when you ask about:
 - Reviewing code quality
 - Security scanning
 - Writing documentation
+- Architecting a Python web app (FastAPI, database, billing, deployment)
 - And more...
 
 ## Contributing
