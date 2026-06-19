@@ -99,8 +99,8 @@ For detailed patterns, see:
 ## Tests That Lie: Avoiding False-Green
 
 A passing suite is worthless if it can't fail when the code is wrong. The most
-expensive bugs ship under green CI. Audit for these anti-patterns — each one was
-found in real libraries where "all tests pass" masked broken behavior.
+expensive bugs ship under green CI. Audit for these anti-patterns — each is a way
+"all tests pass" can mask broken behavior.
 
 **Conditional assertions that vacuously pass.** If the setup silently fails, a
 guarded assertion never runs and the test still passes.
@@ -126,19 +126,20 @@ assert "ui" in todo.tags                                              # also mat
 ```
 
 **Mocking the thing under test.** If you patch `_run_command` and only assert the
-argv tokens, the test locks in a command that may not exist. One MCP wrapper's
-suite was green while every CLI subcommand it built (`survivors`, `--rerun`) had
-been removed upstream. Mock at the boundary (the subprocess/HTTP call), then
-assert on the **parsed result**, not on the arguments you passed in.
+argv tokens, the test locks in a command that may not exist — it stays green even
+after the subcommands or flags it builds are renamed or removed upstream. Mock at
+the boundary (the subprocess/HTTP call), then assert on the **parsed result**, not
+on the arguments you passed in.
 
-**Fakes that ignore the parameters being tested.** A `FakeClient.list_activities`
-that returns all canned rows in one call — ignoring `after` and pagination —
-cannot exercise sync-window or budget logic, so those stay unverified. Make fakes
-honor the parameters whose handling is the point of the test.
+**Fakes that ignore the parameters being tested.** A fake client whose
+`list_items` returns all canned rows in one call — ignoring `after` and
+pagination — cannot exercise the pagination or incremental-sync logic those
+parameters drive, so it stays unverified. Make fakes honor the parameters whose
+handling is the point of the test.
 
-**Smoke tests that import the wrong thing.** `python -c "import server"` printed
-success while resolving an empty `server/` package that shadowed the real
-`server.py` — the distributed wheel was broken. Assert a real symbol is reachable
+**Smoke tests that import the wrong thing.** `python -c "import server"` can print
+success by resolving an empty `server/` package that shadows the real `server.py`
+— a broken wheel that still "imports." Assert a real symbol is reachable
 (`from server import main; main`), not merely that an import name resolves.
 
 **Forgotten mock → silent real network calls.** A test missing its `httpx_mock`
