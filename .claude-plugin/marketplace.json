@@ -29,7 +29,17 @@
         "./skills/cli-development",
         "./skills/community",
         "./skills/library-review",
-        "./skills/git-hygiene"
+        "./skills/git-hygiene",
+        "./skills/web-app-architecture"
+      ]
+    },
+    {
+      "name": "python-web-app",
+      "description": "Opinionated reference architecture for building production Python web apps - FastAPI, async SQLAlchemy, Stripe, and Dockerized deployment",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/web-app-architecture"
       ]
     },
     {
