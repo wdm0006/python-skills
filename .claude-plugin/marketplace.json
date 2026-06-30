@@ -30,7 +30,17 @@
         "./skills/community",
         "./skills/library-review",
         "./skills/git-hygiene",
-        "./skills/web-app-architecture"
+        "./skills/web-app-architecture",
+        "./skills/mcp-servers"
+      ]
+    },
+    {
+      "name": "python-mcp-servers",
+      "description": "Build robust Python MCP servers - tool error contracts, subprocess wrapping, single-file vs packaged distribution, and global-state-free testing",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/mcp-servers"
       ]
     },
     {
