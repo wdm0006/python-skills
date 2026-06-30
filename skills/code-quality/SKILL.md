@@ -84,6 +84,32 @@ except ValueError as e:
     logger.error(e)
 ```
 
+```python
+# Bad: truthiness guard swallows a legitimate 0 / 0.0 / "" / False
+hour = config.get("start_hour") or 9   # a valid 0 (midnight) silently becomes 9
+if self.max_drawdown:                  # max_drawdown=0 silently disables the limit
+    enforce(self.max_drawdown)
+
+# Good: guard on None, not on truthiness
+hour = config.get("start_hour")
+hour = 9 if hour is None else hour
+if self.max_drawdown is not None:
+    enforce(self.max_drawdown)
+```
+
+`x = x or default` is fine only when the single falsy value you mean to replace
+is an empty container (e.g. `items = items or []`). For numeric, boolean, or
+string fields where `0`, `False`, or `""` are meaningful inputs, it is a bug —
+use `x if x is not None else default`.
+
+```python
+# Bad: identity comparison against a literal (ruff flags this as F632)
+if name is not "":   # CPython interning makes it *sometimes* work — never rely on it
+
+# Good: value comparison
+if name != "":
+```
+
 ## Pythonic Idioms
 
 ```python
@@ -122,6 +148,8 @@ Code Quality:
 - [ ] Public API has docstrings
 - [ ] No mutable default arguments
 - [ ] Specific exception handling
+- [ ] Truthiness guards don't swallow valid 0/False/"" (guard on `is None`)
+- [ ] No `is`/`is not` against literals (use ==/!=)
 - [ ] py.typed marker present
 ```
 
