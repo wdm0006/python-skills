@@ -108,6 +108,59 @@ For detailed templates, see:
 - **[PYPROJECT_FULL.md](PYPROJECT_FULL.md)** - Complete pyproject.toml
 - **[CONDA.md](CONDA.md)** - Conda packaging guide
 
+## Verify the Built Artifact (a green build is not a correct wheel)
+
+`python -m build` succeeding tells you the backend *ran*, not that the wheel
+contains your code. Build backends select files via config — hatchling's
+`[tool.hatch.build.targets.wheel]` (`only-include` / `packages` / `include`),
+setuptools' `[tool.setuptools.packages.find]`. Get that config wrong and the
+backend cheerfully ships a wheel that is missing subpackages or data files, with
+no error. `twine check` won't catch it either — it validates metadata, not
+contents.
+
+**Always inspect the wheel and install it clean before publishing:**
+
+```bash
+python -m build
+python -m zipfile -l dist/*.whl        # list every file the wheel contains
+# ^ confirm ALL your subpackages (my_pkg/, my_pkg/sub/) and data files are there,
+#   not just the top-level module.
+```
+
+The most common footgun is over-narrow file selection. This ships *only*
+`server.py` and silently drops the whole `server/` package and `data/`:
+
+```toml
+# DON'T — over-narrow include drops everything else
+[tool.hatch.build]
+only-include = ["server.py"]
+
+# DO — include the package (and any data dirs); let the backend walk it
+[tool.hatch.build.targets.wheel]
+packages = ["src/my_pkg"]
+```
+
+**Name-collision footgun:** never ship both a top-level module `foo.py` and a
+package directory `foo/`. The package shadows the module, so `import foo`
+resolves to the (often nearly empty) `foo/__init__.py`, and a console entry point
+`foo = "foo:main"` fails because that package has no `main`. Pick one — usually
+the package — and delete the other.
+
+**Then prove it from a clean install, not from the source tree:**
+
+```bash
+python -m venv /tmp/verify && /tmp/verify/bin/pip install dist/*.whl
+cd /tmp && /tmp/verify/bin/python -c "import my_pkg; my_pkg.submodule.real_func"
+mycli --help                           # exercise each console script too
+```
+
+Run it from a directory *other than the repo root* — otherwise `import my_pkg`
+picks up the source tree on `sys.path` and "works" even when the wheel is empty.
+And assert on a *real symbol* (`my_pkg.submodule.real_func`), never just that the
+bare top-level name imports: `import foo` can succeed against a shadowing empty
+package and prove nothing. A CI smoke test that only does `import foo; print("ok")`
+is a false green — it passes whether or not the distributed package is usable.
+
 ## Checklist
 
 ```
@@ -117,6 +170,11 @@ Before Release:
 - [ ] LICENSE file exists
 - [ ] Version set correctly
 - [ ] twine check passes
+- [ ] `python -m zipfile -l dist/*.whl` shows every subpackage + data file
+- [ ] No module/package name collision (no foo.py AND foo/)
+- [ ] Installed the wheel into a clean venv and imported a real submodule
+      symbol from a directory outside the repo (not just the top-level name)
+- [ ] Each console script runs after a clean install
 
 After Release:
 - [ ] pip install works
