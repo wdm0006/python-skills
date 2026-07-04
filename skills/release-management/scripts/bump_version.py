@@ -153,8 +153,8 @@ def main():
     )
     parser.add_argument(
         "bump_type",
-        choices=["major", "minor", "patch"],
         nargs="?",
+        metavar="major|minor|patch|X.Y.Z",
         help="Type of version bump (or specific version like 1.2.3)",
     )
     parser.add_argument(
