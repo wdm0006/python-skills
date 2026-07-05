@@ -34,18 +34,26 @@ jobs:
         run: uv pip install --system -e ".[dev]"
 
       - name: Lint
-        run: ruff check src tests
+        run: |
+          ruff check src tests
+          ruff format --check src tests   # formatting is a separate gate from ruff check
 
       - name: Type check
         run: mypy src
 
       - name: Test
-        run: pytest --cov-report=xml
-
-      - name: Upload coverage
-        if: matrix.python-version == '3.11'
-        uses: codecov/codecov-action@v3
+        run: pytest --cov=src --cov-report=term-missing
 ```
+
+Run the **same** `ruff check` + `ruff format --check` commands here that `make
+lint` runs — if they diverge, a branch that passes locally goes red in CI (or
+vice versa). Lint the same paths, too (add `examples/`/`docs/` if they hold
+Python).
+
+Coverage is reported in the job log via `--cov-report=term-missing` rather than
+uploaded to a third-party service — no external account, token, or network
+dependency in the gate. If you later want an XML/HTML artifact, add
+`--cov-report=xml` and store it as a build artifact instead of uploading it.
 
 ## Pre-commit Configuration
 

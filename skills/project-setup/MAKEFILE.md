@@ -15,8 +15,12 @@ dev:
 test:
 	pytest
 
+# lint must stay read-only and mirror CI exactly — no --fix here (that belongs in
+# `format`). An auto-fixing lint target mutates files and exits 0, hiding real
+# violations that CI's read-only check then fails on.
 lint:
 	ruff check src tests
+	ruff format --check src tests   # formatting is NOT covered by ruff check
 
 format:
 	ruff format src tests
