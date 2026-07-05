@@ -31,7 +31,17 @@
         "./skills/library-review",
         "./skills/git-hygiene",
         "./skills/web-app-architecture",
-        "./skills/mcp-servers"
+        "./skills/mcp-servers",
+        "./skills/apple-platform-apps"
+      ]
+    },
+    {
+      "name": "apple-platform-apps",
+      "description": "Build and ship native Swift/SwiftUI apps for iOS/macOS - CI code signing and test targets, secure OAuth and Keychain token storage, SwiftData/CloudKit modeling, and deterministic date/RNG handling",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/apple-platform-apps"
       ]
     },
     {
