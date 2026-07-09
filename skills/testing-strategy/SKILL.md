@@ -158,6 +158,51 @@ network call fails loudly instead of "passing."
 it pass documents the bug as acceptable. Assert the *correct* behavior and let it
 fail until the bug is fixed (use `xfail(strict=True)` to track it without red CI).
 
+## Catch Deprecation Drift Before It Breaks You
+
+A dependency deprecates an API in one release and removes it in the next. Code
+that calls the deprecated form keeps working — emitting a `DeprecationWarning` or
+`FutureWarning` nobody reads — right up until a routine `pip install -U` upgrades
+past the removal and the call becomes a hard `AttributeError`/`TypeError`. By
+then the break is a production incident, not a warning.
+
+This is the same failure mode across every ecosystem: `DataFrame.append` (removed
+in pandas 2.0), `matplotlib.cm.get_cmap` (removed in 3.9), a networkx layout
+helper renamed out of the top-level namespace, `datetime.utcnow()` (deprecated in
+3.12, hundreds of warnings buried in the log). In each case the signal existed as
+a warning for a full release cycle and was ignored.
+
+Turn that warning into a test failure so it fails loud while it's still just a
+deprecation:
+
+```toml
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error",                                    # any warning fails the test
+    # Targeted, documented escape hatches for warnings you can't fix yet:
+    "ignore:.*legacy config.*:DeprecationWarning:some_dependency",
+]
+```
+
+`"error"` promotes every warning to an exception, so a `DeprecationWarning` from a
+dependency (or from your own soon-to-break call) turns a green suite red the day
+the warning first appears — months before the removal lands. Add a *narrow,
+commented* `ignore` entry (scoped by message and module) for third-party warnings
+you genuinely can't act on yet; never blanket-ignore a whole category, or you
+re-bury the signal you just surfaced.
+
+Two habits make this land:
+
+- **Don't pin ancient dependencies and forget them.** A lockfile frozen on a
+  years-old release hides every deprecation the ecosystem has issued since. Test
+  against a current resolution (e.g. a periodic unpinned CI job) so drift shows up
+  as a failing warning, not a surprise years later.
+- **When you wrap an external CLI or library, verify its *installed* API, not the
+  one you remember.** Code written against a tool's 2.x commands while the project
+  pins 3.x fails only at runtime — and unit tests that mock the subprocess pass
+  green while asserting flags that no longer exist. Check the real version's
+  surface (`--help`, `inspect`, the changelog) before asserting against it.
+
 ## Checklist
 
 ```
@@ -167,6 +212,7 @@ Testing:
 - [ ] No external service dependencies (mock them)
 - [ ] Coverage > 85%
 - [ ] Tests run in CI
+- [ ] filterwarnings = ["error"] so deprecations fail loud (with narrow, commented ignores only)
 ```
 
 ## Learn More
