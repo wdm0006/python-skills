@@ -67,6 +67,39 @@ pytest                      # Test
 mypy src                    # Type check
 ```
 
+## Keep local checks identical to CI
+
+The most common CI failure is not a bug — it's a check that passes locally but
+fails in CI (or vice versa) because the two run different commands. Two rules
+prevent an entire class of "green locally, red in CI" (and chronically-red base
+branch) problems:
+
+**1. `make lint` must be read-only — never `--fix`.** A `lint` target that runs
+`ruff check --fix` mutates your files and almost always exits 0, so pre-existing
+violations silently sit on the branch while CI's read-only `ruff check` goes red.
+Put `--fix` only in `format` and the pre-commit hook. `make lint` should run the
+*exact* commands CI runs.
+
+**2. CI (and `make lint`) must check formatting too.** `ruff check` and
+`ruff format` are different tools: the linter passing says nothing about
+formatting. Gate on both, or formatting drift ships / turns a branch red
+unexpectedly:
+
+```bash
+ruff check src tests          # lint rules
+ruff format --check src tests # formatting — REQUIRED, not implied by ruff check
+```
+
+Lint the **same paths** in the Makefile and CI (add `examples/`, `docs/`, etc. if
+they contain Python) — a narrower local scope lets violations accumulate in dirs
+CI checks. Configure ruff under `[tool.ruff.lint]` (not the deprecated top-level
+`select`/`ignore`), and keep `requires-python` and `[tool.ruff] target-version`
+in sync so ruff doesn't apply upgrade rules for a version you don't support.
+
+For coverage, prefer running `pytest --cov` with a terminal report
+(`--cov-report=term-missing`) in the CI log over uploading to a third-party
+service — no external account, token, or network dependency in the gate.
+
 ## Key Decisions
 
 | Choice | Recommendation | Why |
@@ -83,7 +116,8 @@ mypy src                    # Type check
 Project Setup:
 - [ ] src/ layout with py.typed marker
 - [ ] pyproject.toml (not setup.py)
-- [ ] Makefile with dev/test/lint/format
+- [ ] Makefile with dev/test/lint/format (lint read-only, no --fix)
+- [ ] `make lint` runs the exact `ruff check` + `ruff format --check` CI runs
 - [ ] .pre-commit-config.yaml
 - [ ] .github/workflows/ci.yml
 - [ ] README.md, LICENSE, CHANGELOG.md
