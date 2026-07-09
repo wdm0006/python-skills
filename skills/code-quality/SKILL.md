@@ -110,6 +110,105 @@ if name is not "":   # CPython interning makes it *sometimes* work — never rel
 if name != "":
 ```
 
+## Fail Loud: Don't Degrade Silently
+
+The costliest bugs aren't crashes — they're failures that look like success. Code
+that swallows an error and returns something plausible corrupts data downstream
+with no signal that anything went wrong. Prefer raising, or at minimum surfacing
+an explicit error, over a quiet fallback.
+
+**Don't collapse exceptions into a generic string — and don't discard output.**
+
+```python
+# Bad: real parse error becomes a one-line string; traceback and context lost
+try:
+    return parse(path)
+except Exception as e:
+    return {"error": str(e)}     # every distinct failure looks the same
+
+# Bad: a nonzero exit discards stdout — where many CLIs write their real summary
+result = subprocess.run(cmd, capture_output=True, text=True)
+if result.returncode != 0:
+    return f"Error: {result.stderr}"   # tools that exit nonzero *by design*
+                                       # (e.g. "N findings") report empty here
+
+# Good: let it raise (or return stdout+stderr+code so the caller can decide)
+return {"stdout": result.stdout, "stderr": result.stderr, "code": result.returncode}
+```
+
+**Give success and failure distinct sentinels.** If the error path writes the
+same status value the success path uses, failed runs read as complete.
+
+```python
+# Bad: on failure, status is set to the SAME value that means "done"
+try:
+    run_job()
+    status = "READY"
+except Exception:
+    status = "READY"     # failures are now indistinguishable from success
+
+# Good: a terminal error state the UI/caller can branch on
+    status = "ERROR"
+```
+
+**Never substitute fabricated data on failure.** Returning randomized or sample
+data when a fetch fails makes the UI show plausible-but-invented numbers.
+
+```python
+# Bad: a network hiccup silently becomes made-up numbers
+try:
+    return fetch_metrics()
+except RequestError:
+    return generate_sample_data()   # user can't tell real from fake
+
+# Good: propagate the failure (or return an explicit sentinel the UI renders as an error)
+```
+
+**Signal partial results — don't return them as complete.** A paginated fetch
+that aborts mid-stream and returns what it has looks identical to a full result.
+
+```python
+# Bad: caller can't distinguish "12 items" from "12 of 900 before the API died"
+def fetch_all():
+    items = []
+    for page in paginate():
+        try:
+            items.extend(page)
+        except RequestError:
+            break            # silent truncation
+    return items
+
+# Good: return completeness alongside the data (or raise)
+    return items, complete   # caller warns loudly when complete is False
+```
+
+**Batch loops: collect per-item errors, don't just `continue`.** Skipping bad
+inputs silently gives no way to know coverage was incomplete — and makes sibling
+operations inconsistent when some report errors and others don't.
+
+```python
+# Bad: files that fail to load vanish with no trace
+for f in files:
+    try:
+        process(load(f))
+    except Exception:
+        continue                     # how many were skipped? which ones?
+
+# Good: accumulate skips and return them so callers (and automation) can see them
+errors = []
+for f in files:
+    try:
+        process(load(f))
+    except Exception as e:
+        errors.append({"file": f, "error": str(e)})
+return {"processed": ..., "errors": errors}
+```
+
+The unifying rule: when you catch an error, either recover meaningfully or make
+the failure **visible** (raise, log at error level, or return a distinguishable
+sentinel). A `return`/`continue`/fallback inside `except` that produces
+normal-looking output is where silent corruption lives.
+
 ## Pythonic Idioms
 
 ```python
@@ -148,6 +247,8 @@ Code Quality:
 - [ ] Public API has docstrings
 - [ ] No mutable default arguments
 - [ ] Specific exception handling
+- [ ] Failures fail loud — no fabricated fallbacks, colliding success/error sentinels, or silently-truncated results
+- [ ] Batch loops collect per-item errors instead of a bare `continue`
 - [ ] Truthiness guards don't swallow valid 0/False/"" (guard on `is None`)
 - [ ] No `is`/`is not` against literals (use ==/!=)
 - [ ] py.typed marker present
