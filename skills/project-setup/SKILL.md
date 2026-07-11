@@ -118,6 +118,7 @@ Project Setup:
 - [ ] pyproject.toml (not setup.py)
 - [ ] Makefile with dev/test/lint/format (lint read-only, no --fix)
 - [ ] `make lint` runs the exact `ruff check` + `ruff format --check` CI runs
+- [ ] Build-gating tools pinned (linter, formatter, toolchain, test runner) so upstream releases don't flip green/red on unrelated PRs
 - [ ] .pre-commit-config.yaml
 - [ ] .github/workflows/ci.yml
 - [ ] README.md, LICENSE, CHANGELOG.md
