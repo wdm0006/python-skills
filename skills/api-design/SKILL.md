@@ -128,17 +128,11 @@ semantics before deciding it failed.
 
 ## Deprecation
 
-```python
-import warnings
-
-def old_function():
-    warnings.warn(
-        "old_function() deprecated, use new_function()",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return new_function()
-```
+Deprecate gracefully: warn now, document the removal version, and remove only in a
+major release. The warning mechanics (including deprecating parameters, classes,
+and modules) and the migration-guide template are owned by the
+`managing-python-releases` skill — see
+**[../release-management/MIGRATION.md](../release-management/MIGRATION.md)**.
 
 ## Anti-Patterns
 
@@ -148,13 +142,10 @@ process(data, True, False, True)
 
 # Good: Keyword arguments
 process(data, validate=True, cache=False)
-
-# Bad: Mutable default
-def process(items: list = []):
-
-# Good: None default
-def process(items: list | None = None):
 ```
+
+The mutable-default-argument trap (`def f(x: list = [])`) is covered by the
+`improving-python-code-quality` skill.
 
 For detailed patterns, see:
 - **[PATTERNS.md](PATTERNS.md)** - Builder, factory, and advanced patterns

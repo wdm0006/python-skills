@@ -32,7 +32,7 @@ def encode(latitude: float, longitude: float, *, precision: int = 12) -> str:
 
 ```bash
 # Install
-pip install sphinx furo myst-parser sphinx-copybutton
+uv add --dev sphinx furo myst-parser sphinx-copybutton
 
 # Initialize
 sphinx-quickstart docs/
@@ -70,7 +70,7 @@ Short description of what it does.
 
 ## Installation
 
-pip install package
+uv add package
 
 ## Quick Start
 

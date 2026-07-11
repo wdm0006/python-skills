@@ -17,23 +17,26 @@ First, add this repository as a plugin marketplace in Claude Code:
 Install the complete skill set (recommended):
 
 ```
-/plugin install python-library-complete@wdm0006-python-skills
+/plugin install python-library-complete@python-library-dev
 ```
 
 Or install specific bundles based on your needs:
 
 ```
 # Core skills for starting projects
-/plugin install python-library-foundations@wdm0006-python-skills
+/plugin install python-library-foundations@python-library-dev
 
 # Skills for packaging and releasing
-/plugin install python-library-distribution@wdm0006-python-skills
+/plugin install python-library-distribution@python-library-dev
 
 # Quality-focused skills (security, performance, API design)
-/plugin install python-library-quality@wdm0006-python-skills
+/plugin install python-library-quality@python-library-dev
 
 # Opinionated architecture for building Python web apps
-/plugin install python-web-app@wdm0006-python-skills
+/plugin install python-web-app@python-library-dev
+
+# MCP servers for LLM clients (FastMCP)
+/plugin install python-mcp-servers@python-library-dev
 ```
 
 ### Alternative: Local Installation
@@ -83,12 +86,14 @@ After installation, you can verify the skills are loaded by running:
 | **building-python-clis** | Click/Typer CLIs, command groups, shell completion, CLI testing | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **building-python-communities** | CONTRIBUTING.md, issue templates, PR templates, GitHub automation | [Building Engaging Community](https://mcginniscommawill.com/posts/2025-01-22-building-engaging-community/), [Inner Source Introduction](https://mcginniscommawill.com/posts/2025-02-11-inner-source-introduction/), [From Silos to Shared Libraries](https://mcginniscommawill.com/posts/2025-02-18-silos-to-shared-libraries/) |
 | **reviewing-python-libraries** | Comprehensive library reviews across all quality dimensions | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
+| **keeping-git-repos-clean** | Prevent, detect, and remediate committed secrets and dev artifacts — .gitignore, `git rm --cached`, history scrubbing, credential rotation | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **building-python-web-apps** | Opinionated reference architecture for production web apps — FastAPI, async SQLAlchemy/Postgres, Stripe billing, Jinja or SPA frontends, and Dockerized deployment via Terraform | Production web app patterns |
+| **building-python-mcp-servers** | Robust Python MCP servers with FastMCP — tool design, error contracts, CLI/subprocess wrapping, single-file vs packaged distribution, testing, and prompt-injection awareness | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 
 ## Plugin Bundles
 
 ### python-library-complete
-All library-development skills, plus the web-app architecture skill, for comprehensive Python development.
+All library-development skills, plus the web-app architecture and MCP-server skills, for comprehensive Python development.
 
 ### python-library-foundations
 Core skills for starting projects:
@@ -107,10 +112,15 @@ Quality-focused skills:
 - Security audit
 - Performance
 - API design
+- Git hygiene
 
 ### python-web-app
 Opinionated architecture for building Python web apps:
 - Web app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment)
+
+### python-mcp-servers
+Build MCP servers for LLM clients:
+- MCP servers (FastMCP tool design, error contracts, packaging, testing, prompt-injection awareness)
 
 ## Usage
 

@@ -9,7 +9,7 @@ help:
 	@echo "Commands: dev test lint format type-check clean build publish"
 
 dev:
-	pip install -e ".[dev,docs]"
+	uv sync --extra dev --extra docs
 	pre-commit install
 
 test:
@@ -34,7 +34,7 @@ clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 
 build: clean
-	python -m build
+	uv build
 
 publish: build
 	twine upload dist/*
@@ -59,7 +59,7 @@ docs:
 	cd docs && make html
 
 docs-serve:
-	python -m http.server --directory docs/_build/html
+	uv run python -m http.server --directory docs/_build/html
 
 # Coverage report
 coverage:

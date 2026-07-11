@@ -1,5 +1,11 @@
 # Complete pyproject.toml Reference
 
+## Contents
+- Full Template
+- Entry Points
+- Build Backends
+- Dependency Specifiers
+
 ## Full Template
 
 ```toml
@@ -25,6 +31,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = []
 
@@ -73,7 +80,7 @@ known-first-party = ["my_library"]
 # Pytest configuration
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra -q --cov=my_library --cov-report=term-missing"
+addopts = "-ra -q --cov=my_library --cov-report=term-missing --cov-fail-under=85"
 
 # MyPy configuration
 [tool.mypy]
@@ -95,6 +102,11 @@ exclude_lines = [
     "if TYPE_CHECKING:",
 ]
 ```
+
+The ruff, mypy, pytest, and coverage blocks above are a sensible default in one
+place. For the comprehensive, annotated versions of those configs see the
+`improving-python-code-quality` skill (ruff and mypy) and the
+`testing-python-libraries` skill (pytest and the 85% coverage gate).
 
 ## Entry Points
 

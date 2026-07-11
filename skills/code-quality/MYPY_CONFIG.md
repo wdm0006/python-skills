@@ -69,7 +69,7 @@ For libraries without type hints:
 
 ```bash
 # Install stubs
-pip install types-requests types-PyYAML
+uv add --dev types-requests types-PyYAML
 
 # Or ignore in config
 [[tool.mypy.overrides]]

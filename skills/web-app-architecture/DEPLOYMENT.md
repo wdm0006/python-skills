@@ -1,5 +1,14 @@
 # Deployment
 
+## Contents
+- Dockerfile
+- One image, three roles
+- Migrations run pre-deploy
+- Infrastructure as code — Terraform
+- Secrets
+- Health checks
+- CI
+
 **One Docker image, one managed platform, all infrastructure in Terraform.** The web
 service, the worker, and migrations are the *same image* run with different commands
 — never separate codebases.
@@ -99,7 +108,7 @@ Two clean patterns, no copy-pasting from dashboards:
   same value into both the web and worker services via the shared `local.app_env`.
 - **Mark no-sync** (`sync = false` / equivalent) for values that must come from
   elsewhere, and set them out of band. The provisioned-by-TF Stripe webhook secret
-  (see **[PAYMENTS.md](PAYMENTS.md)**) flows straight from the resource into the env.
+  (covered in the payments reference) flows straight from the resource into the env.
 
 The `secret_key` must be **identical** across web and worker (they verify the same
 signed tokens). Never commit real secrets; `.env` is gitignored and `.env.example`

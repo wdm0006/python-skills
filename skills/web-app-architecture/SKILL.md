@@ -1,6 +1,6 @@
 ---
 name: building-python-web-apps
-description: Opinionated reference architecture for production Python web apps — FastAPI + async SQLAlchemy + Postgres, pydantic-settings config, Stripe billing, server-rendered Jinja or a decoupled SPA, deployed as a single Docker image on a managed platform via Terraform. Use when starting a new SaaS/web app, choosing a stack, structuring routers/services/models, wiring Stripe webhooks, setting up config/secrets, or deciding how to deploy.
+description: Provides an opinionated reference architecture for production Python web apps — FastAPI + async SQLAlchemy + Postgres, pydantic-settings config, Stripe billing, server-rendered Jinja or a decoupled SPA, deployed as a single Docker image on a managed platform via Terraform. Use when starting a new SaaS/web app, choosing a stack, structuring routers/services/models, wiring Stripe webhooks, setting up config/secrets, or deciding how to deploy.
 ---
 
 # Building Python Web Apps

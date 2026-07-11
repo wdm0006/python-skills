@@ -15,7 +15,7 @@ python -m pyinstrument script.py
 python -m cProfile -s cumulative script.py
 
 # Memory profiling
-pip install memray
+uv add --dev memray
 memray run script.py
 memray flamegraph memray-*.bin
 ```

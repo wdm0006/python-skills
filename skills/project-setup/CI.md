@@ -1,5 +1,12 @@
 # CI/CD Configuration Reference
 
+## Contents
+- GitHub Actions CI (lint, type-check, test matrix)
+- Pin your CI tooling
+- Pre-commit configuration
+- Release workflow (points to the release-management skill)
+- .gitignore
+
 ## GitHub Actions CI
 
 ```yaml
@@ -22,27 +29,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - name: Install uv
-        uses: astral-sh/setup-uv@v1
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv pip install --system -e ".[dev]"
+        run: uv sync --extra dev --python ${{ matrix.python-version }}
 
       - name: Lint
         run: |
-          ruff check src tests
-          ruff format --check src tests   # formatting is a separate gate from ruff check
+          uv run ruff check src tests
+          uv run ruff format --check src tests   # formatting is a separate gate from ruff check
 
       - name: Type check
-        run: mypy src
+        run: uv run mypy src
 
       - name: Test
-        run: pytest --cov=src --cov-report=term-missing
+        run: uv run pytest --cov=src --cov-report=term-missing
 ```
 
 Run the **same** `ruff check` + `ruff format --check` commands here that `make
@@ -120,28 +125,9 @@ repos:
 
 ## Release Workflow
 
-```yaml
-# .github/workflows/release.yml
-name: Release
-
-on:
-  push:
-    tags: ['v*']
-
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install build
-      - run: python -m build
-      - uses: pypa/gh-action-pypi-publish@release/v1
-```
+The tag-triggered PyPI publish workflow (trusted publishing, GitHub release, and
+the release runbook) is owned by the `managing-python-releases` skill (see its
+AUTOMATION.md reference). Keep one copy there rather than a second `release.yml` here.
 
 ## .gitignore
 

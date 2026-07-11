@@ -1,5 +1,14 @@
 # Type Hint Patterns Reference
 
+## Contents
+- Basic Types
+- Function Signatures
+- Generics
+- Protocols (Structural Typing)
+- Type Aliases
+- Overloads
+- TypedDict
+
 ## Basic Types
 
 ```python

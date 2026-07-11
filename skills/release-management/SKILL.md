@@ -53,6 +53,10 @@ __version__ = version("my-package")
 
 ## GitHub Actions Release
 
+A tag-triggered workflow builds with `uv` and publishes to PyPI via trusted
+publishing (no stored token). The full canonical pipeline — TestPyPI dry run,
+GitHub release, and the release runbook — is in **[AUTOMATION.md](AUTOMATION.md)**.
+
 ```yaml
 # .github/workflows/release.yml
 on:
@@ -63,19 +67,23 @@ jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      id-token: write
+      contents: write      # create the GitHub release
+      id-token: write      # trusted publishing (no token)
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-      - run: pip install build && python -m build
-      - uses: softprops/action-gh-release@v1
+      - uses: astral-sh/setup-uv@v5
+      - run: uv build
+      - uses: softprops/action-gh-release@v2
         with:
           files: dist/*
       - uses: pypa/gh-action-pypi-publish@release/v1
 ```
 
 ## Deprecation Process
+
+Warn with `stacklevel=2` so the message points at the caller. Deprecating
+parameters, classes, or whole modules — and the migration-guide template — is
+covered in **[MIGRATION.md](MIGRATION.md)**.
 
 ```python
 import warnings
