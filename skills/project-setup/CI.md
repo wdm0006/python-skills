@@ -55,6 +55,41 @@ uploaded to a third-party service — no external account, token, or network
 dependency in the gate. If you later want an XML/HTML artifact, add
 `--cov-report=xml` and store it as a build artifact instead of uploading it.
 
+## Pin your CI tooling — don't let upstream releases decide green/red
+
+Identical local and CI *commands* still aren't reproducible if CI installs the
+tools at "latest." When a linter, formatter, language toolchain, test
+orchestrator, or floated runtime dependency auto-upgrades, your pass/fail can
+flip on a PR that never touched the affected code — green/red becomes a function
+of upstream release dates, not your diff. These failure modes all recur:
+
+- **Formatter version drift.** A formatter installed at latest can reformat files
+  under a newer release, so a PR that never touched those files fails the
+  `--check` gate (or a version bump silently reformats them). Pin the formatter to
+  one version and use that *same* version locally and in the pre-commit hook.
+- **Linter config schema tied to the linter's major version.** When the installed
+  linter's major version and the config file's schema drift apart, the linter
+  fails at config validation *before it lints a single line* — a red job with no
+  real violation. Pin the linter/action major version to match the config schema
+  (and bump both together).
+- **A floated runtime dependency your tests import.** A `latest` numeric/plotting/
+  framework dependency can deprecate-then-remove an API between releases, turning
+  even a docs-only PR red. Pin such deps (or a compatible range), or at minimum
+  know which ones float so a surprise red isn't mistaken for your change.
+- **Auto-upgrading language toolchains.** A toolchain resolver that fetches a
+  newer version than your build matrix *declares* means the matrix tests a version
+  it never names — the coverage you advertise is fiction. Pin the toolchain and
+  the matrix to the project's declared minimum so the matrix tests what it claims.
+- **Test-orchestrator default changes.** An unpinned test runner or orchestrator
+  can change a default between minor versions (e.g. a missing interpreter flipping
+  from "skip" to "hard fail"), reddening an unrelated PR. Pin it, and set the
+  behavior explicitly in config rather than relying on the default.
+
+Rule of thumb: pin every tool that gates the build (linter, formatter, type
+checker, toolchain, test runner) to an explicit version, and bump them in their
+own dedicated PR — so a tooling bump's fallout lands in a diff that's *about* the
+bump, not scattered across unrelated feature PRs.
+
 ## Pre-commit Configuration
 
 ```yaml
