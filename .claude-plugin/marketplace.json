@@ -31,7 +31,17 @@
         "./skills/library-review",
         "./skills/git-hygiene",
         "./skills/web-app-architecture",
-        "./skills/mcp-servers"
+        "./skills/mcp-servers",
+        "./skills/go-projects"
+      ]
+    },
+    {
+      "name": "go-project-ci",
+      "description": "Set up and maintain Go projects with a CI gate that actually gates - module-path correctness, golangci-lint config matched to the installed major, deterministic gofmt, a pinned toolchain, and meaningful test/lint jobs",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/go-projects"
       ]
     },
     {
