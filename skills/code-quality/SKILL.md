@@ -209,6 +209,58 @@ the failure **visible** (raise, log at error level, or return a distinguishable
 sentinel). A `return`/`continue`/fallback inside `except` that produces
 normal-looking output is where silent corruption lives.
 
+## Determinism & Reproducibility
+
+Non-deterministic output is a quiet tax: churny, unreviewable diffs; flaky tests;
+and simulations no one can reproduce from a seed. Three sources recur.
+
+**Serializing from an unordered container.** Building a list or JSON payload by
+iterating a `set` (or merging into a dict and ranging it) emits results in an
+order that varies run to run — `str` hashing is randomized per process, so a
+regenerated file is the same data reshuffled, and the real change drowns in noise
+in a repo whose whole point may be a clean diff. Impose a total order before you
+serialize.
+
+```python
+# Bad: set iteration order isn't stable across runs
+tags = [render(t) for t in tag_set]
+json.dump(record, f)                     # nested sets/merges churn the output
+
+# Good: sort before writing
+tags = [render(t) for t in sorted(tag_set)]
+json.dump(record, f, sort_keys=True)
+```
+
+**Multiple RNGs, none injectable.** A library that draws from both `random` and
+`numpy.random` needs *both* seeded to be reproducible — seeding one leaves the
+other free-running, so the run is only half-deterministic. And seeding the global
+RNGs (`random.seed`, `np.random.seed`) clobbers the caller's global state. Accept
+a seed (or an RNG instance) and thread local generators through, so callers get
+reproducibility without you reaching into their globals.
+
+```python
+# Bad: two independent global RNGs, no way to seed from the outside
+def simulate():
+    x = random.random()              # stdlib global stream
+    y = np.random.normal()           # numpy global — a *separate* stream
+
+# Good: caller-supplied, local generators; one seed reproduces the whole run
+def simulate(seed: int | None = None):
+    rng = random.Random(seed)
+    nprng = np.random.default_rng(seed)
+    x = rng.random()
+    y = nprng.normal()
+```
+
+**Unpinned parsing context.** Locale-dependent parsing — `datetime.strptime` with
+`%b`/`%a` (month/day names) — silently changes behavior across machines. Pin the
+format and locale so a test that passes on your box passes in CI too.
+
+Non-determinism also weakens tests: a function that `shuffle`s its output forces
+assertions so loose ("contains any of these words") that they stop catching
+regressions. Make the seam deterministic — inject the RNG — and assert exact
+output.
+
 ## Pythonic Idioms
 
 ```python
@@ -251,6 +303,7 @@ Code Quality:
 - [ ] Batch loops collect per-item errors instead of a bare `continue`
 - [ ] Truthiness guards don't swallow valid 0/False/"" (guard on `is None`)
 - [ ] No `is`/`is not` against literals (use ==/!=)
+- [ ] Deterministic output: sort before serializing; seed/inject all RNGs (both `random` and `numpy`)
 - [ ] py.typed marker present
 ```
 
