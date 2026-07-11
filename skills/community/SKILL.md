@@ -16,7 +16,7 @@ description: Builds and manages open source Python library communities including
 
 git clone https://github.com/user/package.git
 cd package
-pip install -e ".[dev]"
+uv sync --extra dev
 pre-commit install
 pytest
 

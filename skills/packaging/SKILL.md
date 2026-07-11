@@ -38,45 +38,26 @@ where = ["src"]
 ## Building
 
 ```bash
-pip install build
-python -m build              # Creates dist/
-twine check dist/*           # Validate
+uv build                     # Creates sdist + wheel in dist/
+uvx twine check dist/*       # Validate metadata
 ```
 
 ## Publishing to PyPI
 
-**First time setup:**
-```bash
-# Create API token at pypi.org/manage/account/token/
-export TWINE_USERNAME=__token__
-export TWINE_PASSWORD=pypi-xxx...
-```
+Prefer **trusted publishing** from CI (no stored token) — see the CI section
+below. For a manual publish, upload with twine via `uvx`:
 
-**Publish:**
 ```bash
-twine upload --repository testpypi dist/*  # Test first
-twine upload dist/*                         # Production
+uvx twine upload --repository testpypi dist/*  # Test first
+uvx twine upload dist/*                         # Production (uses a PyPI token)
 ```
 
 ## GitHub Actions (Trusted Publishing)
 
-```yaml
-# .github/workflows/publish.yml
-on:
-  release:
-    types: [published]
-
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-      - run: pip install build && python -m build
-      - uses: pypa/gh-action-pypi-publish@release/v1
-```
+Publishing is automated by the canonical tag-triggered release workflow in the
+`managing-python-releases` skill — one pipeline builds with `uv` and publishes via
+trusted publishing. See **[../release-management/AUTOMATION.md](../release-management/AUTOMATION.md)**;
+don't maintain a second copy here.
 
 ## Dependency Best Practices
 
@@ -105,12 +86,12 @@ data = files("my_package.data").joinpath("file.json").read_text()
 ```
 
 For detailed templates, see:
-- **[PYPROJECT_FULL.md](PYPROJECT_FULL.md)** - Complete pyproject.toml
-- **[CONDA.md](CONDA.md)** - Conda packaging guide
+- **[../project-setup/PYPROJECT.md](../project-setup/PYPROJECT.md)** - Complete annotated pyproject.toml (canonical)
+- **[CONDA.md](CONDA.md)** - Conda / conda-forge packaging guide
 
 ## Verify the Built Artifact (a green build is not a correct wheel)
 
-`python -m build` succeeding tells you the backend *ran*, not that the wheel
+`uv build` succeeding tells you the backend *ran*, not that the wheel
 contains your code. Build backends select files via config — hatchling's
 `[tool.hatch.build.targets.wheel]` (`only-include` / `packages` / `include`),
 setuptools' `[tool.setuptools.packages.find]`. Get that config wrong and the
@@ -121,8 +102,8 @@ contents.
 **Always inspect the wheel and install it clean before publishing:**
 
 ```bash
-python -m build
-python -m zipfile -l dist/*.whl        # list every file the wheel contains
+uv build
+uv run python -m zipfile -l dist/*.whl # list every file the wheel contains
 # ^ confirm ALL your subpackages (my_pkg/, my_pkg/sub/) and data files are there,
 #   not just the top-level module.
 ```
@@ -149,7 +130,7 @@ the package — and delete the other.
 **Then prove it from a clean install, not from the source tree:**
 
 ```bash
-python -m venv /tmp/verify && /tmp/verify/bin/pip install dist/*.whl
+uv venv /tmp/verify && uv pip install --python /tmp/verify/bin/python dist/*.whl
 cd /tmp && /tmp/verify/bin/python -c "import my_pkg; my_pkg.submodule.real_func"
 mycli --help                           # exercise each console script too
 ```
@@ -170,7 +151,7 @@ Before Release:
 - [ ] LICENSE file exists
 - [ ] Version set correctly
 - [ ] twine check passes
-- [ ] `python -m zipfile -l dist/*.whl` shows every subpackage + data file
+- [ ] `uv run python -m zipfile -l dist/*.whl` shows every subpackage + data file
 - [ ] No module/package name collision (no foo.py AND foo/)
 - [ ] Installed the wheel into a clean venv and imported a real submodule
       symbol from a directory outside the repo (not just the top-level name)

@@ -2,12 +2,13 @@
 """Create a new Python library project with modern best practices.
 
 Usage:
-    python create_project.py my-library
-    python create_project.py my-library --author "Your Name" --email you@example.com
+    uv run python scripts/create_project.py my-library
+    uv run python scripts/create_project.py my-library --author "Your Name" --email you@example.com
 """
 
 import argparse
-import os
+import sys
+from datetime import date, datetime
 from pathlib import Path
 from textwrap import dedent
 
@@ -61,6 +62,7 @@ def create_project(
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
             "Programming Language :: Python :: 3.12",
+            "Programming Language :: Python :: 3.13",
         ]
         dependencies = []
 
@@ -139,7 +141,7 @@ def create_project(
         ## Installation
 
         ```bash
-        pip install {name}
+        uv add {name}
         ```
 
         ## Quick Start
@@ -158,13 +160,13 @@ def create_project(
         cd {name}
 
         # Install in development mode
-        pip install -e ".[dev]"
+        uv sync --extra dev
 
         # Run tests
-        pytest
+        uv run pytest
 
         # Run linting
-        ruff check src tests
+        uv run ruff check src tests
         ```
 
         ## License
@@ -175,10 +177,10 @@ def create_project(
     (project_dir / "README.md").write_text(readme)
 
     # Create LICENSE
-    license_text = dedent('''
+    license_text = dedent(f'''
         MIT License
 
-        Copyright (c) 2024
+        Copyright (c) {datetime.now().year}
 
         Permission is hereby granted, free of charge, to any person obtaining a copy
         of this software and associated documentation files (the "Software"), to deal
@@ -240,28 +242,32 @@ def create_project(
 
     # Create Makefile
     makefile = dedent(f'''
-        .PHONY: help install dev test lint format clean
+        .PHONY: help install dev test lint typecheck format clean
 
         help:
         \t@echo "Available commands:"
-        \t@echo "  make dev      Install in development mode"
-        \t@echo "  make test     Run tests"
-        \t@echo "  make lint     Run linter"
-        \t@echo "  make format   Format code"
-        \t@echo "  make clean    Remove build artifacts"
+        \t@echo "  make dev        Install in development mode"
+        \t@echo "  make test       Run tests"
+        \t@echo "  make lint       Run linter"
+        \t@echo "  make typecheck  Run type checker"
+        \t@echo "  make format     Format code"
+        \t@echo "  make clean      Remove build artifacts"
 
         dev:
-        \tpip install -e ".[dev]"
+        \tuv sync --extra dev
 
         test:
-        \tpytest
+        \tuv run pytest
 
         lint:
-        \truff check src tests
+        \tuv run ruff check src tests
+
+        typecheck:
+        \tuv run mypy src
 
         format:
-        \truff format src tests
-        \truff check --fix src tests
+        \tuv run ruff format src tests
+        \tuv run ruff check --fix src tests
 
         clean:
         \trm -rf build dist *.egg-info
@@ -287,37 +293,38 @@ def create_project(
             runs-on: ubuntu-latest
             strategy:
               matrix:
-                python-version: ["3.10", "3.11", "3.12"]
+                python-version: ["3.10", "3.11", "3.12", "3.13"]
 
             steps:
               - uses: actions/checkout@v4
 
+              - name: Install uv
+                uses: astral-sh/setup-uv@v5
+
               - name: Set up Python ${{ matrix.python-version }}
-                uses: actions/setup-python@v5
-                with:
-                  python-version: ${{ matrix.python-version }}
+                run: uv python install ${{ matrix.python-version }}
 
               - name: Install dependencies
-                run: pip install -e ".[dev]"
+                run: uv sync --extra dev --python ${{ matrix.python-version }}
 
               - name: Lint
-                run: ruff check src tests
+                run: uv run ruff check src tests
 
               - name: Type check
-                run: mypy src
+                run: uv run mypy src
 
               - name: Test
-                run: pytest --cov-report=xml
+                run: uv run pytest --cov-report=xml
 
               - name: Upload coverage
-                if: matrix.python-version == '3.11'
-                uses: codecov/codecov-action@v3
+                if: matrix.python-version == '3.12'
+                uses: codecov/codecov-action@v4
     ''').strip()
 
     (project_dir / ".github" / "workflows" / "ci.yml").write_text(ci_yaml)
 
     # Create CHANGELOG
-    changelog = dedent('''
+    changelog = dedent(f'''
         # Changelog
 
         All notable changes to this project will be documented in this file.
@@ -327,13 +334,41 @@ def create_project(
         ### Added
         - Initial project structure
 
-        ## [0.1.0] - YYYY-MM-DD
+        ## [0.1.0] - {date.today().isoformat()}
 
         ### Added
         - Initial release
     ''').strip()
 
     (project_dir / "CHANGELOG.md").write_text(changelog)
+
+    # Create .pre-commit-config.yaml
+    pre_commit = dedent('''
+        repos:
+          - repo: https://github.com/pre-commit/pre-commit-hooks
+            rev: v4.5.0
+            hooks:
+              - id: trailing-whitespace
+              - id: end-of-file-fixer
+              - id: check-yaml
+              - id: check-added-large-files
+              - id: check-merge-conflict
+
+          - repo: https://github.com/astral-sh/ruff-pre-commit
+            rev: v0.1.9
+            hooks:
+              - id: ruff
+                args: [--fix]
+              - id: ruff-format
+
+          - repo: https://github.com/pre-commit/mirrors-mypy
+            rev: v1.8.0
+            hooks:
+              - id: mypy
+                additional_dependencies: []
+    ''').strip()
+
+    (project_dir / ".pre-commit-config.yaml").write_text(pre_commit)
 
     return project_dir
 
@@ -357,14 +392,15 @@ def main():
             description=args.description,
         )
         print(f"Created project: {project_dir}")
-        print(f"\nNext steps:")
+        print("\nNext steps:")
         print(f"  cd {args.name}")
-        print(f"  git init")
-        print(f"  pip install -e '.[dev]'")
-        print(f"  pytest")
+        print("  git init")
+        print("  uv sync --extra dev")
+        print("  uv run pre-commit install")
+        print("  uv run pytest")
     except ValueError as e:
         print(f"Error: {e}")
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

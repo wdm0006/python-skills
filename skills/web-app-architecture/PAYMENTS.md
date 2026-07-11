@@ -1,5 +1,12 @@
 # Payments with Stripe
 
+## Contents
+- Isolate the SDK
+- Checkout
+- The Webhook — one endpoint, verified, idempotent
+- Provision the webhook in Terraform
+- Marketplace / split payments
+
 Stripe is the default. The rules that keep billing from becoming a support
 nightmare: **isolate the SDK, verify every webhook, and make webhook handling
 idempotent.** Use `stripe>=15`.

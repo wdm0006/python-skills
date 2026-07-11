@@ -8,10 +8,10 @@ description: Designs and implements pytest test suites for Python libraries with
 ## Quick Start
 
 ```bash
-pytest                              # Run tests
-pytest --cov=my_library             # With coverage
-pytest -x                           # Stop on first failure
-pytest -k "test_encode"             # Run matching tests
+uv run pytest                       # Run tests
+uv run pytest --cov=my_library      # With coverage
+uv run pytest -x                    # Stop on first failure
+uv run pytest -k "test_encode"      # Run matching tests
 ```
 
 ## Pytest Configuration
@@ -85,7 +85,7 @@ def test_invalid_raises():
 For detailed patterns, see:
 - **[FIXTURES.md](FIXTURES.md)** - Advanced fixture patterns
 - **[HYPOTHESIS.md](HYPOTHESIS.md)** - Property-based testing
-- **[CI.md](CI.md)** - CI/CD test configuration
+- **[../project-setup/CI.md](../project-setup/CI.md)** - CI/CD test configuration
 
 ## Test Principles
 

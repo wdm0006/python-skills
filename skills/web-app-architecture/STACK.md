@@ -1,5 +1,14 @@
 # Core Stack Templates
 
+## Contents
+- pyproject.toml
+- config.py — pydantic-settings with prod guards
+- db.py — lazy async engine + session dependency
+- models.py — SQLAlchemy 2.0 declarative
+- Alembic
+- Makefile — the developer entrypoint
+- Testing shape
+
 Copy-pasteable starting points for the framework, packaging, database, and config
 layers. Names use `myapp`; the env prefix is `MYAPP_`.
 

@@ -50,7 +50,7 @@ web/
 ```
 
 - The API serves no HTML; `docs` stays gated to admins.
-- Auth is bearer-token (see **[AUTH.md](AUTH.md)** — Approach B pairs with Bearer-JWT).
+- Auth is bearer-token (Approach B pairs with the Bearer-JWT scheme in the auth reference).
 - The static site gets the same security headers and an SPA rewrite (all routes →
   `index.html`).
 

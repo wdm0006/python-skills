@@ -9,10 +9,10 @@ description: Comprehensively reviews Python libraries for quality across project
 
 ```bash
 git clone https://github.com/user/package && cd package
-cat pyproject.toml | head -50        # Modern config?
-ls tests/ && pytest --collect-only   # Tests exist?
-pytest --cov=package | tail -20      # Coverage?
-pip install bandit && bandit -r src/ # Security?
+head -50 pyproject.toml                     # Modern config?
+ls tests/ && uv run pytest --collect-only   # Tests exist?
+uv run pytest --cov=package | tail -20      # Coverage?
+uvx bandit -r src/                          # Security?
 ```
 
 ## Review Dimensions
@@ -88,7 +88,7 @@ Essential:
 Important:
 - [ ] Type hints on public API
 - [ ] CI runs tests on PRs
-- [ ] Coverage > 70%
+- [ ] Coverage > 85%
 - [ ] Changelog maintained
 
 Recommended:

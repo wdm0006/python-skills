@@ -8,10 +8,14 @@ description: Audits Python libraries for security vulnerabilities using Bandit, 
 ## Quick Start
 
 ```bash
-# Static analysis
-bandit -r src/ -ll                    # High severity only
-pip-audit                             # Dependency vulnerabilities
-detect-secrets scan > .secrets.baseline  # Secrets detection
+# Run all four scanners; exits non-zero on any blocking finding (gates CI):
+uv run python scripts/security_scan.py .
+
+# Or individually:
+uvx bandit -r src/ -ll                       # High-severity static analysis
+uvx pip-audit                                # Dependency vulnerabilities
+uvx semgrep --config auto src/               # Pattern-based SAST
+uvx detect-secrets scan > .secrets.baseline  # Secrets detection
 ```
 
 ## Tool Configuration
@@ -24,8 +28,8 @@ skips: [B101]  # assert_used - OK in tests
 
 **pip-audit:**
 ```bash
-pip-audit -r requirements.txt         # Scan requirements
-pip-audit --fix                       # Auto-fix vulnerabilities
+uvx pip-audit -r requirements.txt     # Scan requirements
+uvx pip-audit --fix                   # Auto-fix vulnerabilities
 ```
 
 ## Common Vulnerabilities
@@ -61,15 +65,15 @@ if not file_path.is_relative_to(base):
 ## CI Integration
 
 ```yaml
-# .github/workflows/security.yml
-- run: bandit -r src/ -ll
-- run: pip-audit
-- run: detect-secrets scan --all-files
+# .github/workflows/security.yml — full workflow in CI_SECURITY.md
+- uses: astral-sh/setup-uv@v5
+- run: uv run python scripts/security_scan.py . --output security-report.json
 ```
 
 For detailed patterns, see:
-- **[VULNERABILITIES.md](VULNERABILITIES.md)** - Full vulnerability examples
-- **[CI_SECURITY.md](CI_SECURITY.md)** - Complete CI workflow
+- **scripts/security_scan.py** — runs all four scanners and exits non-zero on blocking findings (`uv run python scripts/security_scan.py .`)
+- **[VULNERABILITIES.md](VULNERABILITIES.md)** - Vulnerability classes with vulnerable→fixed pairs
+- **[CI_SECURITY.md](CI_SECURITY.md)** - Complete CI workflow, pre-commit, Dependabot, triage
 
 ## Audit Checklist
 

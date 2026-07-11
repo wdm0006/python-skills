@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-pip install hypothesis
+uv add --dev hypothesis
 ```
 
 ## Basic Usage

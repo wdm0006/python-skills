@@ -57,7 +57,7 @@ where = ["src"]
 
 ```bash
 # Setup
-pip install -e ".[dev]"
+uv sync --extra dev
 pre-commit install
 
 # Daily workflow
