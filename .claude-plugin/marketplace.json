@@ -1,37 +1,37 @@
 {
-  "name": "python-library-dev",
+  "name": "dev-skills",
   "owner": {
     "name": "Will McGinnis",
     "email": "will@mcginniscommawill.com"
   },
   "metadata": {
-    "description": "Comprehensive skills for professional Python library development - from project setup to community management",
-    "version": "1.0.0",
+    "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, and Scala projects",
+    "version": "2.0.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "library", "development", "packaging", "testing", "api-design"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "library", "packaging", "testing", "ci", "api-design"]
   },
   "plugins": [
     {
       "name": "python-library-complete",
-      "description": "Complete Python library development toolkit - all skills for building professional-grade libraries",
+      "description": "Complete Python library development toolkit - all Python skills for building professional-grade libraries, web apps, and MCP servers",
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/project-setup",
-        "./skills/code-quality",
-        "./skills/testing-strategy",
-        "./skills/security-audit",
-        "./skills/api-design",
-        "./skills/documentation",
-        "./skills/packaging",
-        "./skills/release-management",
-        "./skills/performance",
-        "./skills/cli-development",
-        "./skills/community",
-        "./skills/library-review",
-        "./skills/git-hygiene",
-        "./skills/web-app-architecture",
-        "./skills/mcp-servers"
+        "./skills/python/project-setup",
+        "./skills/python/code-quality",
+        "./skills/python/testing-strategy",
+        "./skills/python/security-audit",
+        "./skills/python/api-design",
+        "./skills/python/documentation",
+        "./skills/python/packaging",
+        "./skills/python/release-management",
+        "./skills/python/performance",
+        "./skills/python/cli-development",
+        "./skills/python/community",
+        "./skills/python/library-review",
+        "./skills/common/git-hygiene",
+        "./skills/python/web-app-architecture",
+        "./skills/python/mcp-servers"
       ]
     },
     {
@@ -40,7 +40,7 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/mcp-servers"
+        "./skills/python/mcp-servers"
       ]
     },
     {
@@ -49,7 +49,7 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/web-app-architecture"
+        "./skills/python/web-app-architecture"
       ]
     },
     {
@@ -58,9 +58,9 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/project-setup",
-        "./skills/code-quality",
-        "./skills/testing-strategy"
+        "./skills/python/project-setup",
+        "./skills/python/code-quality",
+        "./skills/python/testing-strategy"
       ]
     },
     {
@@ -69,21 +69,61 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/packaging",
-        "./skills/release-management",
-        "./skills/cli-development"
+        "./skills/python/packaging",
+        "./skills/python/release-management",
+        "./skills/python/cli-development"
       ]
     },
     {
       "name": "python-library-quality",
-      "description": "Quality-focused skills - security, performance, and API design",
+      "description": "Quality-focused skills - security, performance, API design, and git hygiene",
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/security-audit",
-        "./skills/performance",
-        "./skills/api-design",
-        "./skills/git-hygiene"
+        "./skills/python/security-audit",
+        "./skills/python/performance",
+        "./skills/python/api-design",
+        "./skills/common/git-hygiene"
+      ]
+    },
+    {
+      "name": "swift-apps",
+      "description": "Build, test, and ship native Swift/SwiftUI apps for Apple platforms - unsigned CI builds, the hand-maintained pbxproj, SwiftPM-vs-app-target test boundaries, Keychain/OAuth security, CloudKit/SwiftData constraints, plus git hygiene",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/swift/apps",
+        "./skills/common/git-hygiene"
+      ]
+    },
+    {
+      "name": "go-projects",
+      "description": "Set up and maintain Go projects with a CI gate that actually gates - module-path correctness, golangci-lint config matched to the installed major, deterministic gofmt, a pinned toolchain, meaningful test jobs, plus git hygiene",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/go/projects",
+        "./skills/common/git-hygiene"
+      ]
+    },
+    {
+      "name": "rust-crates",
+      "description": "Set up, test, and publish Rust crates - Cargo layout, a fmt/clippy(-D warnings)/test CI gate, MSRV pinning, feature-flag hygiene, crates.io publishing, plus git hygiene",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/rust/crates",
+        "./skills/common/git-hygiene"
+      ]
+    },
+    {
+      "name": "scala-projects",
+      "description": "Set up, test, and publish Scala projects - sbt layout, scalafmt/scalafix gates, Scala 2-vs-3 cross-building, real test jobs, Maven Central publishing via sbt-ci-release, plus git hygiene",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/scala/projects",
+        "./skills/common/git-hygiene"
       ]
     }
   ]
