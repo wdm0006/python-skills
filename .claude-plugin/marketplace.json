@@ -31,7 +31,17 @@
         "./skills/library-review",
         "./skills/git-hygiene",
         "./skills/web-app-architecture",
-        "./skills/mcp-servers"
+        "./skills/mcp-servers",
+        "./skills/swift-app-ci"
+      ]
+    },
+    {
+      "name": "swift-app-ci",
+      "description": "Build, test, and ship Swift/Xcode apps reliably - unsigned CI builds, the hand-maintained pbxproj, SwiftPM-module vs app-target test boundaries, SourceKit false positives, gitignored base xcconfig, Keychain vs UserDefaults for secrets, and CloudKit/SwiftData constraints",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/swift-app-ci"
       ]
     },
     {
