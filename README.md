@@ -1,6 +1,8 @@
-# Python Library Development Skills
+# Developer Skills for Claude Code
 
-A comprehensive set of Claude Code skills for professional Python library development, based on the guide at [mcginniscommawill.com](https://mcginniscommawill.com/guides/python-library-development/).
+A growing, multi-language set of opinionated, checklist-driven Claude Code skills for professional software development. It began as a Python library-development toolkit (based on the guide at [mcginniscommawill.com](https://mcginniscommawill.com/guides/python-library-development/)) and now also covers Go, Swift/Apple apps, Rust, and Scala. Install only the languages and bundles that make sense for you.
+
+> **Heads up — repo rename planned.** The GitHub repository is still named `wdm0006/python-skills` for now and may be renamed to reflect its polyglot scope. The marketplace-add command below uses that repo path and will change when the repo is renamed; the install slug is `@dev-skills`.
 
 ## Installation
 
@@ -12,31 +14,44 @@ First, add this repository as a plugin marketplace in Claude Code:
 /plugin marketplace add wdm0006/python-skills
 ```
 
-### Step 2: Install a Plugin Bundle
+### Step 2: Install the Bundles You Need
 
-Install the complete skill set (recommended):
-
-```
-/plugin install python-library-complete@python-library-dev
-```
-
-Or install specific bundles based on your needs:
+Install a per-language bundle:
 
 ```
-# Core skills for starting projects
-/plugin install python-library-foundations@python-library-dev
+# Python — complete library toolkit (setup, quality, testing, packaging, docs, and more)
+/plugin install python-library-complete@dev-skills
 
-# Skills for packaging and releasing
-/plugin install python-library-distribution@python-library-dev
+# Go — project setup & a CI gate that actually gates
+/plugin install go-projects@dev-skills
 
-# Quality-focused skills (security, performance, API design)
-/plugin install python-library-quality@python-library-dev
+# Swift / Apple platforms — Xcode build & CI, signing, Keychain, CloudKit/SwiftData
+/plugin install swift-apps@dev-skills
 
-# Opinionated architecture for building Python web apps
-/plugin install python-web-app@python-library-dev
+# Rust — Cargo layout, fmt/clippy/test gate, MSRV, crates.io publishing
+/plugin install rust-crates@dev-skills
 
-# MCP servers for LLM clients (FastMCP)
-/plugin install python-mcp-servers@python-library-dev
+# Scala — sbt build, scalafmt/scalafix gates, cross-building, Maven Central
+/plugin install scala-projects@dev-skills
+```
+
+Or install a narrower Python bundle:
+
+```
+# Core skills for starting Python projects
+/plugin install python-library-foundations@dev-skills
+
+# Packaging and releasing Python libraries
+/plugin install python-library-distribution@dev-skills
+
+# Quality-focused Python skills (security, performance, API design, git hygiene)
+/plugin install python-library-quality@dev-skills
+
+# Opinionated architecture for Python web apps
+/plugin install python-web-app@dev-skills
+
+# Python MCP servers for LLM clients (FastMCP)
+/plugin install python-mcp-servers@dev-skills
 ```
 
 ### Alternative: Local Installation
@@ -49,7 +64,8 @@ git clone https://github.com/wdm0006/python-skills.git
 
 # Copy skills to your project's .claude/skills/ directory
 mkdir -p .claude/skills
-cp -r python-skills/skills/* .claude/skills/
+cp -r python-skills/skills/python/* .claude/skills/       # or skills/go/*, skills/swift/*, etc.
+cp -r python-skills/skills/common/* .claude/skills/       # git hygiene applies to every language
 ```
 
 Or for global installation (available in all projects):
@@ -57,7 +73,7 @@ Or for global installation (available in all projects):
 ```bash
 # Copy to your personal Claude skills directory
 mkdir -p ~/.claude/skills
-cp -r python-skills/skills/* ~/.claude/skills/
+cp -r python-skills/skills/*/* ~/.claude/skills/
 ```
 
 ### Verifying Installation
@@ -71,6 +87,8 @@ After installation, you can verify the skills are loaded by running:
 > **Note:** Skills require Claude Code Pro, Max, Team, or Enterprise. Free tier users do not have access to Skills.
 
 ## Available Skills
+
+### Python
 
 | Skill | Description | Based On |
 |-------|-------------|----------|
@@ -86,53 +104,68 @@ After installation, you can verify the skills are loaded by running:
 | **building-python-clis** | Click/Typer CLIs, command groups, shell completion, CLI testing | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **building-python-communities** | CONTRIBUTING.md, issue templates, PR templates, GitHub automation | [Building Engaging Community](https://mcginniscommawill.com/posts/2025-01-22-building-engaging-community/), [Inner Source Introduction](https://mcginniscommawill.com/posts/2025-02-11-inner-source-introduction/), [From Silos to Shared Libraries](https://mcginniscommawill.com/posts/2025-02-18-silos-to-shared-libraries/) |
 | **reviewing-python-libraries** | Comprehensive library reviews across all quality dimensions | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
-| **keeping-git-repos-clean** | Prevent, detect, and remediate committed secrets and dev artifacts — .gitignore, `git rm --cached`, history scrubbing, credential rotation | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **building-python-web-apps** | Opinionated reference architecture for production web apps — FastAPI, async SQLAlchemy/Postgres, Stripe billing, Jinja or SPA frontends, and Dockerized deployment via Terraform | Production web app patterns |
 | **building-python-mcp-servers** | Robust Python MCP servers with FastMCP — tool design, error contracts, CLI/subprocess wrapping, single-file vs packaged distribution, testing, and prompt-injection awareness | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 
+### Go
+
+| Skill | Description |
+|-------|-------------|
+| **building-go-projects** | Go project setup with a CI gate that actually gates — module-path correctness, golangci-lint config matched to the installed major, deterministic gofmt, pinned toolchain, meaningful test/lint jobs, injectable git/gh runners, and safe outbound HTTP |
+
+### Swift / Apple Platforms
+
+| Skill | Description |
+|-------|-------------|
+| **building-swift-apps** | Native Swift/SwiftUI apps for macOS/iOS — unsigned CI builds (`CODE_SIGNING_ALLOWED=NO`), the hand-maintained pbxproj, SwiftPM-vs-app-target test boundaries, SourceKit false positives, gitignored base xcconfig, Keychain vs UserDefaults + OAuth state/PKCE, CloudKit/SwiftData constraints, and deterministic dates/RNG |
+
+### Rust
+
+| Skill | Description |
+|-------|-------------|
+| **building-rust-crates** | Rust crate setup, testing, and publishing — Cargo layout, a fmt/clippy(`-D warnings`)/test CI gate, MSRV pinning, feature-flag hygiene, no-`unwrap`-in-libraries, and crates.io publishing with cargo-release |
+
+### Scala
+
+| Skill | Description |
+|-------|-------------|
+| **building-scala-projects** | Scala project setup, testing, and publishing — sbt build layout, scalafmt/scalafix gates, Scala 2-vs-3 cross-building, real (non-no-op) test jobs, and Maven Central publishing via sbt-ci-release |
+
+### Common (language-agnostic)
+
+| Skill | Description | Based On |
+|-------|-------------|----------|
+| **keeping-git-repos-clean** | Prevent, detect, and remediate committed secrets and dev artifacts — .gitignore, `git rm --cached`, history scrubbing, credential rotation. Bundled into every language's plugin. | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
+
 ## Plugin Bundles
 
-### python-library-complete
-All library-development skills, plus the web-app architecture and MCP-server skills, for comprehensive Python development.
+### Per-language
 
-### python-library-foundations
-Core skills for starting projects:
-- Project setup
-- Code quality
-- Testing strategy
+- **python-library-complete** — all Python skills, plus the web-app architecture and MCP-server skills and git hygiene, for comprehensive Python development.
+- **go-projects** — `building-go-projects` + `keeping-git-repos-clean`.
+- **swift-apps** — `building-swift-apps` + `keeping-git-repos-clean`.
+- **rust-crates** — `building-rust-crates` + `keeping-git-repos-clean`.
+- **scala-projects** — `building-scala-projects` + `keeping-git-repos-clean`.
 
-### python-library-distribution
-Skills for packaging and releasing:
-- Packaging
-- Release management
-- CLI development
+### Narrower Python bundles
 
-### python-library-quality
-Quality-focused skills:
-- Security audit
-- Performance
-- API design
-- Git hygiene
+- **python-library-foundations** — project setup, code quality, testing strategy.
+- **python-library-distribution** — packaging, release management, CLI development.
+- **python-library-quality** — security audit, performance, API design, git hygiene.
+- **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment).
+- **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, packaging, testing, prompt-injection awareness).
 
-### python-web-app
-Opinionated architecture for building Python web apps:
-- Web app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment)
-
-### python-mcp-servers
-Build MCP servers for LLM clients:
-- MCP servers (FastMCP tool design, error contracts, packaging, testing, prompt-injection awareness)
+Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
 
 ## Usage
 
 Once installed, Claude will automatically use these skills when you ask about:
 
-- Setting up a new Python library
-- Adding tests to your project
-- Publishing to PyPI
-- Reviewing code quality
-- Security scanning
-- Writing documentation
-- Architecting a Python web app (FastAPI, database, billing, deployment)
+- Setting up a new project (Python, Go, Rust, Scala) or a Swift/Xcode app
+- Wiring a CI pipeline whose gate actually gates
+- Adding tests, publishing packages, or reviewing code quality
+- Security scanning and keeping secrets out of git
+- Architecting a Python web app or building a Python MCP server
 - And more...
 
 ## Contributing
