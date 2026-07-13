@@ -118,6 +118,33 @@ This also avoids **double registration**: a module-level "create all tools" loop
 run directly (`uv run server.py`, as Claude Desktop does) versus via a console
 entry point. Register in exactly one place.
 
+## Sampling is an optional client capability — contain failures in the tool
+
+`ctx.sample(...)` is not guaranteed to work just because the tool itself was
+called successfully. The connected client may not support sampling, or its
+sampling handler may raise while processing the request. Those are different
+failure modes at the framework layer, but they are the same tool-level outcome:
+the requested analysis could not be produced.
+
+Catch the exception around the sampling boundary **inside the tool** and convert
+it to the server's normal error shape. Do not rely on the framework's outer
+exception wrapper; by then the caller receives an opaque protocol/tool error
+instead of your documented contract.
+
+```python
+async def sample_or_error(ctx: Context, prompt: str) -> dict:
+    try:
+        response = await ctx.sample(prompt)
+    except Exception as exc:
+        return {"error": f"sampling failed: {exc}"}
+    return {"result": response.text or ""}
+```
+
+Keep the `try` block narrow so unrelated programming errors are not mislabeled as
+sampling failures. Test both boundaries explicitly: a client with no sampling
+support, and a configured sampling handler that raises. Also test an empty
+sampling response if the tool promises an empty-string or other fallback.
+
 ## Distribution: single-file vs packaged
 
 MCP servers are often launched as a single file (`uv run server.py`), so two
@@ -168,6 +195,7 @@ Contract:
 - [ ] One consistent error shape; documented that callers check it
 - [ ] Batch tools return a per-item skipped/errors list (never silent continue)
 - [ ] Inputs validated (absolute paths, allowed types) before use
+- [ ] Sampling failures (unsupported client and handler exception) normalized inside the tool
 
 Subprocess:
 - [ ] Both stdout and stderr returned; non-zero exit not assumed to be failure
