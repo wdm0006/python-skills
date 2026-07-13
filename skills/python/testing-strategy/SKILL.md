@@ -154,6 +154,31 @@ network call fails loudly instead of "passing."
 - Marker filters (`-m "not integration"`) can deselect the only meaningful tests.
   Reproduce CI's exact marker expression locally before trusting green.
 
+**Empty evaluator sets must not mean "all clear."** Auditors, policy engines,
+and validation pipelines often compute a score from the enabled rules. A category
+filter can accidentally disable every rule; if the scoring code maps
+`results == []` to `score = 100`, an unsupported request becomes a silent perfect
+pass. Treat an empty post-filter rule set as a configuration/error state, or keep
+an aggregate rule enabled when it is the evaluator for every category.
+
+```python
+enabled = [rule for rule in rules if rule.supports(requested_categories)]
+if not enabled:
+    raise NoApplicableRulesError(requested_categories)
+results = evaluate(enabled, subject)
+```
+
+Regression tests must assert more than the final score: request each supported
+category (and representative combinations), assert that at least one rule ran,
+and use a known failing subject so a no-op path cannot look clean.
+
+```python
+result = audit(known_noncompliant_subject, categories=["bias"])
+assert result.rules_evaluated > 0
+assert result.issues                 # proves filtering did not bypass evaluation
+assert result.overall_score < 100
+```
+
 **Tests written around a bug.** Wrapping a call in `try/except RuinError` to make
 it pass documents the bug as acceptable. Assert the *correct* behavior and let it
 fail until the bug is fixed (use `xfail(strict=True)` to track it without red CI).
