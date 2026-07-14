@@ -78,6 +78,30 @@ protection on state-changing requests: a per-session token rendered into forms a
 checked on POST with `hmac.compare_digest`. Token-in-header schemes (bearer) are not
 CSRF-exposed and don't need this.
 
+## Protecting FastAPI's OpenAPI schema
+
+Setting `docs_url=None` and `redoc_url=None` hides the interactive UIs, but
+FastAPI still registers `/openapi.json` whenever `openapi_url` is non-`None`.
+That built-in route is registered before later decorators, so adding a guarded
+`@app.get("/openapi.json")` without disabling the built-in route leaves the schema
+public: the built-in handler shadows the guarded one.
+
+Disable automatic registration, then serve the schema yourself:
+
+```python
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+
+@app.get("/openapi.json", include_in_schema=False)
+async def private_openapi(_: AdminDep) -> dict:
+    return app.openapi()
+```
+
+Schema generation still works when `openapi_url=None`; only the automatic route
+is disabled. Add regression tests proving an anonymous request receives `401` or
+`403`, an authorized request receives `200`, and the response contains `"openapi"`.
+Inspect `app.routes` if duplicate paths are suspected—a passing authorized test
+alone will not reveal that an earlier public handler won routing precedence.
+
 ## Quick guide
 
 | App type                         | Scheme            |
