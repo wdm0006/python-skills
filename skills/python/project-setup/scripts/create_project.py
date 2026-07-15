@@ -7,10 +7,27 @@ Usage:
 """
 
 import argparse
+import json
+import keyword
+import re
 import sys
 from datetime import date, datetime
 from pathlib import Path
 from textwrap import dedent
+
+
+def _package_name(distribution_name: str) -> str:
+    package_name = re.sub(r"[-_.]+", "_", distribution_name).lower()
+    if not package_name.isidentifier() or keyword.iskeyword(package_name):
+        raise ValueError(
+            f"Project name {distribution_name!r} does not produce a valid Python "
+            f"package name ({package_name!r})"
+        )
+    return package_name
+
+
+def _toml_string(value: str) -> str:
+    return json.dumps(value, ensure_ascii=False)
 
 
 def create_project(
@@ -20,8 +37,7 @@ def create_project(
     description: str = "A Python library",
 ) -> Path:
     """Create a new Python library project structure."""
-    # Convert name to valid Python package name
-    package_name = name.replace("-", "_").lower()
+    package_name = _package_name(name)
     project_dir = Path(name)
 
     if project_dir.exists():
@@ -45,14 +61,14 @@ def create_project(
         build-backend = "setuptools.build_meta"
 
         [project]
-        name = "{name}"
+        name = {_toml_string(name)}
         version = "0.1.0"
-        description = "{description}"
+        description = {_toml_string(description)}
         readme = "README.md"
         requires-python = ">=3.10"
         license = {{text = "MIT"}}
         authors = [
-            {{name = "{author}", email = "{email}"}}
+            {{name = {_toml_string(author)}, email = {_toml_string(email)}}}
         ]
         classifiers = [
             "Development Status :: 3 - Alpha",
@@ -76,8 +92,8 @@ def create_project(
         ]
 
         [project.urls]
-        Homepage = "https://github.com/username/{name}"
-        Repository = "https://github.com/username/{name}"
+        Homepage = {_toml_string(f"https://github.com/username/{name}")}
+        Repository = {_toml_string(f"https://github.com/username/{name}")}
 
         [tool.setuptools.packages.find]
         where = ["src"]
@@ -107,7 +123,7 @@ def create_project(
 
     # Create __init__.py
     init_py = dedent(f'''
-        """{description}."""
+        {f"{description}."!r}
 
         __version__ = "0.1.0"
     ''').strip()
