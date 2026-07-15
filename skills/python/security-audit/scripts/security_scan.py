@@ -80,10 +80,10 @@ def run_bandit(project_path: Path) -> ScanResult:
     return ScanResult("bandit", True, findings, blocking)
 
 
-def run_pip_audit() -> ScanResult:
-    """Run pip-audit for dependency vulnerabilities. Blocks on any vulnerable package."""
+def run_pip_audit(project_path: Path) -> ScanResult:
+    """Audit the target project's dependencies. Blocks on any vulnerable package."""
     stdout, err = _run(
-        ["pip-audit", "--format", "json"],
+        ["pip-audit", "--format", "json", str(project_path)],
         "pip-audit",
         "uv tool install pip-audit",
     )
@@ -221,7 +221,7 @@ def main():
 
     scanners = [
         ("bandit", lambda: run_bandit(project_path)),
-        ("pip-audit", run_pip_audit),
+        ("pip-audit", lambda: run_pip_audit(project_path)),
         ("semgrep", lambda: run_semgrep(project_path)),
         ("secrets", lambda: check_secrets(project_path)),
     ]

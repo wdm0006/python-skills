@@ -13,7 +13,7 @@ uv run python scripts/security_scan.py .
 
 # Or individually:
 uvx bandit -r src/ -ll                       # High-severity static analysis
-uvx pip-audit                                # Dependency vulnerabilities
+uvx pip-audit .                              # This project's dependencies
 uvx semgrep --config auto src/               # Pattern-based SAST
 uvx detect-secrets scan > .secrets.baseline  # Secrets detection
 ```
