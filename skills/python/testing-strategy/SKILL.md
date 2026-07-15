@@ -183,6 +183,79 @@ assert result.overall_score < 100
 it pass documents the bug as acceptable. Assert the *correct* behavior and let it
 fail until the bug is fixed (use `xfail(strict=True)` to track it without red CI).
 
+## Ambient State: Tests That Only Pass on Your Machine
+
+A test that reads state it never set — environment variables, a module-level
+cache, the working directory, the clock — is testing the machine as much as the
+code. These are the tests that pass locally and fail in CI, or pass or fail
+depending on which test ran first. Pin every input the code reads.
+
+**Pin every variable that feeds a lookup, not just the one you know about.**
+Config-directory resolution is the classic trap: setting `HOME` looks sufficient,
+but on Linux the XDG variables are set independently of `HOME`, so the lookup
+ignores your temp dir and every test shares one real config directory. One test's
+corrupt fixture then leaks into the next, and run order decides who fails.
+
+```python
+# BAD — HOME alone. macOS ignores XDG entirely, so this passes locally forever
+# and only ever fails on Linux CI.
+monkeypatch.setenv("HOME", str(tmp_path))
+
+# GOOD — pin every input to the resolution.
+monkeypatch.setenv("HOME", str(tmp_path))
+monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+```
+
+When a platform difference decides whether a variable is read, the incomplete
+version of the test is not "mostly right" — it is untested on exactly the
+platform that runs CI.
+
+**Import-time configuration breaks collection, not tests.** A settings object
+built at module scope (`settings = Settings()`) is evaluated on import, so a
+missing variable fails *collection* — before any fixture runs, so no fixture can
+fix it. Declare the variables where collection can see them (pytest config, or a
+root `conftest.py`), mirroring the `env:` block CI uses. Better: build config in a
+factory the test can call with overrides, so importing the module is inert.
+
+**Module-level globals outlive the test that populated them.** A cache like
+`_analyzers = None` keeps one test's mocks alive for every later test. Reset it
+*before and after* — the trailing reset is what stops the last test in a file from
+leaking into the next file.
+
+```python
+@pytest.fixture(autouse=True)
+def reset_analyzer_cache():
+    app._analyzers = None
+    yield
+    app._analyzers = None
+```
+
+Resetting a mock has the same trap: `reset_mock()` clears recorded calls but
+**keeps** `return_value` and `side_effect`, so a stub set in one test still
+answers in the next.
+
+```python
+m.reset_mock()                                       # calls cleared; stub still returns 42
+m.reset_mock(return_value=True, side_effect=True)    # actually resets the stub
+```
+
+**The working directory is an input.** Code that shells out inherits the process
+CWD. A test asserting "runs against the path I passed" is vacuous when the test's
+own CWD is already a valid project — it passes whether or not the path is
+threaded through at all. Move away first, so the fallback would actually fail.
+
+```python
+def test_runs_against_given_path(tmp_path, monkeypatch, project):
+    monkeypatch.chdir(tmp_path)          # empty: a CWD fallback errors here
+    assert not run_tool(project_path=str(project)).startswith("Error")
+```
+
+**Freeze the clock and keep it frozen.** Restoring the real clock mid-test — to
+wait on something — silently hands wall-clock time back to any date logic that
+runs afterward. A business-hours branch then follows whatever the runner's local
+time happens to be, so the suite is green during the day and red at night. Drive
+the pending work deterministically instead of sleeping inside a frozen-clock test.
+
 ## Checklist
 
 ```
@@ -190,6 +263,7 @@ Testing:
 - [ ] Tests exist for public API
 - [ ] Edge cases covered (empty, boundary, error)
 - [ ] No external service dependencies (mock them)
+- [ ] No ambient state read unpinned (env vars, module globals, CWD, clock)
 - [ ] Coverage > 85%
 - [ ] Tests run in CI
 ```
