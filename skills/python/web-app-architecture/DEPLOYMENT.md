@@ -43,6 +43,52 @@ CMD ["uv", "run", "uvicorn", "myapp.main:app", "--host", "0.0.0.0", "--port", "8
 `--proxy-headers --forwarded-allow-ips '*'` makes the app trust the platform's
 load-balancer headers (correct scheme/host for secure cookies and redirects).
 
+### The client-IP trap this opens up
+
+Trusting `X-Forwarded-For` (XFF) for scheme/host is fine. Trusting it to identify
+*who* a request is from is a footgun, and it's the same mistake in three places:
+**rate-limit keys, IP allowlists, and the IP you write to audit logs**. A proxy
+*appends* the real peer to the XFF chain, so the **left-most** value is whatever the
+client sent — attacker-controlled. slowapi's `get_remote_address` returns
+`request.client.host`, which under `--forwarded-allow-ips '*'` is *also* derived from
+that same untrusted header. So a naive limiter keyed on the left-most XFF (or on
+`request.client.host` with a wildcard trust) buckets by a value the attacker picks:
+
+```python
+# WRONG — attacker rotates X-Forwarded-For per request, lands in a fresh bucket
+# every time. Measured effect: ~0/50 login attempts blocked vs 45/50 on the real IP.
+client_ip = request.headers["x-forwarded-for"].split(",")[0].strip()
+limiter = Limiter(key_func=get_remote_address)  # request.client.host, same problem
+```
+
+The trustworthy value is a **fixed position counted from the right** — you trust
+exactly as many hops as you actually run. With one managed load balancer in front,
+that's the last entry:
+
+```python
+# RIGHT — trust N proxies (here 1); take the (N+1)th from the right.
+TRUSTED_PROXY_HOPS = 1
+
+def real_client_ip(request: Request) -> str:
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        chain = [p.strip() for p in xff.split(",") if p.strip()]
+        if len(chain) > TRUSTED_PROXY_HOPS:
+            return chain[-(TRUSTED_PROXY_HOPS + 1)]
+    return request.client.host
+
+limiter = Limiter(key_func=real_client_ip)
+```
+
+Define this **once** and reuse it everywhere an IP is consumed — the bug reappears
+per-copy when `_get_client_ip` is reimplemented in the limiter, the auth router, and
+the audit service independently. Nothing else guards brute force by default
+(a `failed_attempts` column with no lockout enforcement does not), so a spoofable
+limiter is the whole defense. Note too that an in-memory limiter is **per process**,
+so effective limits multiply by instance count — back anything that must hold
+app-wide (login, password-reset, registration) with a shared store (Redis), not
+process memory.
+
 ## One image, three roles
 
 | Role    | Command                                            |
