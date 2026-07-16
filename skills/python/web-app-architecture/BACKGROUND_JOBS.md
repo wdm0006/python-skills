@@ -71,6 +71,37 @@ A `JobStatus` enum (`pending/processing/completed/failed`) and storing the resul
 (or error) on completion is enough — you don't need Celery's full feature set for
 long-poll jobs.
 
+### Reserve quotas, then compensate failures
+
+If submitting a job consumes a scarce quota, reserve it atomically **before**
+enqueueing; checking and incrementing separately lets concurrent requests exceed
+the limit. But a reservation is not earned usage yet. Refund it if enqueue fails
+or if the worker exhausts retries and dead-letters the job.
+
+```python
+period_end = await reserve_quota(       # one conditional UPDATE ... WHERE used < limit
+    db, user_id=user.id
+)
+job = {"user_id": user.id, "reserved_period_end": period_end.isoformat()}
+try:
+    await queue.enqueue(job)
+except Exception:
+    await refund_quota(db, **job)        # compensating transaction
+    raise
+
+# Worker: refund once, only when the final retry becomes a dead letter.
+if not await retry_or_dead_letter(job, error):
+    await refund_quota(db, **job)
+```
+
+Make the refund conditional and idempotent (`used > 0`), and include the billing
+period identity captured by the reservation. Refund only if that period is still
+current; a late failure after rollover must not decrement the new period's usage.
+Keep the identity needed to refund in the durable job payload, not only in an
+ephemeral status record. If that record expires before the worker reads it, move
+the job to a dead-letter queue and alert — do not acknowledge it as success, and
+do not guess which account to refund.
+
 ## Choosing
 
 | Situation                                            | Use            |
