@@ -125,6 +125,28 @@ assert result.returncode == 0 or "html_static_path" in result.stderr  # masks re
 assert "ui" in todo.tags                                              # also matches "build"
 ```
 
+**Presence assertions are blind to duplicates.** `assert X in output` proves that
+*at least one* X exists. It cannot tell you that there are two, or which one a
+consumer will honor. That is the exact shape of bugs in generated output — HTML
+tags, config keys, emitted headers — where a framework's base template and your
+override each emit one and they disagree. Extract every occurrence and compare
+the whole list.
+
+```python
+# BAD — passes with one correct tag, and equally with two conflicting ones.
+assert '<link rel="canonical"' in html
+
+# GOOD — pins both the count and the values.
+canonicals = re.findall(r'<link rel="canonical" href="([^"]*)"', html)
+assert canonicals == ["https://example.com/guide/"]
+```
+
+When two emitters produce the "same" tag they often don't format it identically
+(one self-closing, one not), so anchor the pattern on the attribute you care
+about and stop before the tag close — otherwise the duplicate you're hunting
+slips past your regex and the test looks clean. The same rule applies to anything
+countable: assert `len(rows) == 2` and the row values, not `assert rows`.
+
 **Mocking the thing under test.** If you patch `_run_command` and only assert the
 argv tokens, the test locks in a command that may not exist — it stays green even
 after the subcommands or flags it builds are renamed or removed upstream. Mock at
