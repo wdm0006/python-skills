@@ -47,15 +47,22 @@ SwiftLint and SwiftFormat both ship self-contained prebuilt Linux binaries, so
       - uses: actions/checkout@v4
       - name: Install SwiftLint & SwiftFormat (Linux)
         run: |
-          curl -sSL -o /tmp/sl.zip https://github.com/realm/SwiftLint/releases/download/0.65.0/swiftlint_linux_amd64.zip
+          set -euxo pipefail
+          curl -fsSL -o /tmp/sl.zip https://github.com/realm/SwiftLint/releases/download/0.65.0/swiftlint_linux_amd64.zip
           unzip -oq /tmp/sl.zip -d /tmp/sl
-          sudo install -m0755 "$(find /tmp/sl -type f -name swiftlint | head -1)" /usr/local/bin/swiftlint
-          curl -sSL -o /tmp/sf.zip https://github.com/nicklockwood/SwiftFormat/releases/download/0.62.1/swiftformat_linux.zip
+          sudo install -m0755 /tmp/sl/swiftlint-static /usr/local/bin/swiftlint
+          curl -fsSL -o /tmp/sf.zip https://github.com/nicklockwood/SwiftFormat/releases/download/0.62.1/swiftformat_linux.zip
           unzip -oq /tmp/sf.zip -d /tmp/sf
-          sudo install -m0755 "$(find /tmp/sf -type f -name swiftformat | head -1)" /usr/local/bin/swiftformat
+          sudo install -m0755 /tmp/sf/swiftformat_linux /usr/local/bin/swiftformat
       - run: swiftlint lint
       - run: swiftformat . --lint
 ```
+
+Use SwiftLint's **`swiftlint-static`** (not the dynamically linked `swiftlint`,
+which needs a Swift runtime the bare runner lacks) and SwiftFormat's
+`swiftformat_linux` — both are statically linked and run on plain `ubuntu-latest`.
+Pin versions in the URL, `curl -f` to fail on a bad download, and reference the
+exact binary names rather than a fragile `find`.
 
 **What genuinely can't move.** A SwiftPM target only builds on Linux if its code
 and its dependencies do. Two reliable signals it's macOS-pinned: the package
