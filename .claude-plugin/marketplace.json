@@ -30,6 +30,7 @@
         "./skills/python/community",
         "./skills/python/library-review",
         "./skills/common/git-hygiene",
+        "./skills/common/github-actions",
         "./skills/python/web-app-architecture",
         "./skills/python/mcp-servers"
       ]
@@ -83,7 +84,8 @@
         "./skills/python/security-audit",
         "./skills/python/performance",
         "./skills/python/api-design",
-        "./skills/common/git-hygiene"
+        "./skills/common/git-hygiene",
+        "./skills/common/github-actions"
       ]
     },
     {
@@ -93,7 +95,8 @@
       "strict": false,
       "skills": [
         "./skills/swift/apps",
-        "./skills/common/git-hygiene"
+        "./skills/common/git-hygiene",
+        "./skills/common/github-actions"
       ]
     },
     {
@@ -103,7 +106,8 @@
       "strict": false,
       "skills": [
         "./skills/go/projects",
-        "./skills/common/git-hygiene"
+        "./skills/common/git-hygiene",
+        "./skills/common/github-actions"
       ]
     },
     {
@@ -113,7 +117,8 @@
       "strict": false,
       "skills": [
         "./skills/rust/crates",
-        "./skills/common/git-hygiene"
+        "./skills/common/git-hygiene",
+        "./skills/common/github-actions"
       ]
     },
     {
@@ -123,7 +128,8 @@
       "strict": false,
       "skills": [
         "./skills/scala/projects",
-        "./skills/common/git-hygiene"
+        "./skills/common/git-hygiene",
+        "./skills/common/github-actions"
       ]
     }
   ]
