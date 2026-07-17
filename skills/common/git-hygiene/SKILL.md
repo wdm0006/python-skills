@@ -132,6 +132,49 @@ htmlcov/
 ~$*
 ```
 
+## Verification can dirty the tree
+
+Compilers, test runners, and asset pipelines often write into the checkout even
+when the command is only meant to verify a change. They may create unignored
+cache files or regenerate a tracked distributable such as a PDF or compiled CSS.
+A green command does not mean the working tree still contains only your change.
+
+Bracket verification with status checks and stage only reviewed paths:
+
+```bash
+git status --short
+make test                         # or the project's real build command
+git status --short
+git diff -- path/you/changed
+git add path/you/changed          # never sweep in generated files with git add -A
+git diff --cached --check
+git diff --cached --stat
+```
+
+If a tool necessarily produces noisy output, run it in a disposable copy of the
+checkout. This preserves a real build while keeping generated files away from
+the patch:
+
+```bash
+scratch_dir=$(mktemp -d)
+rsync -a --exclude .git ./ "$scratch_dir/"
+(cd "$scratch_dir" && make build)
+```
+
+When verification modifies a tracked generated output that is intentionally out
+of scope, restore **that exact path only after reviewing its diff**:
+
+```bash
+git diff -- docs/manual.pdf
+git restore -- docs/manual.pdf
+```
+
+Do not use a broad restore/reset to clean up: the checkout may already contain
+someone else's work. Also do not rely on `git stash` as cleanup for untracked
+artifacts; ordinary stashes omit them, and even `--include-untracked` can collide
+with files regenerated before `stash pop`. Prevent or remove known generated
+paths explicitly instead.
+
 ## Checklist
 
 ```
@@ -150,6 +193,7 @@ Prevent:
 - [ ] Project .gitignore covers secrets, build artifacts, OS/editor noise
 - [ ] Global core.excludesFile catches per-developer scratch files
 - [ ] gitleaks / detect-secrets pre-commit hook installed
+- [ ] Verification bracketed by `git status --short`; only reviewed paths staged
 ```
 
 For scanning source code for vulnerabilities and hardcoded-secret *patterns*, see
