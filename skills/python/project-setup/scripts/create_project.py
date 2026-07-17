@@ -128,7 +128,7 @@ def create_project(
         __version__ = "0.1.0"
     ''').strip()
 
-    (project_dir / "src" / package_name / "__init__.py").write_text(init_py)
+    (project_dir / "src" / package_name / "__init__.py").write_text(init_py + "\n")
 
     # Create py.typed marker
     (project_dir / "src" / package_name / "py.typed").write_text("")
@@ -146,7 +146,7 @@ def create_project(
     ''').strip()
 
     (project_dir / "tests" / "__init__.py").write_text("")
-    (project_dir / "tests" / f"test_{package_name}.py").write_text(test_init)
+    (project_dir / "tests" / f"test_{package_name}.py").write_text(test_init + "\n")
 
     # Create README
     readme = dedent(f'''

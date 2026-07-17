@@ -74,6 +74,24 @@ class CreateProjectTests(unittest.TestCase):
         for python_file in project.rglob("*.py"):
             py_compile.compile(python_file, doraise=True)
 
+    def test_generated_python_files_end_with_single_newline(self):
+        project = CREATE_PROJECT.create_project("sample-lib")
+
+        init_py = project / "src" / "sample_lib" / "__init__.py"
+        test_py = project / "tests" / "test_sample_lib.py"
+        for python_file in (init_py, test_py):
+            with self.subTest(python_file=python_file.name):
+                contents = python_file.read_text()
+                self.assertTrue(contents, "generated file should not be empty")
+                self.assertTrue(
+                    contents.endswith("\n"),
+                    "generated Python file must end with a newline (Ruff W292)",
+                )
+                self.assertFalse(
+                    contents.endswith("\n\n"),
+                    "generated Python file must end with exactly one newline",
+                )
+
     def test_hyphenated_name_keeps_existing_layout(self):
         project = CREATE_PROJECT.create_project("my-library")
 
