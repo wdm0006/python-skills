@@ -78,6 +78,25 @@ protection on state-changing requests: a per-session token rendered into forms a
 checked on POST with `hmac.compare_digest`. Token-in-header schemes (bearer) are not
 CSRF-exposed and don't need this.
 
+**Rendering a token is not enforcing one.** The frequent failure is per-form
+opt-in: CSRF is only checked where a handler explicitly validates the token (a
+`validate_on_submit()` / an equivalent dependency), so dropping a hidden token
+field into a template does nothing on its own. Any handler that reads the raw
+request body directly — a file-upload endpoint reading uploaded files, an admin
+POST reading raw form fields — stays wide open, and the template's token is
+decorative. Enforce CSRF **globally** (a single middleware/extension that rejects
+any unsafe-method request lacking a valid token), then carve out exceptions
+deliberately, rather than remembering to add the check on every new route. Audit
+by grepping for handlers that read request bodies but never touch the token.
+
+**A state-changing GET can't be CSRF-protected at all.** If a GET request mutates
+state — deactivating an account, confirming an unsubscribe, deleting a row behind a
+plain `<a href>` — no token scheme saves you: the browser will fire it from an
+`<img src>` on any page, and link prefetchers and email scanners trigger it with no
+user action. A client-side `confirm()` dialog is not protection; the attacker's
+request never sees it. Mutations must use POST/DELETE (so CSRF enforcement and
+same-site cookie rules apply); reserve GET for reads.
+
 ## Protecting FastAPI's OpenAPI schema
 
 Setting `docs_url=None` and `redoc_url=None` hides the interactive UIs, but
