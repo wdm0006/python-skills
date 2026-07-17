@@ -150,6 +150,8 @@ Config:
 Billing & security:
 - [ ] Exactly one Stripe webhook, signature-verified, idempotent
 - [ ] Passwords bcrypt-hashed; auth via reusable dependencies
+- [ ] CSRF enforced globally for cookie auth (not per-form opt-in); no
+      state-changing GET requests — mutations use POST/DELETE
 - [ ] Client IP for rate-limit keys/allowlists/audit logs taken from a fixed
       position in the X-Forwarded-For chain (not the spoofable left-most value)
 - [ ] Private OpenAPI schema served only by a custom guarded route (`openapi_url=None`)
