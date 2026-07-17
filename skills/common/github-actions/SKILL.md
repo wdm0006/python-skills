@@ -27,12 +27,43 @@ reorders every optimization: **a repo with a few macOS jobs can outspend a repo
 with ten times as many Linux jobs.** Before anything else, find your macOS jobs
 and ask of each: does this step genuinely need macOS?
 
-- Xcode / Apple-platform builds: yes, macOS is required.
+- Xcode / Apple-platform builds and tests (`xcodebuild`): yes, macOS is required.
 - Linters and formatters (even Swift ones like SwiftLint/SwiftFormat), pure
   unit tests with no Apple frameworks, packaging, doc builds: usually **no** —
   move them to `ubuntu-latest` and cut that job's cost ~10x.
 
 Split the must-be-macOS work into its own job and push everything else to Linux.
+If a single macOS job does both (e.g. runs SwiftLint *and* an Xcode build), split
+it: a cheap Linux `lint` job plus the macOS `build` job. The tools only parse
+source, so the Linux job just checks out and runs them — no toolchain build.
+
+SwiftLint and SwiftFormat both ship self-contained prebuilt Linux binaries, so
+"Swift means macOS" is a myth for the linting half of the pipeline:
+
+```yaml
+  lint:
+    runs-on: ubuntu-latest        # 1x, not 10x
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SwiftLint & SwiftFormat (Linux)
+        run: |
+          curl -sSL -o /tmp/sl.zip https://github.com/realm/SwiftLint/releases/download/0.65.0/swiftlint_linux_amd64.zip
+          unzip -oq /tmp/sl.zip -d /tmp/sl
+          sudo install -m0755 "$(find /tmp/sl -type f -name swiftlint | head -1)" /usr/local/bin/swiftlint
+          curl -sSL -o /tmp/sf.zip https://github.com/nicklockwood/SwiftFormat/releases/download/0.62.1/swiftformat_linux.zip
+          unzip -oq /tmp/sf.zip -d /tmp/sf
+          sudo install -m0755 "$(find /tmp/sf -type f -name swiftformat | head -1)" /usr/local/bin/swiftformat
+      - run: swiftlint lint
+      - run: swiftformat . --lint
+```
+
+**What genuinely can't move.** A SwiftPM target only builds on Linux if its code
+and its dependencies do. Two reliable signals it's macOS-pinned: the package
+declares `platforms: [.macOS(...)]` only, or it depends on an Apple-focused
+library (e.g. `SQLite.swift`, anything importing `AppKit`/`SwiftUI`/`CloudKit`).
+Don't gamble a repo's only build job on a Linux move — if `swift build` there
+depends on such a package, keep it on macOS. `grep -rE 'import (AppKit|SwiftUI|
+Cocoa|CloudKit|CoreData)'` over the target's sources is a fast pre-check.
 
 ## Trigger hygiene: stop paying for the same commit twice
 
