@@ -85,6 +85,31 @@ from importlib.resources import files
 data = files("my_package.data").joinpath("file.json").read_text()
 ```
 
+## Direct-Reference Dependencies Need a Real Build
+
+A dependency such as `toolkit @ https://example.com/toolkit.whl` may resolve in
+an install dry run without invoking the build backend. With Hatchling, the real
+wheel build then fails unless direct references are explicitly allowed:
+
+```toml
+[project]
+dependencies = [
+    "toolkit @ https://example.com/releases/toolkit.whl",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+```
+
+Do not use `uv pip install --dry-run .` as the packaging check for this case. It
+can report success without building the project. Run `uv build` (or a real
+`uv pip install .`) so the configured backend validates the metadata:
+
+```bash
+uv build
+uvx twine check dist/*
+```
+
 For detailed templates, see:
 - **[../project-setup/PYPROJECT.md](../project-setup/PYPROJECT.md)** - Complete annotated pyproject.toml (canonical)
 - **[CONDA.md](CONDA.md)** - Conda / conda-forge packaging guide
@@ -152,6 +177,7 @@ Before Release:
 - [ ] Version set correctly
 - [ ] twine check passes
 - [ ] `uv run python -m zipfile -l dist/*.whl` shows every subpackage + data file
+- [ ] Direct-reference dependencies pass a real backend build (not only install dry-run)
 - [ ] No module/package name collision (no foo.py AND foo/)
 - [ ] Installed the wheel into a clean venv and imported a real submodule
       symbol from a directory outside the repo (not just the top-level name)
