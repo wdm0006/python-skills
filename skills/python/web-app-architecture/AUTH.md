@@ -121,6 +121,53 @@ is disabled. Add regression tests proving an anonymous request receives `401` or
 Inspect `app.routes` if duplicate paths are suspected—a passing authorized test
 alone will not reveal that an earlier public handler won routing precedence.
 
+## Client identity behind reverse proxies
+
+Rate limits, security logs, and abuse controls are only as strong as their client
+IP derivation. Never take the left-most `X-Forwarded-For` value: clients can
+usually supply it themselves, and permissive proxy-header middleware may expose
+that attacker-controlled value as `request.client.host`.
+
+Define the deployment topology explicitly. If traffic always crosses a known
+number of trusted proxies, read the forwarded chain **right to left** and select
+the address immediately before those hops. Reject a short or malformed chain and
+fall back to the direct peer; do not guess.
+
+```python
+from ipaddress import ip_address
+
+from fastapi import Request
+
+
+def trusted_client_ip(request: Request, *, trusted_proxy_hops: int = 1) -> str:
+    peer = request.client.host if request.client else "unknown"
+    forwarded = request.headers.get("x-forwarded-for")
+    if not forwarded or trusted_proxy_hops < 1:
+        return peer
+
+    chain = [part.strip() for part in forwarded.split(",")]
+    if len(chain) < trusted_proxy_hops:
+        return peer
+
+    try:
+        # Extra client-supplied entries on the left cannot change this position.
+        return str(ip_address(chain[-trusted_proxy_hops]))
+    except ValueError:
+        return peer
+```
+
+This is safe only when the application is reachable exclusively through those
+proxies and the edge proxy overwrites or appends the header as expected. If the
+application also accepts direct traffic, first verify that the direct peer is in
+an explicit trusted-proxy network; otherwise ignore all forwarding headers.
+
+Test the production path, not just the helper. Wrap the ASGI app in the same
+proxy-header middleware and trust configuration used by the server, then send
+requests with different left-most spoofed values but the same right-most trusted
+client address. They must consume the same rate-limit bucket. Also cover missing,
+short, and malformed chains, and reset any module-level in-memory limiter between
+tests so bucket state cannot leak across cases.
+
 ## Quick guide
 
 | App type                         | Scheme            |
