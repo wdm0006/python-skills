@@ -90,6 +90,33 @@ of upstream release dates, not your diff. These failure modes all recur:
   from "skip" to "hard fail"), reddening an unrelated PR. Pin it, and set the
   behavior explicitly in config rather than relying on the default.
 
+### Tox: make missing-interpreter behavior explicit
+
+A tox envlist does not install those Python versions. If the runner provides only
+Python 3.12 while tox declares `py310,py311,py312`, the result depends on tox's
+missing-interpreter policy — and relying on its current default makes unrelated
+tool upgrades capable of breaking CI.
+
+Choose one owner for the version matrix:
+
+- **GitHub Actions owns it (preferred):** install one matrix Python per job and
+  run only that matching tox environment.
+- **Tox owns it:** install every declared interpreter before invoking tox.
+- **A single-interpreter job intentionally runs what is available:** opt into
+  skipping explicitly so a tox upgrade cannot change the contract.
+
+```ini
+# tox.ini, or legacy_tox_ini in pyproject.toml
+[tox]
+envlist = py310,py311,py312
+skip_missing_interpreters = true
+```
+
+Do not use `skip_missing_interpreters = true` to pretend an uninstalled version
+was tested. The CI log and status checks must still make the actual coverage
+obvious; for a supported-version gate, install every version or use an Actions
+matrix.
+
 Rule of thumb: pin every tool that gates the build (linter, formatter, type
 checker, toolchain, test runner) to an explicit version, and bump them in their
 own dedicated PR — so a tooling bump's fallout lands in a diff that's *about* the
