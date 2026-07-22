@@ -105,6 +105,41 @@ it can't parse — with no error and no report — leaves the caller believing t
 operation applied. If you can't act on an input, say so (raise, warn, or return a
 per-item error list); don't quietly do nothing.
 
+**Validation errors must not leave partial mutations behind.** An `inplace=True`
+API that renames caller-owned columns and only then validates another argument can
+raise the right exception while still corrupting the caller's next operation.
+Validate every parameter and precondition before the first mutation. When work
+cannot be validated up front, stage it on a copy and commit only after success.
+
+```python
+# BAD — invalid max_fraction still changes the caller's dataframe.
+def detect(data, *, max_fraction=0.1, inplace=True):
+    target = data if inplace else data.copy()
+    target.rename(columns={"time": "timestamp"}, inplace=True)
+    if not 0 < max_fraction < 0.5:
+        raise ValueError("max_fraction must be between 0 and 0.5")
+    return analyze(target)
+
+# GOOD — the error path is side-effect free.
+def detect(data, *, max_fraction=0.1, inplace=True):
+    if not 0 < max_fraction < 0.5:
+        raise ValueError("max_fraction must be between 0 and 0.5")
+    target = data if inplace else data.copy()
+    target.rename(columns={"time": "timestamp"}, inplace=True)
+    return analyze(target)
+```
+
+Pin the contract in tests: snapshot caller-owned state, trigger a late validation
+error with `inplace=True`, and assert the object is unchanged. Testing only the
+exception type misses the damaging half of this bug.
+
+```python
+before = frame.copy(deep=True)
+with pytest.raises(ValueError, match="max_fraction"):
+    detect(frame, max_fraction=0.5, inplace=True)
+pd.testing.assert_frame_equal(frame, before)
+```
+
 **Filtering down to empty must never read as "all clear."** When you narrow a rule
 set, check set, or work list and the filter yields nothing, an "evaluate all →
 0 problems" path reports a perfect score while actually checking nothing. Guard
@@ -171,6 +206,7 @@ Errors:
 - [ ] Failures fail loud — no success sentinel on the error path
 - [ ] Empty/partial results never masquerade as a complete answer
 - [ ] No silent no-ops or fabricated fallback data
+- [ ] Validation failures leave caller-owned inputs unchanged
 ```
 
 ## Learn More
