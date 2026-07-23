@@ -149,6 +149,31 @@ say), later changing those static definitions leaves **stale copies** frozen in
 existing saves. Version the save format and migrate, or reference stable IDs
 instead of embedding the whole value.
 
+**A property default is not a decoding default.** Swift's synthesized `Codable`
+decoder still calls `decode(_:forKey:)` for every non-optional stored property.
+If an older save lacks a newly added key, decoding throws `keyNotFound`; a load
+path such as `try? decoder.decode(...)` then silently treats the entire save as
+missing. Avoid adding non-optional persisted fields without a migration. Make the
+new field optional when absence is meaningful, or implement `init(from:)` with
+`decodeIfPresent` and an explicit fallback:
+
+```swift
+struct Save: Codable {
+    var score: Int
+    var seed: UInt64 = 0 // this initializer alone does not help decoding
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        score = try values.decode(Int.self, forKey: .score)
+        seed = try values.decodeIfPresent(UInt64.self, forKey: .seed) ?? 0
+    }
+}
+```
+
+Do not hide decode failures behind `try?`: distinguish “no save exists” from
+“the save exists but is incompatible or corrupt,” then migrate or report the
+failure rather than resetting user data.
+
 ## Determinism: dates, formatters, and RNG
 
 **Fixed-format `DateFormatter` needs a POSIX locale and a time zone.** Parsing
@@ -182,6 +207,7 @@ fallback masquerade as live data.
 - [ ] Tokens/keys in Keychain, not UserDefaults; OAuth uses `state`/PKCE; base64url in URLs
 - [ ] CloudKit SwiftData props stay optional with `resolved*` fallbacks
 - [ ] Save format versioned if it `Codable`-embeds value types
+- [ ] New persisted fields decode older saves explicitly; decode failures are not hidden by `try?`
 - [ ] Fixed-format `DateFormatter`s set `en_US_POSIX` locale + `timeZone`
 - [ ] Seeded RNG not mixed with `randomElement()`/`Date()`
 - [ ] No silent sample-data fallback on fetch failure
