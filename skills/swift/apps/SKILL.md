@@ -189,6 +189,38 @@ precise behavior. If reproducibility matters (game seeds, simulations), route
 Home-rolled LCGs that derive values via `next() % N` have poor low-bit
 distribution — don't rely on them for anything statistical.
 
+**Seed the run, not just the step.** A seed derived only from a day, turn, or
+level makes every new run replay the same sequence. Give each run a persisted
+stable identity, then combine it with the step:
+
+```swift
+func stableSeed(runID: UUID, step: UInt64) -> UInt64 {
+    let bytes = withUnsafeBytes(of: runID.uuid) { Array($0) }
+    var seed: UInt64 = 0xcbf29ce484222325
+    for byte in bytes {
+        seed = (seed ^ UInt64(byte)) &* 0x100000001b3
+    }
+    return seed ^ (step &* 0x9e3779b97f4a7c15)
+}
+```
+
+Never use `runID.hashValue`: Swift deliberately randomizes `Hashable` seeding
+per process, so the same persisted UUID can produce a different sequence after
+an app relaunch. Fold the UUID's bytes with an explicitly defined algorithm, as
+above, and keep that algorithm stable as part of the save format.
+
+Use the resulting generator for every decision in that step—including nested
+effects—and pass it `inout` through helpers. Prefer a standard generator or a
+small generator with documented statistical properties; avoid mapping
+`next() % upperBound`, which both overuses weak low bits and introduces modulo
+bias when the generator's range is not divisible by `upperBound`.
+
+Pin both sides of the contract in tests:
+
+- The same run ID and step reproduce the exact full outcome.
+- Different run IDs at the same step do not replay the same script.
+- Encoding and decoding the run preserves subsequent outcomes.
+
 ## Don't fabricate data on failure
 
 A fetch path that, on any network error, silently substitutes randomized sample
@@ -209,5 +241,6 @@ fallback masquerade as live data.
 - [ ] Save format versioned if it `Codable`-embeds value types
 - [ ] New persisted fields decode older saves explicitly; decode failures are not hidden by `try?`
 - [ ] Fixed-format `DateFormatter`s set `en_US_POSIX` locale + `timeZone`
-- [ ] Seeded RNG not mixed with `randomElement()`/`Date()`
+- [ ] Seed includes stable run identity plus step; never uses `hashValue`
+- [ ] Every nested draw uses the seeded RNG; bounded draws avoid raw `next() % N`
 - [ ] No silent sample-data fallback on fetch failure
