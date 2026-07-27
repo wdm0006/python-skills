@@ -205,6 +205,61 @@ assert result.overall_score < 100
 it pass documents the bug as acceptable. Assert the *correct* behavior and let it
 fail until the bug is fixed (use `xfail(strict=True)` to track it without red CI).
 
+## Prove the Test Can Fail: Mutate the Fix
+
+Every regression test makes an implicit claim — *this would have caught the bug*.
+The only way to check the claim is to put the bug back and watch the test go red.
+Do it once, while the fix is still fresh in your head; it takes a minute and it is
+the difference between a regression test and a decoration.
+
+```bash
+# 1. revert the fix (git stash, or hand-edit the guard back to its broken form)
+# 2. run ONLY the new test — it must FAIL, and for the right reason
+uv run pytest tests/test_paths.py::test_symlink_escape_rejected -q
+# 3. restore the fix — it must pass
+```
+
+**Mutate each half of a compound guard separately.** A fix that validates an input
+*and* re-checks the resolved result looks redundant until you revert each half on
+its own.
+
+```python
+def _resolve_baseline(name: str) -> Path:
+    if ".." in name or not NAME_RE.fullmatch(name):   # mutation A
+        raise ValueError(name)
+    path = (BASE_DIR / f"{name}.json").resolve()
+    if not path.is_relative_to(BASE_DIR.resolve()):   # mutation B
+        raise ValueError(name)
+    return path
+```
+
+Reverting A is caught by a `../../etc/passwd` test. Reverting B is caught *only*
+by a symlink placed inside the approved directory that points outside it — a test
+most suites don't have. If reverting one half leaves the suite green, you have a
+test gap, not a redundant check: write the test that pins it.
+
+**Know what "red" looks like for the mutation you chose.** A reintroduced bug does
+not always surface as a clean assertion failure.
+
+- Remove a retry/iteration cap and the suite **hangs** instead of failing. Run the
+  mutated suite under an external timeout — `timeout 60 uv run pytest -q` with no
+  output *is* the reproduction. Making the cap merely unreachable (`> 10**9`) is
+  the honest mutation; the off-by-one (`>` → `>=`) fails loudly and is the cheaper
+  one to re-run day to day.
+- Drop an `await` or a `try` in async code and the runner may die with an unhandled
+  rejection and a worker crash rather than a named test failure. Still red — read
+  the output before concluding your test didn't fire.
+- If the mutated run errors during *collection*, no test ran at all and you have
+  learned nothing about the test.
+
+**A hand-written fixture is itself a mutation — of reality.** When the same person
+authors both a parser and every fixture it is tested against, both encode the same
+assumption, and the suite is green against a guard that cannot fire in production.
+A regex requiring single spaces between tokens matches hand-typed single-space
+fixtures forever, while the live document renders those tokens across indented
+lines. Capture at least one fixture from the real source, commit it, and point the
+guard's test at that.
+
 ## Ambient State: Tests That Only Pass on Your Machine
 
 A test that reads state it never set — environment variables, a module-level
@@ -285,6 +340,7 @@ Testing:
 - [ ] Tests exist for public API
 - [ ] Edge cases covered (empty, boundary, error)
 - [ ] No external service dependencies (mock them)
+- [ ] Each regression test verified red against the reverted fix
 - [ ] No ambient state read unpinned (env vars, module globals, CWD, clock)
 - [ ] Coverage > 85%
 - [ ] Tests run in CI
