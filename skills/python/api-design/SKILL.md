@@ -99,6 +99,27 @@ gets aggregated as if complete, produces silently wrong analytics. Either raise,
 or return an explicit "incomplete" marker the caller must check — never let
 truncation masquerade as the full set.
 
+**Meter external work where it actually happens.** A quota or request budget
+charged once around `list_all_items()` undercounts whenever that helper follows
+pagination internally: one budget unit can hide ten HTTP requests. Spend at the
+lowest shared request boundary so every page, retry, and detail fetch is counted.
+
+```python
+# BAD — the helper may issue an unbounded number of requests.
+budget.spend()
+items = client.list_all_items()
+
+# GOOD — pagination cannot bypass the meter.
+def request(method, url, *, budget, **kwargs):
+    budget.spend()
+    return http.request(method, url, **kwargs)
+```
+
+Keep the budget above the raw HTTP call if cache hits should be free, and below
+retry logic if every retry consumes provider quota. Test with a fake paginated
+transport that returns multiple pages and assert both the result values and the
+exact number of budget spends; a one-page fake cannot prove this contract.
+
 **A no-op on unexpected input is a silent corruption.** Code that skips columns
 of the wrong type, ignores a key it doesn't recognize, or `continue`s past a file
 it can't parse — with no error and no report — leaves the caller believing the
