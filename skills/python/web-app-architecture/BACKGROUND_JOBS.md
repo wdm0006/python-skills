@@ -71,6 +71,55 @@ A `JobStatus` enum (`pending/processing/completed/failed`) and storing the resul
 (or error) on completion is enough — you don't need Celery's full feature set for
 long-poll jobs.
 
+### Status writes: distinct, ordered, and escapable
+
+Status is the only thing the user can see, so three cheap mistakes make a broken run
+look fine — or trap the user in a state they can't leave.
+
+**Failure gets its own terminal value.** An `except` block that writes the success
+sentinel (or writes nothing) reports the failed run as finished, and the user goes
+looking for output that will never exist.
+
+**Write "in progress" before you hand the work off.** Enqueueing first opens a window
+in which a fast-failing worker writes its terminal status *first* and the submitting
+request then overwrites it with `processing` — permanently, since nothing will run
+again to correct it.
+
+```python
+# BAD — the worker may finish before line 2, and failure is indistinguishable
+# from success.
+await queue.enqueue(job)
+await put_status(db, tenant, "processing")   # can clobber a terminal status
+...
+except Exception:
+    await put_status(db, tenant, "ready")    # same sentinel as the success path
+
+# GOOD
+await put_status(db, tenant, "processing")
+await queue.enqueue(job)
+...
+except Exception:
+    await put_status(db, tenant, "error")    # distinct, terminal
+```
+
+**Read an append-only status history by a monotonic key, not a timestamp.** Second-
+resolution timestamps tie routinely — a job that starts and fails inside one second
+writes two rows with identical stamps, and the tie-break is whatever the planner
+feels like returning.
+
+```sql
+-- BAD: same-second rows tie; either row may come back.
+SELECT status FROM job_status WHERE tenant_id = :t ORDER BY created_at DESC LIMIT 1;
+-- GOOD: the serial/identity PK is monotonic and never ties.
+SELECT status FROM job_status WHERE tenant_id = :t ORDER BY id DESC LIMIT 1;
+```
+
+**Gate the retry path on the in-progress value alone**, never on an allowlist of
+terminal ones (`if status == "processing": block` — not `if status != "ready"`).
+Then any unexpected value, including a state you add later, unblocks the user rather
+than trapping them behind a support request. If reaching a terminal state depends on
+a worker that may never run, age stale in-progress rows out on a deadline.
+
 ### Reserve quotas, then compensate failures
 
 If submitting a job consumes a scarce quota, reserve it atomically **before**
