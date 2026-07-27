@@ -136,6 +136,8 @@ Structure:
 - [ ] Logic in services/, not in route handlers
 - [ ] External SDKs (Stripe/email/LLM) isolated behind a service module
 - [ ] /health (or /readyz) actually pings the database
+- [ ] Job status: failure writes its own terminal value, "in progress" is written
+      before the work is handed off, and the current value is read by monotonic id
 
 Data:
 - [ ] Async engine is a lazy singleton with pool_pre_ping
