@@ -108,6 +108,49 @@ sort.Strings(keys)
 for _, k := range keys { /* emit m[k] in stable order */ }
 ```
 
+## Bound text without splitting UTF-8
+
+Go string indexes and slices are byte-based. A limit such as `body[:500]` can
+cut through a multi-byte code point, producing invalid UTF-8 that is later
+replaced, rejected, or corrupted when sent as JSON. This commonly appears when
+bounding API response bodies, changelog excerpts, or LLM context.
+
+If the limit is a byte budget, retreat to the previous rune boundary:
+
+```go
+func truncateUTF8(s string, maxBytes int) string {
+    if maxBytes <= 0 {
+        return ""
+    }
+    if len(s) <= maxBytes {
+        return s
+    }
+
+    end := maxBytes
+    for end > 0 && !utf8.RuneStart(s[end]) {
+        end--
+    }
+    return s[:end]
+}
+```
+
+This assumes the input string is valid UTF-8; validate untrusted raw bytes at
+the ingestion boundary. If the product requirement is a character limit rather
+than a byte limit, truncate by runes instead. Keep one shared limiter for every
+path that constructs the same kind of context so one caller cannot remain
+unbounded while another truncates.
+
+Test the boundary with multi-byte text, not only ASCII:
+
+```go
+func TestTruncateUTF8DoesNotSplitRune(t *testing.T) {
+    got := truncateUTF8("abc🙂def", 5) // the emoji occupies bytes 3..6
+    if got != "abc" || !utf8.ValidString(got) {
+        t.Fatalf("got %q, want valid UTF-8 %q", got, "abc")
+    }
+}
+```
+
 ## Shelling out to git/gh: inject a runner, don't string-match stderr
 
 CLIs that wrap `git`/`gh` by exec'ing them and classifying failures with
@@ -152,6 +195,7 @@ Go project health:
 - [ ] golangci-lint-action version paired with the config lane; timeout in run.timeout, not args
 - [ ] test job actually has *_test.go files with assertions (race gate isn't a no-op)
 - [ ] no map ranged directly into serialized/committed output (sort first)
+- [ ] bounded text is truncated on UTF-8 rune boundaries through one shared helper
 - [ ] git/gh wrappers depend on an injectable Runner, not os/exec + stderr string-matching
 - [ ] outbound HTTP sets Timeout and User-Agent
 ```
