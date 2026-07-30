@@ -32,7 +32,17 @@
         "./skills/common/git-hygiene",
         "./skills/common/github-actions",
         "./skills/python/web-app-architecture",
-        "./skills/python/mcp-servers"
+        "./skills/python/mcp-servers",
+        "./skills/python/llm-features"
+      ]
+    },
+    {
+      "name": "python-llm-features",
+      "description": "Build application features on top of an LLM API - prompt surfaces that drift, structured outputs, context budgeting, model config wiring, live-model tests kept out of CI, stochastic accuracy evaluation, and truthful presentation of model output",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/python/llm-features"
       ]
     },
     {
