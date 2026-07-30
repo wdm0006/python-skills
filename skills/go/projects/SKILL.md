@@ -108,6 +108,47 @@ sort.Strings(keys)
 for _, k := range keys { /* emit m[k] in stable order */ }
 ```
 
+## Dry-run must simulate state transitions, not skip them
+
+A dry-run should suppress external writes, not the in-memory changes used to
+decide what would be written. Gating a preparatory state transition on
+`!dryRun` makes the preview compute from stale state and under-report the real
+operation:
+
+```go
+// BAD — dry-run previews incremental work, while the real rebuild clears state
+// first and performs the full operation.
+if opts.Rebuild && !opts.DryRun {
+    state.ClearProcessed()
+    rewriteHistory()
+}
+work := plan(state)
+```
+
+Split simulation from side effects. Apply the same in-memory transition in both
+modes, and gate only persistence or destructive external operations:
+
+```go
+if opts.Rebuild {
+    state.ClearProcessed() // changes planning only; safe in memory
+    if !opts.DryRun {
+        rewriteHistory()
+    }
+}
+
+work := plan(state)
+if !opts.DryRun {
+    execute(work)
+    save(state)
+}
+```
+
+Test preview fidelity by starting from identical state and comparing the planned
+items from dry-run with the items attempted by a real run using a recording fake.
+Also assert that dry-run performed no filesystem, network, or subprocess writes.
+Do not settle for testing only that it "didn't write": a quiet dry-run that
+reports the wrong plan is still broken.
+
 ## Bound text without splitting UTF-8
 
 Go string indexes and slices are byte-based. A limit such as `body[:500]` can
@@ -195,6 +236,7 @@ Go project health:
 - [ ] golangci-lint-action version paired with the config lane; timeout in run.timeout, not args
 - [ ] test job actually has *_test.go files with assertions (race gate isn't a no-op)
 - [ ] no map ranged directly into serialized/committed output (sort first)
+- [ ] dry-run applies planning-state transitions and suppresses only external writes
 - [ ] bounded text is truncated on UTF-8 rune boundaries through one shared helper
 - [ ] git/gh wrappers depend on an injectable Runner, not os/exec + stderr string-matching
 - [ ] outbound HTTP sets Timeout and User-Agent
