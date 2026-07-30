@@ -106,6 +106,7 @@ After installation, you can verify the skills are loaded by running:
 | **reviewing-python-libraries** | Comprehensive library reviews across all quality dimensions | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **building-python-web-apps** | Opinionated reference architecture for production web apps — FastAPI, async SQLAlchemy/Postgres, Stripe billing, Jinja or SPA frontends, and Dockerized deployment via Terraform | Production web app patterns |
 | **building-python-mcp-servers** | Robust Python MCP servers with FastMCP — tool design, error contracts, CLI/subprocess wrapping, single-file vs packaged distribution, testing, and prompt-injection awareness | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
+| **building-llm-backed-features** | Application features on top of an LLM API — the four prompt surfaces that drift apart, structured-output field descriptions as prompt, one shared context limiter, config wiring validated at boot, live-model tests kept out of CI, stochastic accuracy evaluation, and output that doesn't over-claim | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 
 ### Go
 
@@ -154,6 +155,7 @@ After installation, you can verify the skills are loaded by running:
 - **python-library-quality** — security audit, performance, API design, git hygiene.
 - **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment).
 - **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, packaging, testing, prompt-injection awareness).
+- **python-llm-features** — LLM-backed features (prompt surfaces, structured outputs, context budgeting, model config wiring, accuracy evaluation).
 
 Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
 
