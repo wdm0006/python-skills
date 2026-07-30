@@ -1,6 +1,6 @@
 # Developer Skills for Claude Code
 
-A growing, multi-language set of opinionated, checklist-driven Claude Code skills for professional software development. It began as a Python library-development toolkit (based on the guide at [mcginniscommawill.com](https://mcginniscommawill.com/guides/python-library-development/)) and now also covers Go, Swift/Apple apps, Rust, and Scala. Install only the languages and bundles that make sense for you.
+A growing, multi-language set of opinionated, checklist-driven Claude Code skills for professional software development. It began as a Python library-development toolkit (based on the guide at [mcginniscommawill.com](https://mcginniscommawill.com/guides/python-library-development/)) and now also covers Go, Swift/Apple apps, Rust, Scala, and browser extensions. Install only the languages and bundles that make sense for you.
 
 > **Heads up — repo rename planned.** The GitHub repository is still named `wdm0006/python-skills` for now and may be renamed to reflect its polyglot scope. The marketplace-add command below uses that repo path and will change when the repo is renamed; the install slug is `@dev-skills`.
 
@@ -33,6 +33,9 @@ Install a per-language bundle:
 
 # Scala — sbt build, scalafmt/scalafix gates, cross-building, Maven Central
 /plugin install scala-projects@dev-skills
+
+# Browser extensions — Manifest V3 service workers, chrome.storage safety, Jest chrome mocks
+/plugin install browser-extensions@dev-skills
 ```
 
 Or install a narrower Python bundle:
@@ -131,6 +134,12 @@ After installation, you can verify the skills are loaded by running:
 |-------|-------------|
 | **building-scala-projects** | Scala project setup, testing, and publishing — sbt build layout, scalafmt/scalafix gates, Scala 2-vs-3 cross-building, real (non-no-op) test jobs, and Maven Central publishing via sbt-ci-release |
 
+### JavaScript / Browser Extensions
+
+| Skill | Description |
+|-------|-------------|
+| **building-browser-extensions** | Manifest V3 extensions — service-worker message channels that survive teardown (`return true` + awaited responses), `??`-based numeric settings reads (`0` is a valid hour), lost-update-safe `chrome.storage` writes over defaults, JS-side settings validation (inert HTML `min`/`max`), and a Jest chrome mock that can actually fail |
+
 ### Common (language-agnostic)
 
 | Skill | Description | Based On |
@@ -146,6 +155,7 @@ After installation, you can verify the skills are loaded by running:
 - **swift-apps** — `building-swift-apps` + `keeping-git-repos-clean`.
 - **rust-crates** — `building-rust-crates` + `keeping-git-repos-clean`.
 - **scala-projects** — `building-scala-projects` + `keeping-git-repos-clean`.
+- **browser-extensions** — `building-browser-extensions` + `keeping-git-repos-clean`.
 
 ### Narrower Python bundles
 

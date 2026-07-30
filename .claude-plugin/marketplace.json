@@ -5,10 +5,10 @@
     "email": "will@mcginniscommawill.com"
   },
   "metadata": {
-    "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, and Scala projects",
-    "version": "2.0.0",
+    "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
+    "version": "2.1.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "library", "packaging", "testing", "ci", "api-design"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design"]
   },
   "plugins": [
     {
@@ -117,6 +117,17 @@
       "strict": false,
       "skills": [
         "./skills/rust/crates",
+        "./skills/common/git-hygiene",
+        "./skills/common/github-actions"
+      ]
+    },
+    {
+      "name": "browser-extensions",
+      "description": "Build and test Manifest V3 browser extensions - service-worker message channels that survive teardown, lost-update-safe chrome.storage writes, settings validation in the popup, a Jest chrome mock that can actually fail, plus git hygiene",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/javascript/browser-extensions",
         "./skills/common/git-hygiene",
         "./skills/common/github-actions"
       ]
