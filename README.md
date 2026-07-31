@@ -145,6 +145,7 @@ After installation, you can verify the skills are loaded by running:
 
 | Skill | Description | Based On |
 |-------|-------------|----------|
+| **rendering-untrusted-content** | Render stored/authored/imported content into HTML without shipping XSS — enumerating autoescape bypasses (`\|safe`, `Markup`, `innerHTML`), sanitizing Markdown output with an allowlist (Markdown preserves raw HTML by design), keeping table-cell `style` so alignment survives, escaping on both the server and the DOM, and sanitization tests that assert on the rendered prose rather than the JSON-LD copy | — |
 | **keeping-git-repos-clean** | Prevent, detect, and remediate committed secrets and dev artifacts — .gitignore, `git rm --cached`, history scrubbing, credential rotation. Bundled into every language's plugin. | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 
 ## Plugin Bundles
@@ -156,14 +157,14 @@ After installation, you can verify the skills are loaded by running:
 - **swift-apps** — `building-swift-apps` + `keeping-git-repos-clean`.
 - **rust-crates** — `building-rust-crates` + `keeping-git-repos-clean`.
 - **scala-projects** — `building-scala-projects` + `keeping-git-repos-clean`.
-- **browser-extensions** — `building-browser-extensions` + `keeping-git-repos-clean`.
+- **browser-extensions** — `building-browser-extensions` + `rendering-untrusted-content` + `keeping-git-repos-clean`.
 
 ### Narrower Python bundles
 
 - **python-library-foundations** — project setup, code quality, testing strategy.
 - **python-library-distribution** — packaging, release management, CLI development.
-- **python-library-quality** — security audit, performance, API design, git hygiene.
-- **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment).
+- **python-library-quality** — security audit, performance, API design, untrusted-content rendering, git hygiene.
+- **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment) + untrusted-content rendering.
 - **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, packaging, testing, prompt-injection awareness).
 - **python-llm-features** — LLM-backed features (prompt surfaces, structured outputs, context budgeting, model config wiring, accuracy evaluation).
 
