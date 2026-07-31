@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization"]
   },
   "plugins": [
     {
@@ -33,7 +33,8 @@
         "./skills/common/github-actions",
         "./skills/python/web-app-architecture",
         "./skills/python/mcp-servers",
-        "./skills/python/llm-features"
+        "./skills/python/llm-features",
+        "./skills/common/rendering-untrusted-content"
       ]
     },
     {
@@ -60,7 +61,8 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/python/web-app-architecture"
+        "./skills/python/web-app-architecture",
+        "./skills/common/rendering-untrusted-content"
       ]
     },
     {
@@ -94,6 +96,7 @@
         "./skills/python/security-audit",
         "./skills/python/performance",
         "./skills/python/api-design",
+        "./skills/common/rendering-untrusted-content",
         "./skills/common/git-hygiene",
         "./skills/common/github-actions"
       ]
@@ -138,6 +141,7 @@
       "strict": false,
       "skills": [
         "./skills/javascript/browser-extensions",
+        "./skills/common/rendering-untrusted-content",
         "./skills/common/git-hygiene",
         "./skills/common/github-actions"
       ]
