@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.3.0",
+    "version": "2.4.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts"]
   },
   "plugins": [
     {
@@ -45,6 +45,15 @@
       "strict": false,
       "skills": [
         "./skills/common/sync-jobs"
+      ]
+    },
+    {
+      "name": "verifying-external-behavior",
+      "description": "Confirm what a third-party library, remote API, build backend, or scraped document actually does before depending on it - throwaway probes, permissive clients that forward wrong arguments, per-endpoint docs that don't generalize, fakes that encode your assumption, and dry-runs that skip the failing step",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/verifying-external-behavior"
       ]
     },
     {
