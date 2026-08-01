@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs"]
   },
   "plugins": [
     {
@@ -34,7 +34,17 @@
         "./skills/python/web-app-architecture",
         "./skills/python/mcp-servers",
         "./skills/python/llm-features",
-        "./skills/common/rendering-untrusted-content"
+        "./skills/common/rendering-untrusted-content",
+        "./skills/common/sync-jobs"
+      ]
+    },
+    {
+      "name": "resumable-sync-jobs",
+      "description": "Write batch and sync jobs that fail honestly - exit codes that report partial failure, checkpoints that are safe to resume, per-item tolerance vs fatal abort, unknown-vs-zero in aggregated output, bounded retries, honest dry-runs, and compensating reserved quota",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/sync-jobs"
       ]
     },
     {
