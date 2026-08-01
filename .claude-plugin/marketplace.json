@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.4.0",
+    "version": "2.5.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts"]
   },
   "plugins": [
     {
@@ -35,7 +35,17 @@
         "./skills/python/mcp-servers",
         "./skills/python/llm-features",
         "./skills/common/rendering-untrusted-content",
-        "./skills/common/sync-jobs"
+        "./skills/common/sync-jobs",
+        "./skills/common/build-artifacts"
+      ]
+    },
+    {
+      "name": "shipping-build-artifacts",
+      "description": "Make the build step a real gate on what you distribute - scripts that fail instead of warning on a missing input, size checks bounded on both sides, file lists checked against the entrypoints they must cover, committed bundles that can't go stale, portable release shell, and artifact verification that runs before the upload",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/build-artifacts"
       ]
     },
     {
@@ -103,7 +113,8 @@
       "skills": [
         "./skills/python/packaging",
         "./skills/python/release-management",
-        "./skills/python/cli-development"
+        "./skills/python/cli-development",
+        "./skills/common/build-artifacts"
       ]
     },
     {
@@ -160,6 +171,7 @@
       "strict": false,
       "skills": [
         "./skills/javascript/browser-extensions",
+        "./skills/common/build-artifacts",
         "./skills/common/rendering-untrusted-content",
         "./skills/common/git-hygiene",
         "./skills/common/github-actions"
