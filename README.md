@@ -148,6 +148,7 @@ After installation, you can verify the skills are loaded by running:
 | **rendering-untrusted-content** | Render stored/authored/imported content into HTML without shipping XSS — enumerating autoescape bypasses (`\|safe`, `Markup`, `innerHTML`), sanitizing Markdown output with an allowlist (Markdown preserves raw HTML by design), keeping table-cell `style` so alignment survives, escaping on both the server and the DOM, and sanitization tests that assert on the rendered prose rather than the JSON-LD copy | — |
 | **keeping-git-repos-clean** | Prevent, detect, and remediate committed secrets and dev artifacts — .gitignore, `git rm --cached`, history scrubbing, credential rotation. Bundled into every language's plugin. | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **verifying-external-behavior** | Confirm what a third-party library, remote API, build backend, or scraped document actually does before depending on it — throwaway probes that run in seconds, permissive clients that forward a misspelled selector instead of rejecting it, status codes that differ between the collection and item forms of a resource, summary response shapes that make a "we already have it" fast path always-false, fakes that only prove your code calls the fake, and dry-runs that skip the step that fails | — |
+| **shipping-build-artifacts** | Make the build step a real gate on what you distribute — build scripts that warn and exit 0 on a missing input, size checks with only an upper bound, hand-maintained file lists that drift from the entrypoints they must cover, committed bundles that go stale when only the source changes, GNU-only shell that aborts on the other OS, and verification that runs against the source tree instead of the artifact | — |
 | **running-resumable-sync-jobs** | Batch/sync jobs that fail honestly — exit codes that report partial failure, checkpoints safe to resume, per-item tolerance vs. fatal abort, unknown-vs-coerced-`0` in aggregated output, bounded per-page retries, dry-runs that mutate in-memory state identically, and compensating reserved quota | — |
 
 ## Plugin Bundles
@@ -159,12 +160,12 @@ After installation, you can verify the skills are loaded by running:
 - **swift-apps** — `building-swift-apps` + `keeping-git-repos-clean`.
 - **rust-crates** — `building-rust-crates` + `keeping-git-repos-clean`.
 - **scala-projects** — `building-scala-projects` + `keeping-git-repos-clean`.
-- **browser-extensions** — `building-browser-extensions` + `rendering-untrusted-content` + `keeping-git-repos-clean`.
+- **browser-extensions** — `building-browser-extensions` + `shipping-build-artifacts` + `rendering-untrusted-content` + `keeping-git-repos-clean`.
 
 ### Narrower Python bundles
 
 - **python-library-foundations** — project setup, code quality, testing strategy.
-- **python-library-distribution** — packaging, release management, CLI development.
+- **python-library-distribution** — packaging, release management, CLI development, build-artifact shipping.
 - **python-library-quality** — security audit, performance, API design, untrusted-content rendering, external-behavior verification, git hygiene.
 - **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment) + untrusted-content rendering.
 - **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, packaging, testing, prompt-injection awareness).
@@ -174,6 +175,7 @@ After installation, you can verify the skills are loaded by running:
 
 - **resumable-sync-jobs** — batch/sync jobs, cron tasks, importers, and paginated fetchers (partial-failure exit codes, resumable checkpoints, bounded retries, quota compensation).
 - **verifying-external-behavior** — integrating a dependency, endpoint, or build backend (probe the exact call, inspect outbound parameters, validate fakes against the real service, skip the dry-run shortcut).
+- **shipping-build-artifacts** — build/package scripts, `dist/` copy steps, committed compiled assets, and release workflows that upload a zip or installer (fail on missing inputs, bound size both ways, rebuild-and-diff committed bundles, verify the artifact before publishing).
 
 Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
 
