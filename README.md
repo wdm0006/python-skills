@@ -147,6 +147,7 @@ After installation, you can verify the skills are loaded by running:
 |-------|-------------|----------|
 | **rendering-untrusted-content** | Render stored/authored/imported content into HTML without shipping XSS — enumerating autoescape bypasses (`\|safe`, `Markup`, `innerHTML`), sanitizing Markdown output with an allowlist (Markdown preserves raw HTML by design), keeping table-cell `style` so alignment survives, escaping on both the server and the DOM, and sanitization tests that assert on the rendered prose rather than the JSON-LD copy | — |
 | **keeping-git-repos-clean** | Prevent, detect, and remediate committed secrets and dev artifacts — .gitignore, `git rm --cached`, history scrubbing, credential rotation. Bundled into every language's plugin. | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
+| **verifying-external-behavior** | Confirm what a third-party library, remote API, build backend, or scraped document actually does before depending on it — throwaway probes that run in seconds, permissive clients that forward a misspelled selector instead of rejecting it, status codes that differ between the collection and item forms of a resource, summary response shapes that make a "we already have it" fast path always-false, fakes that only prove your code calls the fake, and dry-runs that skip the step that fails | — |
 | **running-resumable-sync-jobs** | Batch/sync jobs that fail honestly — exit codes that report partial failure, checkpoints safe to resume, per-item tolerance vs. fatal abort, unknown-vs-coerced-`0` in aggregated output, bounded per-page retries, dry-runs that mutate in-memory state identically, and compensating reserved quota | — |
 
 ## Plugin Bundles
@@ -164,7 +165,7 @@ After installation, you can verify the skills are loaded by running:
 
 - **python-library-foundations** — project setup, code quality, testing strategy.
 - **python-library-distribution** — packaging, release management, CLI development.
-- **python-library-quality** — security audit, performance, API design, untrusted-content rendering, git hygiene.
+- **python-library-quality** — security audit, performance, API design, untrusted-content rendering, external-behavior verification, git hygiene.
 - **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment) + untrusted-content rendering.
 - **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, packaging, testing, prompt-injection awareness).
 - **python-llm-features** — LLM-backed features (prompt surfaces, structured outputs, context budgeting, model config wiring, accuracy evaluation).
@@ -172,6 +173,7 @@ After installation, you can verify the skills are loaded by running:
 ### Language-agnostic
 
 - **resumable-sync-jobs** — batch/sync jobs, cron tasks, importers, and paginated fetchers (partial-failure exit codes, resumable checkpoints, bounded retries, quota compensation).
+- **verifying-external-behavior** — integrating a dependency, endpoint, or build backend (probe the exact call, inspect outbound parameters, validate fakes against the real service, skip the dry-run shortcut).
 
 Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
 
