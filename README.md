@@ -150,6 +150,7 @@ After installation, you can verify the skills are loaded by running:
 | **verifying-external-behavior** | Confirm what a third-party library, remote API, build backend, or scraped document actually does before depending on it — throwaway probes that run in seconds, permissive clients that forward a misspelled selector instead of rejecting it, status codes that differ between the collection and item forms of a resource, summary response shapes that make a "we already have it" fast path always-false, fakes that only prove your code calls the fake, and dry-runs that skip the step that fails | — |
 | **shipping-build-artifacts** | Make the build step a real gate on what you distribute — build scripts that warn and exit 0 on a missing input, size checks with only an upper bound, hand-maintained file lists that drift from the entrypoints they must cover, committed bundles that go stale when only the source changes, GNU-only shell that aborts on the other OS, and verification that runs against the source tree instead of the artifact | — |
 | **running-resumable-sync-jobs** | Batch/sync jobs that fail honestly — exit codes that report partial failure, checkpoints safe to resume, per-item tolerance vs. fatal abort, unknown-vs-coerced-`0` in aggregated output, bounded per-page retries, dry-runs that mutate in-memory state identically, and compensating reserved quota | — |
+| **reproducing-ci-locally** | Make the local check agree with the runner — deriving the command, paths, marker expression and `env:` from the workflow file rather than the Makefile, running each gate step separately because the first failure hides the rest, pinning the linter version CI resolves (an unpinned formatter that widens file coverage reddens every open PR), building the interpreter and extras the runner builds, fixing divergence in shared config rather than in the YAML, and confirming a run is green instead of explaining a red job away | — |
 
 ## Plugin Bundles
 
@@ -176,6 +177,7 @@ After installation, you can verify the skills are loaded by running:
 - **resumable-sync-jobs** — batch/sync jobs, cron tasks, importers, and paginated fetchers (partial-failure exit codes, resumable checkpoints, bounded retries, quota compensation).
 - **verifying-external-behavior** — integrating a dependency, endpoint, or build backend (probe the exact call, inspect outbound parameters, validate fakes against the real service, skip the dry-run shortcut).
 - **shipping-build-artifacts** — build/package scripts, `dist/` copy steps, committed compiled assets, and release workflows that upload a zip or installer (fail on missing inputs, bound size both ways, rebuild-and-diff committed bundles, verify the artifact before publishing).
+- **reproducing-ci-locally** — running the CI gate on your machine so it agrees with the runner (workflow-derived commands and markers, short-circuiting gate steps, pinned linter versions, the runner's interpreter and extras, confirming green).
 
 Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
 

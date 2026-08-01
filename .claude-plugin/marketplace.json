@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.5.0",
+    "version": "2.6.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment"]
   },
   "plugins": [
     {
@@ -36,7 +36,17 @@
         "./skills/python/llm-features",
         "./skills/common/rendering-untrusted-content",
         "./skills/common/sync-jobs",
-        "./skills/common/build-artifacts"
+        "./skills/common/build-artifacts",
+        "./skills/common/reproducing-ci-locally"
+      ]
+    },
+    {
+      "name": "reproducing-ci-locally",
+      "description": "Make the local check agree with the runner - deriving the command, paths, markers and env from the workflow file rather than the Makefile, unblocking gate steps that short-circuit and hide the next failure, pinning the linter version CI resolves, building the interpreter and extras the runner builds, and confirming a run is green instead of explaining a red job away",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/reproducing-ci-locally"
       ]
     },
     {
