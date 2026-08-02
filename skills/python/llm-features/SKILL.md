@@ -1,6 +1,6 @@
 ---
 name: building-llm-backed-features
-description: Builds application features on top of an LLM API in Python — prompt surfaces that drift apart, structured outputs, context budgeting, model/config wiring, keeping live-model calls out of default CI, evaluating stochastic output, and presenting model output truthfully. Use when adding an LLM call to an app, designing structured outputs or prompt templates, wiring model config, or testing/evaluating LLM-backed analysis.
+description: Builds application features on top of an LLM API in Python — prompt surfaces that drift apart, structured outputs, context budgeting, model/config wiring, filtered evaluator sets, keeping live-model calls out of default CI, evaluating stochastic output, and presenting model output truthfully. Use when adding an LLM call to an app, designing structured outputs or prompt templates, filtering audit rules, wiring model config, or testing/evaluating LLM-backed analysis.
 ---
 
 # Building LLM-Backed Features
@@ -128,6 +128,48 @@ monkeypatch.setattr(Analyzer, "_score", Mock(side_effect=[12.0, 30.5]))
 That runs in milliseconds and covers the wiring, chunking, and thresholding —
 which is where the bugs actually are.
 
+## An empty evaluator set is not a clean pass
+
+Audit and classification services often filter rules to the categories requested
+by the caller. If the filter disables every rule and the evaluator treats no
+results as no findings, the response becomes a confident clean pass: a perfect
+score, zero failures, and zero evidence. That is absence of evaluation, not
+evidence of safety.
+
+Fail closed when a requested filter selects nothing:
+
+```python
+selected = [rule for rule in rules if rule.category in requested_categories]
+if not selected:
+    raise NoApplicableRules(requested_categories)
+
+results = await evaluate_all(selected, document)
+```
+
+Composite rules need explicit semantics. A rule that evaluates all categories
+must not be removed merely because its registry tag names one category. Either
+model its coverage as a set and filter on intersection, or designate it as
+always applicable:
+
+```python
+selected = [
+    rule
+    for rule in rules
+    if rule.covers_all or rule.categories & requested_categories
+]
+```
+
+Prefer selecting a local list over mutating shared `enabled` flags. If the
+framework requires temporary mutation, record exactly which rules this request
+disabled and restore only those in `finally`; blindly re-enabling every rule
+overwrites administrator or tenant configuration.
+
+Regression tests must ask for a category not named by the composite rule and
+assert that evaluation still ran. Assert evidence, not only the final score:
+the evaluator call count, the applied rule identifiers, and a nonzero
+`rules_evaluated` count. Also test a genuinely unsupported category and require
+an explicit error or `not_evaluated` status—never the normal pass shape.
+
 ## Evaluate accuracy as its own job, and record raw outcomes
 
 Model output is stochastic, so a single-run assertion is a coin flip and belongs
@@ -193,6 +235,9 @@ Tests & evaluation:
 - [ ] Live-model modules marked; default/CI run deselects them
 - [ ] CI reproduced with the full marker expression
 - [ ] Real analysis path covered with a pre-populated model cache (no network)
+- [ ] Category filters cannot reduce evaluation to zero and return a clean pass
+- [ ] Composite rules declare their coverage; temporary rule state is restored
+      in `finally` without re-enabling rules disabled before the request
 - [ ] Accuracy fixture is versioned, has negative cases, runs each case N times,
       and persists raw outcomes
 

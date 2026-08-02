@@ -109,7 +109,7 @@ After installation, you can verify the skills are loaded by running:
 | **reviewing-python-libraries** | Comprehensive library reviews across all quality dimensions | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **building-python-web-apps** | Opinionated reference architecture for production web apps — FastAPI, async SQLAlchemy/Postgres, Stripe billing, Jinja or SPA frontends, and Dockerized deployment via Terraform | Production web app patterns |
 | **building-python-mcp-servers** | Robust Python MCP servers with FastMCP — tool design, error contracts, CLI/subprocess wrapping, single-file vs packaged distribution, testing, and prompt-injection awareness | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
-| **building-llm-backed-features** | Application features on top of an LLM API — the four prompt surfaces that drift apart, structured-output field descriptions as prompt, one shared context limiter, config wiring validated at boot, live-model tests kept out of CI, stochastic accuracy evaluation, and output that doesn't over-claim | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
+| **building-llm-backed-features** | Application features on top of an LLM API — prompt surfaces that drift apart, filtered evaluator sets that cannot silently become clean passes, config wiring validated at boot, live-model tests kept out of CI, stochastic accuracy evaluation, and output that doesn't over-claim | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 
 ### Go
 
