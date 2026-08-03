@@ -110,6 +110,60 @@ if name is not "":   # CPython interning makes it *sometimes* work — never rel
 if name != "":
 ```
 
+## A Rule You Enabled Isn't a Rule That Fires
+
+Linters ship exemptions, and the costly ones are invisible: the rule is in
+`select`, the job is green, and the class of mistake you believed was policed
+walks straight through. Before relying on a check to protect something, write
+the violation on purpose once and confirm it gets reported.
+
+The Ruff default that bites hardest is `dummy-variable-rgx`. It exists so
+`_`-prefixed throwaways don't trip unused-variable checks, but its default
+pattern matches **any** leading-underscore name — so `F811` (redefinition of an
+unused name) ignores every private helper in the codebase.
+
+```python
+# module.py — two module-level definitions. The FIRST one is dead code.
+def _is_rate_limited(response):          # never called; editing it has no effect
+    return response.status_code == 403
+
+def _is_rate_limited(response):          # this is the one that wins
+    return response.status_code == 403 and "rate limit" in response.text.lower()
+```
+
+`ruff check --select F811` passes clean on that file. Rename both to
+`is_rate_limited` and it fires immediately (verified on ruff 0.16). The gate is
+working — the *name* opted out of it.
+
+This shape shows up most often after two branches independently add the same
+module-level helper and a conflict resolution keeps both sides. Nothing goes
+red; the bodies usually agree at first; then someone patches the dead copy and
+cannot work out why the behaviour didn't change.
+
+Prefer fixing it in config, so the check actually covers private names:
+
+```toml
+[tool.ruff.lint]
+dummy-variable-rgx = "^_$"   # only a bare `_` is a throwaway
+```
+
+State the tradeoff honestly before adopting it: `_, keep = pair()` stays silent,
+but `_unused = compute()` now trips `F841`. In a codebase that leans on `_name`
+throwaways that is real noise — delete the assignment or use a bare `_` rather
+than reverting the regex.
+
+Independently, after resolving a conflict in a module both branches edited, look
+for duplicated definitions directly — this catches shadowing the linter's
+config can't:
+
+```bash
+grep -oE '^(def|class) [A-Za-z_][A-Za-z0-9_]*' module.py | sort | uniq -d
+```
+
+The habit generalizes past Ruff: when a check is load-bearing, introduce the
+mistake once and watch it get caught, the same way a regression test is only
+trustworthy after you've seen it go red.
+
 ## Fail Loud: Don't Degrade Silently
 
 The costliest bugs aren't crashes — they're failures that look like success. Code
@@ -303,6 +357,8 @@ Code Quality:
 - [ ] Batch loops collect per-item errors instead of a bare `continue`
 - [ ] Truthiness guards don't swallow valid 0/False/"" (guard on `is None`)
 - [ ] No `is`/`is not` against literals (use ==/!=)
+- [ ] Load-bearing lint rules verified to fire (F811 skips `_`-prefixed names under the default `dummy-variable-rgx`)
+- [ ] No duplicate module-level `def`/`class` names after a conflict resolution
 - [ ] Deterministic output: sort before serializing; seed/inject all RNGs (both `random` and `numpy`)
 - [ ] py.typed marker present
 ```
