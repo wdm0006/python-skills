@@ -127,6 +127,12 @@ def update_changelog(
         return False
 
     content = changelog.read_text()
+
+    # Already released: leave the file untouched so retried releases don't
+    # insert a second heading for the same version.
+    if re.search(rf'(?m)^##\s*\[?{re.escape(new_version)}\]?(?![\w.\-])', content):
+        return False
+
     today = date.today().isoformat()
 
     # Match the [Unreleased] heading only (not the [Unreleased]: link reference
