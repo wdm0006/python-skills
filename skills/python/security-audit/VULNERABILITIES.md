@@ -139,14 +139,61 @@ resp = requests.get(url)
 ```
 
 ```python
-# Fixed — allowlist the scheme and host, block private ranges
+# Still vulnerable — validation and connection perform separate DNS lookups
 parsed = urllib.parse.urlparse(url)
-if parsed.scheme not in ("https",) or parsed.hostname not in ALLOWED_HOSTS:
+addresses = socket.getaddrinfo(parsed.hostname, 443)
+if any(ipaddress.ip_address(item[4][0]).is_private for item in addresses):
     raise ValueError("Disallowed URL")
-resp = requests.get(url, timeout=5, allow_redirects=False)
+resp = requests.get(url, timeout=5)  # resolves the hostname again
 ```
 
-Validate against an allowlist rather than a denylist, resolve the hostname and reject private/loopback/link-local IPs, and disable redirects so a permitted host cannot bounce the request to an internal one.
+That check has two holes. An attacker-controlled hostname can resolve to a public
+address during validation and an internal address when the HTTP client resolves it
+again (DNS rebinding). Redirects create the same gap at every hop.
+
+The safe invariant is **connect only to an address returned by validation**:
+
+```python
+CGNAT = ipaddress.ip_network("100.64.0.0/10")
+
+def address_is_blocked(text: str) -> bool:
+    address = ipaddress.ip_address(text)
+    return (
+        address.is_private
+        or address.is_loopback
+        or address.is_link_local
+        or address.is_multicast
+        or address.is_reserved
+        or address.is_unspecified
+        or address in CGNAT
+    )
+
+# Pseudocode: the transport API differs by HTTP client.
+target = validate_url_and_resolve(url)  # returns original host + approved IPs
+response = transport.request(
+    connect_ip=choose(target.approved_ips),
+    authority=target.hostname,           # HTTP Host / HTTP/2 :authority
+    tls_server_name=target.hostname,     # certificate verification and SNI
+)
+```
+
+Do not substitute `ip_address(...).is_private` for an explicit deny policy:
+Python does not classify carrier-grade NAT (`100.64.0.0/10`) as private, even
+though it is not a safe public destination for an SSRF fetcher. Include IPv4 and
+IPv6 results, and reject the hostname if **any** resolved address is forbidden;
+otherwise an attacker can influence which answer the client selects.
+
+If redirects are enabled, handle them manually with a small hop limit. Parse,
+allowlist, resolve, validate, and pin the connection again for every `Location`.
+Preserve the redirected URL's original authority and TLS server name while the
+socket connects to the approved IP. Disabling redirects is simpler and preferred
+when the product does not require them.
+
+Tests must prove the validation-to-connection binding, not merely mock the
+validator: simulate DNS returning public-then-loopback answers and assert that the
+transport either uses the retained public IP or rejects the request without a
+second unconstrained lookup. Repeat the test for a redirect target and include
+CGNAT, IPv6 loopback, link-local, and mixed public/private answer sets.
 
 ## XXE
 

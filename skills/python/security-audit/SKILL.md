@@ -85,6 +85,8 @@ Code:
 - [ ] No weak crypto (MD5/SHA1)
 - [ ] Input validation on external data
 - [ ] Path traversal prevention
+- [ ] SSRF fetches connect to the validated IP on every redirect hop (DNS rebinding safe)
+- [ ] SSRF deny policy covers IPv4/IPv6 and CGNAT (`100.64.0.0/10`)
 
 Dependencies:
 - [ ] pip-audit clean
