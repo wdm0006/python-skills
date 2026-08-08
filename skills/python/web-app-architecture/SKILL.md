@@ -151,6 +151,8 @@ Config:
 
 Billing & security:
 - [ ] Exactly one Stripe webhook, signature-verified, idempotent
+- [ ] New passwords centrally limited to 72 UTF-8 bytes before bcrypt hashing
+- [ ] Password verification remains unbounded for compatibility with existing hashes
 - [ ] Passwords bcrypt-hashed; auth via reusable dependencies
 - [ ] CSRF enforced globally for cookie auth (not per-form opt-in); no
       state-changing GET requests — mutations use POST/DELETE

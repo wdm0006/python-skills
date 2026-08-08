@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.10.0",
+    "version": "2.11.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt"]
   },
   "plugins": [
     {
