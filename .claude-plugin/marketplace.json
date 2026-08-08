@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.11.0",
+    "version": "2.12.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation"]
   },
   "plugins": [
     {
@@ -154,13 +154,23 @@
     },
     {
       "name": "swift-apps",
-      "description": "Build, test, and ship native Swift/SwiftUI apps for Apple platforms - unsigned CI builds, the hand-maintained pbxproj, SwiftPM-vs-app-target test boundaries, Keychain/OAuth security, CloudKit/SwiftData constraints, plus git hygiene",
+      "description": "Build, test, and ship native Swift/SwiftUI apps for Apple platforms - unsigned CI builds, the hand-maintained pbxproj, SwiftPM-vs-app-target test boundaries, Keychain/OAuth security, CloudKit/SwiftData constraints, TestFlight releases with fastlane and xcodebuild, plus git hygiene",
       "source": "./",
       "strict": false,
       "skills": [
         "./skills/swift/apps",
+        "./skills/swift/releases",
         "./skills/common/git-hygiene",
         "./skills/common/github-actions"
+      ]
+    },
+    {
+      "name": "shipping-swift-apps",
+      "description": "Ship Swift apps to TestFlight and the App Store - one App Store Connect API key for fastlane and xcodebuild, metadata-only lanes that cannot submit a build, headless archive and upload, build numbers read from the API instead of guessed, closed pre-release trains, SKIP_INSTALL for bundled helper apps, and per-destination archives for multiplatform targets",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/swift/releases"
       ]
     },
     {

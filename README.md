@@ -25,7 +25,7 @@ Install a per-language bundle:
 # Go — project setup & a CI gate that actually gates
 /plugin install go-projects@dev-skills
 
-# Swift / Apple platforms — Xcode build & CI, signing, Keychain, CloudKit/SwiftData
+# Swift / Apple platforms — Xcode build & CI, signing, Keychain, CloudKit/SwiftData, TestFlight releases
 /plugin install swift-apps@dev-skills
 
 # Rust — Cargo layout, fmt/clippy/test gate, MSRV, crates.io publishing
@@ -122,6 +122,7 @@ After installation, you can verify the skills are loaded by running:
 | Skill | Description |
 |-------|-------------|
 | **building-swift-apps** | Native Swift/SwiftUI apps for macOS/iOS — unsigned CI builds (`CODE_SIGNING_ALLOWED=NO`), the hand-maintained pbxproj, SwiftPM-vs-app-target test boundaries, SourceKit false positives, gitignored base xcconfig, Keychain vs UserDefaults + OAuth state/PKCE, CloudKit/SwiftData constraints, and deterministic dates/RNG |
+| **shipping-swift-apps** | Releasing to TestFlight and the App Store — one App Store Connect API key for both fastlane and `xcodebuild`, metadata/pricing lanes that can't submit a build, headless `archive` + `-exportArchive destination=upload`, build numbers read from the API instead of guessed, closed pre-release trains, `SKIP_INSTALL` for bundled helper apps, per-destination archives for multiplatform targets, and keeping `.p8`/`.env` credentials ignored |
 
 ### Rust
 
@@ -159,7 +160,8 @@ After installation, you can verify the skills are loaded by running:
 
 - **python-library-complete** — all Python skills, plus the web-app architecture and MCP-server skills and git hygiene, for comprehensive Python development.
 - **go-projects** — `building-go-projects` + `keeping-git-repos-clean`.
-- **swift-apps** — `building-swift-apps` + `keeping-git-repos-clean`.
+- **swift-apps** — `building-swift-apps` + `shipping-swift-apps` + `keeping-git-repos-clean`.
+- **shipping-swift-apps** — TestFlight/App Store releases on their own (App Store Connect API key auth, fastlane metadata lanes, headless archive and upload, build-number and version-train rules) for when the build side is already sorted.
 - **rust-crates** — `building-rust-crates` + `keeping-git-repos-clean`.
 - **scala-projects** — `building-scala-projects` + `keeping-git-repos-clean`.
 - **browser-extensions** — `building-browser-extensions` + `shipping-build-artifacts` + `rendering-untrusted-content` + `keeping-git-repos-clean`.
@@ -190,6 +192,7 @@ Once installed, Claude will automatically use these skills when you ask about:
 - Setting up a new project (Python, Go, Rust, Scala) or a Swift/Xcode app
 - Wiring a CI pipeline whose gate actually gates
 - Adding tests, publishing packages, or reviewing code quality
+- Shipping an Xcode app to TestFlight or the App Store
 - Security scanning and keeping secrets out of git
 - Architecting a Python web app or building a Python MCP server
 - And more...
