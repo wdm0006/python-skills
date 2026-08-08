@@ -12,12 +12,64 @@ What stays constant across every app, and the one real choice: **which token**.
 # security.py
 import bcrypt
 
+MAX_PASSWORD_BYTES = 72
+
+
+def password_bytes(pw: str) -> bytes:
+    encoded = pw.encode("utf-8")
+    if len(encoded) > MAX_PASSWORD_BYTES:
+        raise ValueError(f"Password must be at most {MAX_PASSWORD_BYTES} UTF-8 bytes")
+    return encoded
+
+
 def hash_password(pw: str) -> str:
-    return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
+    return bcrypt.hashpw(password_bytes(pw), bcrypt.gensalt()).decode()
+
 
 def verify_password(pw: str, hashed: str) -> bool:
-    return bcrypt.checkpw(pw.encode(), hashed.encode())
+    # Do not apply the creation policy here: old hashes may predate it.
+    return bcrypt.checkpw(pw.encode("utf-8"), hashed.encode("utf-8"))
 ```
+
+### Password length is a creation-time policy
+
+Classic bcrypt only consumes the first 72 **bytes**, so a character-count limit
+is insufficient: a Unicode password can cross the boundary well before 72
+characters. Enforce the UTF-8 byte limit in the lowest shared hashing function,
+then route every password-creation path through it: registration, invitations,
+reset, profile change, admin creation, and model/service convenience methods.
+Endpoint-only validation is bypassed as soon as a background job or new caller
+uses the service directly.
+
+Do not apply the new maximum in `verify_password`. Verification is an
+authentication compatibility path, not password creation; rejecting a long
+candidate before bcrypt sees it can lock out accounts whose hashes were created
+under an older policy. Apply the limit when a password is newly set or replaced,
+while allowing verification to check existing hashes.
+
+Test the policy at both layers:
+
+```python
+def test_password_limit_counts_utf8_bytes():
+    assert len(password_bytes("a" * 72)) == 72
+    with pytest.raises(ValueError):
+        password_bytes("é" * 37)  # 74 UTF-8 bytes, only 37 characters
+
+
+def test_verification_does_not_apply_creation_policy(monkeypatch):
+    seen = {}
+
+    def fake_checkpw(candidate, _hash):
+        seen["candidate"] = candidate
+        return False
+
+    monkeypatch.setattr(bcrypt, "checkpw", fake_checkpw)
+    verify_password("x" * 73, "stored-hash")
+    assert len(seen["candidate"]) == 73
+```
+
+Also test every public creation entry point rejects an over-limit value. Those
+tests catch duplicated validation that later drifts away from the central rule.
 
 ```python
 # api/deps.py
