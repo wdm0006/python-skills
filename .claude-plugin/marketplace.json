@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.13.0",
+    "version": "2.14.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "merge-conflicts", "rebase", "concurrent-prs", "registries", "versioning"]
   },
   "plugins": [
     {
@@ -38,7 +38,19 @@
         "./skills/common/sync-jobs",
         "./skills/common/build-artifacts",
         "./skills/common/reproducing-ci-locally",
-        "./skills/common/cross-surface-changes"
+        "./skills/common/cross-surface-changes",
+        "./skills/common/concurrent-branches"
+      ]
+    },
+    {
+      "name": "merging-concurrent-branches",
+      "description": "Resolve conflicts between sibling branches without silently dropping work - unioning manifest and catalog entries instead of picking a side, re-deriving version bumps from the current base, taking the base's shared tool config and re-applying only your delta, merging test suites, catching duplicate helpers a clean merge leaves behind, and re-running the gate on the resolution",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/concurrent-branches",
+        "./skills/common/reproducing-ci-locally",
+        "./skills/common/git-hygiene"
       ]
     },
     {

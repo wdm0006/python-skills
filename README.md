@@ -78,6 +78,9 @@ Or install a language-agnostic bundle:
 # Reproduce CI failures locally
 /plugin install reproducing-ci-locally@dev-skills
 
+# Resolve conflicts between concurrent branches without dropping sibling changes
+/plugin install merging-concurrent-branches@dev-skills
+
 # Keep user-facing facts consistent across product surfaces
 /plugin install shipping-across-surfaces@dev-skills
 ```
@@ -178,6 +181,7 @@ After installation, you can verify the skills are loaded by running:
 | **shipping-build-artifacts** | Make the build step a real gate on what you distribute — build scripts that warn and exit 0 on a missing input, size checks with only an upper bound, hand-maintained file lists that drift from the entrypoints they must cover, committed bundles that go stale when only the source changes, GNU-only shell that aborts on the other OS, and verification that runs against the source tree instead of the artifact | — |
 | **running-resumable-sync-jobs** | Batch/sync jobs that fail honestly — exit codes that report partial failure, checkpoints safe to resume, per-item tolerance vs. fatal abort, unknown-vs-coerced-`0` in aggregated output, bounded per-page retries, dry-runs that mutate in-memory state identically, and compensating reserved quota | — |
 | **reproducing-ci-locally** | Make the local check agree with the runner — deriving the command, paths, marker expression and `env:` from the workflow file rather than the Makefile, running each gate step separately because the first failure hides the rest, pinning the linter version CI resolves (an unpinned formatter that widens file coverage reddens every open PR), building the interpreter and extras the runner builds, fixing divergence in shared config rather than in the YAML, and confirming a run is green instead of explaining a red job away | — |
+| **merging-concurrent-branches** | Resolve conflicts between sibling branches without silently dropping work — identifying the registry files every feature PR appends to, unioning manifest and catalog entries instead of `--ours`-ing one side away, re-deriving version bumps and other monotonic counters from the current base rather than merging them as text, taking the base's shared tool config and re-applying only your delta, merging test modules so a side-pick can't delete coverage a green suite won't miss, catching the duplicate-helper class of clean-but-wrong merges, and re-running the full gate on a resolution no CI run has ever seen | — |
 | **shipping-across-surfaces** | Land a change everywhere the same fact is stated — enumerating the surface inventory (landing copy, structured data, docs, `llms.txt`, changelog plus the version badge repeated in every page's nav, sitemap, README, and the descriptions embedded in code), generating a surface instead of restating it, drift tests that compare against the live registry rather than a second hand-written list, never hand-maintaining a snapshot of a surface another codebase owns, paired producer/consumer PRs for format changes, and keeping overloaded product words apart | — |
 
 ## Plugin Bundles
@@ -208,6 +212,7 @@ After installation, you can verify the skills are loaded by running:
 - **shipping-build-artifacts** — build/package scripts, `dist/` copy steps, committed compiled assets, and release workflows that upload a zip or installer (fail on missing inputs, bound size both ways, rebuild-and-diff committed bundles, verify the artifact before publishing).
 - **reproducing-ci-locally** — running the CI gate on your machine so it agrees with the runner (workflow-derived commands and markers, short-circuiting gate steps, pinned linter versions, the runner's interpreter and extras, confirming green).
 - **shipping-across-surfaces** — landing a user-facing change everywhere the same fact is stated (surface inventory, generated instead of restated surfaces, drift tests against the live registry, cross-repo format contracts and direction of ownership, overloaded product terms).
+- **merging-concurrent-branches** — rebasing or resolving conflicts when several PRs are open against one base (union the registry, re-derive the version from the base, keep the base's shared config, merge test suites, grep for duplicate helpers, re-run the gate on the resolution).
 
 Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
 
