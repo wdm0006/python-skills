@@ -11,6 +11,7 @@ Usage:
 import argparse
 import re
 import sys
+import tomllib
 from datetime import date
 from pathlib import Path
 
@@ -23,9 +24,11 @@ def get_current_version(project_path: Path) -> str | None:
     if not pyproject.exists():
         return None
 
-    content = pyproject.read_text()
-    match = re.search(r'version\s*=\s*"([^"]+)"', content)
-    return match.group(1) if match else None
+    with pyproject.open("rb") as file:
+        project = tomllib.load(file).get("project", {})
+
+    version = project.get("version")
+    return version if isinstance(version, str) else None
 
 
 def parse_version(version: str) -> tuple[int, int, int]:
@@ -83,13 +86,26 @@ def update_version(
 
     # pyproject.toml
     pyproject = project_path / "pyproject.toml"
-    if update_file(
-        pyproject,
-        r'version\s*=\s*"[^"]+"',
-        f'version = "{new_version}"',
-        dry_run,
-    ):
-        updated_files.append(str(pyproject))
+    if pyproject.exists():
+        content = pyproject.read_text()
+        project_table = re.search(
+            r'(?ms)^[ \t]*\[project\][ \t]*(?:#.*)?$(.*?)(?=^[ \t]*\[|\Z)',
+            content,
+        )
+        if project_table:
+            body_start, body_end = project_table.span(1)
+            body = content[body_start:body_end]
+            new_body = re.sub(
+                r'(?m)^(\s*version\s*=\s*)"[^"]+"',
+                rf'\g<1>"{new_version}"',
+                body,
+                count=1,
+            )
+            new_content = content[:body_start] + new_body + content[body_end:]
+            if new_content != content:
+                if not dry_run:
+                    pyproject.write_text(new_content)
+                updated_files.append(str(pyproject))
 
     # Top-level package __init__.py (src/<package>/__init__.py), not every subpackage.
     src = project_path / "src"

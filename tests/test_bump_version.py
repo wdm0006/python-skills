@@ -39,6 +39,45 @@ CHANGELOG = """\
 [1.2.2]: https://example.com/releases/v1.2.2
 """
 
+PYPROJECT = """\
+[tool.before]
+version = "9.9.9"
+
+[project]
+name = "example"
+version = "1.2.3"
+description = "A version = \\"value\\" example"
+
+[tool.after]
+version = "8.8.8"
+"""
+
+
+class ProjectVersionTests(unittest.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp_dir.cleanup)
+        self.project = Path(self.temp_dir.name)
+        self.pyproject = self.project / "pyproject.toml"
+        self.pyproject.write_text(PYPROJECT)
+
+    def test_get_current_version_reads_project_table(self):
+        self.assertEqual(BUMP_VERSION.get_current_version(self.project), "1.2.3")
+
+    def test_update_changes_only_project_version(self):
+        expected = PYPROJECT.replace('version = "1.2.3"', 'version = "1.2.4"')
+
+        updated = BUMP_VERSION.update_version(self.project, "1.2.4")
+
+        self.assertEqual(updated, [str(self.pyproject)])
+        self.assertEqual(self.pyproject.read_text(), expected)
+
+    def test_missing_project_version_uses_existing_failure_path(self):
+        self.pyproject.write_text('[tool.example]\nversion = "9.9.9"\n\n[project]\nname = "example"\n')
+
+        self.assertIsNone(BUMP_VERSION.get_current_version(self.project))
+        self.assertEqual(BUMP_VERSION.update_version(self.project, "1.2.4"), [])
+
 
 class UpdateChangelogTests(unittest.TestCase):
     def setUp(self):
