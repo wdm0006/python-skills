@@ -89,6 +89,48 @@ so effective limits multiply by instance count — back anything that must hold
 app-wide (login, password-reset, registration) with a shared store (Redis), not
 process memory.
 
+### Authentication limits fail closed when the shared store fails
+
+A shared limiter is a security dependency, not an optional cache. Falling back to
+an in-process counter during a Redis outage gives every process a fresh allowance
+and restores the bypass the shared store was meant to remove. For authentication
+routes, fail closed instead:
+
+- Return **503 Service Unavailable** with `Retry-After` when Redis is unavailable.
+  Keep this distinct from **429 Too Many Requests**, which means the limiter is
+  healthy and the client exhausted its allowance.
+- Reject a per-process backend in deployed configuration. A safe code path is not
+  enough if a production environment can silently select `memory`.
+- Record nothing locally on failure. A local fallback cannot preserve a global
+  limit and makes behavior depend on which instance receives the next request.
+
+Use one atomic Redis operation (usually a Lua script) to increment the bucket,
+set expiry only for a new bucket, and return the count plus its remaining TTL.
+Report that **actual TTL** in `X-RateLimit-Reset` / `retry_after`; returning the
+full window on every response makes the apparent reset time slide even though
+the Redis key does not. Count blocked attempts too, but do not extend the window:
+
+```lua
+local count = redis.call("INCR", KEYS[1])
+local ttl = redis.call("TTL", KEYS[1])
+if ttl < 0 then
+  redis.call("EXPIRE", KEYS[1], ARGV[1])
+  ttl = tonumber(ARGV[1])
+end
+return {count, ttl}
+```
+
+Test the contract at three levels:
+
+1. A fake client for fast unit tests around 429 vs. 503 and headers.
+2. A real disposable Redis instance for command semantics: TTL sentinels,
+   automatic expiry, and the exact async-client return/await behavior.
+3. A dead port for a deterministic outage test; assert 503 + `Retry-After`, no
+   local allowance, and no authentication work performed.
+
+Fakes often encode the command behavior the implementation author expected. A
+one-minute real-service probe is what proves the assumption.
+
 ## One image, three roles
 
 | Role    | Command                                            |
