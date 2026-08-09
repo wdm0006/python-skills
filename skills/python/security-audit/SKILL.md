@@ -1,6 +1,6 @@
 ---
 name: auditing-python-security
-description: Audits Python libraries for security vulnerabilities using Bandit, pip-audit, Semgrep, and detect-secrets. Identifies SQL injection, command injection, hardcoded credentials, weak cryptography, and insecure deserialization. Use when reviewing library security, setting up security scanning in CI, or implementing secure coding patterns.
+description: Audits Python libraries for security vulnerabilities using Bandit, pip-audit, Semgrep, and detect-secrets. Identifies SQL injection, command injection, hardcoded credentials, secrets exposed through tracebacks, weak cryptography, and insecure deserialization. Use when reviewing library security, setting up security scanning in CI, or implementing secure coding patterns.
 ---
 
 # Python Security Auditing
@@ -62,6 +62,49 @@ if not file_path.is_relative_to(base):
     raise ValueError("Invalid path")
 ```
 
+## Tracebacks Must Not Dump Frame Locals
+
+Rich exception renderers can print every local variable in every stack frame.
+That turns an ordinary unhandled exception into a credential leak: API tokens,
+authorization headers, request bodies, and decrypted configuration commonly live
+in locals when the traceback is rendered to a terminal or CI log.
+
+Keep local-variable rendering disabled anywhere logs can leave the developer's
+machine:
+
+```python
+from rich.traceback import install
+
+install(show_locals=False)
+```
+
+Do not stop at asserting the configuration call. Exercise the installed exception
+hook with a sentinel secret and inspect the rendered output. This catches a later
+refactor that replaces the hook or re-enables locals elsewhere:
+
+```python
+import sys
+
+
+def test_unhandled_traceback_does_not_expose_locals(capsys):
+    sentinel = "sentinel-secret-that-must-not-appear"
+
+    try:
+        raise RuntimeError("boom")
+    except RuntimeError:
+        exc_type, exc, traceback = sys.exc_info()
+        sys.excepthook(exc_type, exc, traceback)
+
+    output = capsys.readouterr()
+    rendered = output.out + output.err
+    assert "RuntimeError: boom" in rendered  # proves the hook rendered
+    assert sentinel not in rendered
+```
+
+Use a unique sentinel, never a real credential. Assert both that the exception was
+rendered and that the sentinel was absent; an empty or bypassed output path must
+not make the security test pass vacuously.
+
 ## CI Integration
 
 ```yaml
@@ -82,6 +125,7 @@ Code:
 - [ ] No SQL injection (parameterized queries)
 - [ ] No command injection (no shell=True)
 - [ ] No hardcoded secrets
+- [ ] Exception and logging configuration cannot render frame locals containing secrets
 - [ ] No weak crypto (MD5/SHA1)
 - [ ] Input validation on external data
 - [ ] Path traversal prevention
