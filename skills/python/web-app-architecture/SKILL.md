@@ -158,6 +158,8 @@ Billing & security:
       state-changing GET requests — mutations use POST/DELETE
 - [ ] Client IP for rate-limit keys/allowlists/audit logs taken from a fixed
       position in the X-Forwarded-For chain (not the spoofable left-most value)
+- [ ] Authentication rate limits use a required shared backend; backend outages
+      fail closed with 503, while healthy exhausted buckets return 429 + actual TTL
 - [ ] Private OpenAPI schema served only by a custom guarded route (`openapi_url=None`)
 - [ ] Sentry + PostHog init guarded (no-op when unkeyed, never break a request)
 
