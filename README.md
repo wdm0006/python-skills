@@ -28,6 +28,9 @@ Install a per-language bundle:
 # Swift / Apple platforms — Xcode build & CI, signing, Keychain, CloudKit/SwiftData, TestFlight releases
 /plugin install swift-apps@dev-skills
 
+# Swift releases — TestFlight and App Store delivery
+/plugin install shipping-swift-apps@dev-skills
+
 # Rust — Cargo layout, fmt/clippy/test gate, MSRV, crates.io publishing
 /plugin install rust-crates@dev-skills
 
@@ -55,6 +58,28 @@ Or install a narrower Python bundle:
 
 # Python MCP servers for LLM clients (FastMCP)
 /plugin install python-mcp-servers@dev-skills
+
+# LLM-backed Python features
+/plugin install python-llm-features@dev-skills
+```
+
+Or install a language-agnostic bundle:
+
+```
+# Resumable batch and synchronization jobs
+/plugin install resumable-sync-jobs@dev-skills
+
+# Verify third-party libraries, APIs, build backends, and scraped documents
+/plugin install verifying-external-behavior@dev-skills
+
+# Build and verify release artifacts
+/plugin install shipping-build-artifacts@dev-skills
+
+# Reproduce CI failures locally
+/plugin install reproducing-ci-locally@dev-skills
+
+# Keep user-facing facts consistent across product surfaces
+/plugin install shipping-across-surfaces@dev-skills
 ```
 
 ### Alternative: Local Installation
@@ -148,6 +173,7 @@ After installation, you can verify the skills are loaded by running:
 |-------|-------------|----------|
 | **rendering-untrusted-content** | Render stored/authored/imported content into HTML without shipping XSS — enumerating autoescape bypasses (`\|safe`, `Markup`, `innerHTML`), sanitizing Markdown output with an allowlist (Markdown preserves raw HTML by design), keeping table-cell `style` so alignment survives, escaping on both the server and the DOM, and sanitization tests that assert on the rendered prose rather than the JSON-LD copy | — |
 | **keeping-git-repos-clean** | Prevent, detect, and remediate committed secrets and dev artifacts — .gitignore, `git rm --cached`, history scrubbing, credential rotation. Bundled into every language's plugin. | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
+| **running-github-actions-efficiently** | Build GitHub Actions workflows that gate the intended work — focused triggers, pinned toolchains, explicit permissions, reproducible local commands, and jobs that fail when their checks fail | — |
 | **verifying-external-behavior** | Confirm what a third-party library, remote API, build backend, or scraped document actually does before depending on it — throwaway probes that run in seconds, permissive clients that forward a misspelled selector instead of rejecting it, status codes that differ between the collection and item forms of a resource, summary response shapes that make a "we already have it" fast path always-false, fakes that only prove your code calls the fake, and dry-runs that skip the step that fails | — |
 | **shipping-build-artifacts** | Make the build step a real gate on what you distribute — build scripts that warn and exit 0 on a missing input, size checks with only an upper bound, hand-maintained file lists that drift from the entrypoints they must cover, committed bundles that go stale when only the source changes, GNU-only shell that aborts on the other OS, and verification that runs against the source tree instead of the artifact | — |
 | **running-resumable-sync-jobs** | Batch/sync jobs that fail honestly — exit codes that report partial failure, checkpoints safe to resume, per-item tolerance vs. fatal abort, unknown-vs-coerced-`0` in aggregated output, bounded per-page retries, dry-runs that mutate in-memory state identically, and compensating reserved quota | — |
