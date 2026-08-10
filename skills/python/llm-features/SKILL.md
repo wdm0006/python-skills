@@ -186,6 +186,39 @@ nowhere near a CI gate. Run evaluation as an explicit, credentialed job:
 CI still tests the *scorer and report logic* — with canned outcomes, no API calls
 — so that half stays deterministic and fast.
 
+## Undefined statistics are not zero
+
+Dispersion metrics such as standard deviation and burstiness need at least two
+observations. Returning `0.0` when there is only one usable sentence does not mean
+"perfectly uniform"; it means the metric was not measurable. If the downstream
+flag compares that fabricated zero with a minimum threshold, a one-sentence input
+can be labelled suspicious solely because evidence was absent.
+
+Keep unmeasurable values nullable through the entire result contract:
+
+```python
+def burstiness(scores: list[float]) -> float | None:
+    finite = [score for score in scores if math.isfinite(score)]
+    if len(finite) < 2:
+        return None
+    return statistics.stdev(finite)
+
+
+value = burstiness(sentence_scores)
+if value is not None and value < config.burstiness_min:
+    flags.append("low_burstiness")
+```
+
+Do not convert `None` back to zero in serialization, z-score calculation, or the
+flag layer. Omit the derived flag/z-score when the metric is unavailable, expose
+the feature as `null`, and give users an explanatory reason when that context is
+useful. The same rule applies when every per-item calculation failed: do not
+narrate a threshold finding from an empty set of finite values.
+
+Test both halves of the contract. A single-observation fixture must assert the
+metric is `None` **and** that no threshold-derived finding appears; a unit test of
+the calculator alone will miss a flag layer that still treats absence as zero.
+
 ## Don't present output as more than it is
 
 Two shapes cause most of the damage:
@@ -240,6 +273,8 @@ Tests & evaluation:
       in `finally` without re-enabling rules disabled before the request
 - [ ] Accuracy fixture is versioned, has negative cases, runs each case N times,
       and persists raw outcomes
+- [ ] Statistics with too few usable observations return `None`, and downstream
+      z-scores/flags do not turn that absence into a zero-valued finding
 
 Output:
 - [ ] No field whose name over-claims what the value measures
