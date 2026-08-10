@@ -260,6 +260,69 @@ fixtures forever, while the live document renders those tokens across indented
 lines. Capture at least one fixture from the real source, commit it, and point the
 guard's test at that.
 
+## Pick Fixture Values That Separate the Bug From the Fix
+
+A test survives mutation most often because its *data* cannot tell the two
+implementations apart. Before writing the assertion, work out what the buggy
+version would produce from your fixture. If it produces the same number, the
+fixture is the problem — change it, not the assertion.
+
+**Order-sensitive readings need a fixture whose ends differ.** A summary that
+prints the latest value from an already-sorted frame reads `.iloc[0]` when the
+sort is descending and `.iloc[-1]` when it is ascending; both are one character
+apart and only one is right. A single-row or flat fixture makes them agree.
+
+```python
+# BAD — every row carries the same total, so first and last agree and the
+# assertion holds against either reading.
+rows = [{"day": "2024-01-01", "cumulative": 5}]
+
+# GOOD — strictly increasing across three days: 2, then 5, then 9. Only the
+# correct reading yields 9.
+rows = [
+    {"day": "2024-01-01", "cumulative": 2},
+    {"day": "2024-01-02", "cumulative": 5},
+    {"day": "2024-01-03", "cumulative": 9},
+]
+assert "Final cumulative stars: 9" in captured.messages
+```
+
+**For per-group derived columns, the two readings must disagree on every row.**
+A gap/delta/rank column computed per group and the same column computed over the
+globally sorted table often coincide for most rows; interleaving two groups is not
+enough on its own — the values have to come out different. Two items per group,
+timed so the within-group spacing and the global spacing diverge, is the smallest
+fixture that pins it:
+
+| group | dates                    | per-group gaps | global-sort gaps |
+| ----- | ------------------------ | -------------- | ---------------- |
+| A     | 2024-01-01, 2024-01-11   | 10.0           | 5.0, 5.0, 10.0   |
+| B     | 2024-01-06, 2024-01-21   | 15.0           | (one blank)      |
+
+Per group there are two blanks and gaps of 10.0 and 15.0; globally there is one
+blank and no value matches. Assert the exact numbers *and* the blank count.
+
+**A fixture that reproduces the bug's magic constant proves nothing.** When the
+defect is a redundant fixed wait of 60 seconds and the legitimate code path also
+falls back to 60 seconds when a header is missing, a fixture that omits the header
+passes on both. Supply a value that makes the legitimate result distinct — a reset
+header five seconds out — so the extra wait is visible.
+
+**Record the sequence, not the fact.** A no-op stub answers "did it sleep?" and
+nothing else. Collect the arguments instead and assert the whole call sequence;
+that is what catches one extra call in the middle.
+
+```python
+# BAD — passes whether the code sleeps once or twice.
+monkeypatch.setattr("mypkg.client.time.sleep", lambda _s: None)
+
+# GOOD — the sequence is the assertion.
+sleeps: list[float] = []
+monkeypatch.setattr("mypkg.client.time.sleep", sleeps.append)
+...
+assert sleeps == [reset_wait, 0.1]   # reset wait, then the post-success pause
+```
+
 ## Ambient State: Tests That Only Pass on Your Machine
 
 A test that reads state it never set — environment variables, a module-level
@@ -341,6 +404,7 @@ Testing:
 - [ ] Edge cases covered (empty, boundary, error)
 - [ ] No external service dependencies (mock them)
 - [ ] Each regression test verified red against the reverted fix
+- [ ] Fixture values make the buggy and correct readings produce different results
 - [ ] No ambient state read unpinned (env vars, module globals, CWD, clock)
 - [ ] Coverage > 85%
 - [ ] Tests run in CI
