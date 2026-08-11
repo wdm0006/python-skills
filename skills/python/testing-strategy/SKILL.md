@@ -260,6 +260,59 @@ fixtures forever, while the live document renders those tokens across indented
 lines. Capture at least one fixture from the real source, commit it, and point the
 guard's test at that.
 
+## Mutate in Both Directions: A Guard Can Also Fire Too Often
+
+A fix that adds a conditional — a warning on incomplete data, a validation check,
+a flag that suppresses a claim — has *two* plausible wrong implementations, not
+one: it never fires (the original bug), or it always fires (over-broad). The
+regression test you naturally write covers only the first. Mutate both ways.
+
+```python
+# The fix: warn when a sub-fetch failed, so a partial total isn't read as complete.
+if failed_sources:
+    log.warning("counts UNDERCOUNT: no data from %s", ", ".join(failed_sources))
+
+# Mutation 1 — the original bug. Delete the tracking so the list is always empty.
+# Mutation 2 — over-broad. Drop the condition, or write `if not sources:`.
+```
+
+**The control test is the one that catches mutation 2, and it looks vacuous.** A
+test asserting that a fully successful run emits *no* warning passes on the
+pre-fix code by construction, so it reads like it proves nothing and gets cut in
+review. It is the only test that fails when the warning becomes unconditional.
+Keep it, and name the pairing explicitly in the PR body so a reviewer doesn't
+delete half the coverage:
+
+| mutation                              | test that goes red                 |
+| ------------------------------------- | ---------------------------------- |
+| tracking removed (never warns)        | `test_failed_source_warns`         |
+| condition removed (always warns)      | `test_healthy_run_emits_no_warning`|
+
+**Truthiness is how guards become over-broad.** The over-firing mutation is rarely
+a deliberate edit — it is `if not x:` where the intent was "this value is absent".
+`None` means *unmeasurable / the fetch failed*; `[]`, `0`, `0.0` and `""` are
+legitimate healthy results that a truthiness check silently folds in with it.
+
+```python
+# BAD — fires on a resource that genuinely has no referrers, or a real count of 0.
+if not referrers:
+    warn_incomplete(name)
+
+# GOOD — only the sentinel means "we don't know".
+if referrers is None:
+    warn_incomplete(name)
+```
+
+A useful tell that you got this wrong: existing fixtures that pass empty
+collections start emitting the new warning. If adding a guard turns unrelated
+tests red, read those failures as the over-broad mutation reporting itself rather
+than as fixtures needing an update.
+
+**Attribute each mutation to exactly one test.** When a fix has several parts,
+revert them one at a time and record which test fails for each. "Deleting only
+the `bool` short-circuit fails exactly one test" is a checked statement; "the
+suite covers this" is not. A part whose removal leaves the suite green is a gap.
+
 ## Pick Fixture Values That Separate the Bug From the Fix
 
 A test survives mutation most often because its *data* cannot tell the two
@@ -404,6 +457,9 @@ Testing:
 - [ ] Edge cases covered (empty, boundary, error)
 - [ ] No external service dependencies (mock them)
 - [ ] Each regression test verified red against the reverted fix
+- [ ] New guards mutated both ways (never fires / always fires), each mutation
+      attributed to one test; control test for the healthy case kept
+- [ ] Absence checked with `is None`, not truthiness (`[]`/`0`/`""` are real values)
 - [ ] Fixture values make the buggy and correct readings produce different results
 - [ ] No ambient state read unpinned (env vars, module globals, CWD, clock)
 - [ ] Coverage > 85%
