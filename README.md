@@ -80,6 +80,9 @@ Or install a language-agnostic bundle:
 
 # Keep user-facing facts consistent across product surfaces
 /plugin install shipping-across-surfaces@dev-skills
+
+# Compute and report statistics, scores, and flags honestly
+/plugin install reporting-derived-metrics@dev-skills
 ```
 
 ### Alternative: Local Installation
@@ -178,6 +181,7 @@ After installation, you can verify the skills are loaded by running:
 | **shipping-build-artifacts** | Make the build step a real gate on what you distribute — build scripts that warn and exit 0 on a missing input, size checks with only an upper bound, hand-maintained file lists that drift from the entrypoints they must cover, committed bundles that go stale when only the source changes, GNU-only shell that aborts on the other OS, and verification that runs against the source tree instead of the artifact | — |
 | **running-resumable-sync-jobs** | Batch/sync jobs that fail honestly — exit codes that report partial failure, checkpoints safe to resume, per-item tolerance vs. fatal abort, unknown-vs-coerced-`0` in aggregated output, bounded per-page retries, dry-runs that mutate in-memory state identically, and compensating reserved quota | — |
 | **reproducing-ci-locally** | Make the local check agree with the runner — deriving the command, paths, marker expression and `env:` from the workflow file rather than the Makefile, running each gate step separately because the first failure hides the rest, pinning the linter version CI resolves (an unpinned formatter that widens file coverage reddens every open PR), building the interpreter and extras the runner builds, fixing divergence in shared config rather than in the YAML, and confirming a run is green instead of explaining a red job away | — |
+| **reporting-derived-metrics** | Compute statistics, scores, and flags from samples that may be too small to support them — undefined dispersion returned as `0.0` and tripping the minimum threshold it is compared against (the least data producing the strongest verdict), `None` vs `0`/`-1`/`NaN` as the sentinel, threshold blocks gated on whether the value was measured, report sentences that narrate findings from absent data, nullability as a public API change, `is None` vs truthiness when `[]`/`0` are real results, and broad excepts that disguise a metric bug as a normal-shaped result | — |
 | **shipping-across-surfaces** | Land a change everywhere the same fact is stated — enumerating the surface inventory (landing copy, structured data, docs, `llms.txt`, changelog plus the version badge repeated in every page's nav, sitemap, README, and the descriptions embedded in code), generating a surface instead of restating it, drift tests that compare against the live registry rather than a second hand-written list, never hand-maintaining a snapshot of a surface another codebase owns, paired producer/consumer PRs for format changes, and keeping overloaded product words apart | — |
 
 ## Plugin Bundles
@@ -207,6 +211,7 @@ After installation, you can verify the skills are loaded by running:
 - **verifying-external-behavior** — integrating a dependency, endpoint, or build backend (probe the exact call, inspect outbound parameters, validate fakes against the real service, skip the dry-run shortcut).
 - **shipping-build-artifacts** — build/package scripts, `dist/` copy steps, committed compiled assets, and release workflows that upload a zip or installer (fail on missing inputs, bound size both ways, rebuild-and-diff committed bundles, verify the artifact before publishing).
 - **reproducing-ci-locally** — running the CI gate on your machine so it agrees with the runner (workflow-derived commands and markers, short-circuiting gate steps, pinned linter versions, the runner's interpreter and extras, confirming green).
+- **reporting-derived-metrics** — scoring and analysis pipelines, z-score/outlier checks, quality and anomaly flags, and metrics rollups (unmeasurable is not zero, gate the threshold on whether the value was measured, never narrate a finding from absent data).
 - **shipping-across-surfaces** — landing a user-facing change everywhere the same fact is stated (surface inventory, generated instead of restated surfaces, drift tests against the live registry, cross-repo format contracts and direction of ownership, overloaded product terms).
 
 Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
