@@ -1,6 +1,6 @@
 ---
 name: shipping-across-surfaces
-description: Land a change everywhere the same fact is stated — enumerating the full surface inventory (landing copy, docs, machine-readable summaries, changelog badges repeated across every page, sitemap, README, and the descriptions embedded in code), generating a surface instead of restating it, drift tests where you cannot generate, never hand-maintaining a copy of a surface another codebase owns, shipping a paired PR when you change a format a different codebase decodes, and keeping overloaded product words apart. Use when adding or renaming a user-facing feature, editing product/marketing copy or docs, changing a serialization or share-link format, wiring one repo's output into another's checks, or reviewing a PR that touched only one place a fact appears.
+description: Land a change everywhere the same fact is stated — enumerating the full surface inventory (landing copy, docs, machine-readable summaries, changelog badges repeated across every page, sitemap, README, descriptions embedded in code, and untyped frontend consumers of typed responses), generating a surface instead of restating it, drift tests where you cannot generate, never hand-maintaining a copy of a surface another codebase owns, shipping a paired PR when you change a format a different codebase decodes, and keeping overloaded product words apart. Use when adding or renaming a user-facing feature, editing product/marketing copy or docs, renaming a serialized response field, changing a serialization or share-link format, wiring one repo's output into another's checks, or reviewing a PR that touched only one place a fact appears.
 ---
 
 # Shipping Across Surfaces
@@ -65,6 +65,42 @@ Compare against the *live* registry, not a second hand-written list — a test t
 compares two hand-maintained lists only proves you updated both copies of the
 same mistake. The same rule covers duplicated dependency metadata and committed
 build outputs; see **[../build-artifacts/SKILL.md](../build-artifacts/SKILL.md)**.
+
+## A response model is only half the contract
+
+A typed backend and an untyped frontend can disagree without either side
+failing. Renaming a Pydantic field updates serialization and keeps every Python
+test green, while a Jinja template's inline JavaScript still reads the old name
+inside a template literal. The browser then renders `undefined`: valid
+JavaScript, no exception, no backend failure.
+
+Treat every serialized field rename as a producer-and-consumer change:
+
+```bash
+# Search the whole tree, not just Python call sites. Templates and committed
+# JavaScript bundles are consumers too.
+rg 'old_field|new_field' .
+```
+
+Then pin the boundary with a test that uses the real serialized response and the
+real consumer. A browser test is ideal when available. A cheaper contract test
+can still make the hidden dependency explicit:
+
+```python
+def test_dashboard_consumes_the_audit_response_contract():
+    payload = AuditResponse.example().model_dump()
+    template = Path("templates/dashboard.html").read_text()
+
+    for field in ("summary", "recommendations"):
+        assert field in payload
+        assert f"result.{field}" in template
+```
+
+This test is deliberately narrow: it does not claim to execute JavaScript. It
+makes a field rename fail in the same change that alters the response model,
+instead of relying on someone to notice `undefined` in a rendered page. Prefer
+generating a typed client or shared schema when the frontend architecture allows
+it; otherwise keep this boundary test beside the producer's contract tests.
 
 ## Don't hand-maintain a copy of a surface you don't own
 
@@ -155,6 +191,8 @@ a habit into a gate.
 Before calling a user-facing change done:
 - [ ] Surface inventory exists in the repo and was walked, not recalled
 - [ ] Old strings grepped for across the whole tree, including code descriptions
+- [ ] Serialized field renames grepped through templates and frontend code
+- [ ] Untyped response consumers covered by a boundary contract test
 - [ ] Every sibling tool/endpoint description mentioning the feature updated
 - [ ] Changelog entry added and the repeated version badge bumped everywhere
 - [ ] All surfaces in ONE PR, not a docs follow-up
