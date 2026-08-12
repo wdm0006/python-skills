@@ -154,6 +154,30 @@ but a `None` from fetchers B and C is silently coerced to 0 and dropped from the
 aggregate, the trailing "skipped: M" line under-reports and the totals are wrong
 in a direction no reader can detect.
 
+**Compare against the sentinel, never truthiness.** Every healthy value in this
+position is falsy: a referrer list is `[]` for a target that genuinely has none,
+a counter is `{"count": 0}` for a quiet period. So `if not clones:` fires the
+incomplete-data warning on complete data — and it quietly repurposes every
+empty-result fixture already in your suite, which keeps passing while now
+exercising the failure branch. The distinction you are drawing is *unmeasured*
+vs. *measured zero*, and only `is None` draws it.
+
+```python
+if not referrers:            # Bad — a target with no referrers is not a failure
+if referrers is None:        # Good
+```
+
+**Put the signal in the artifact, not only on the console.** The common half-fix
+names the failed targets in a warning printed after the totals and leaves the
+coerced `0` in the exported file. That serves the operator watching the run and
+nobody else: a downstream dashboard, a spreadsheet, or a diff against yesterday's
+export sees a confident zero with no way to tell it from a quiet period, and the
+row still counts as *analyzed* in the run's own summary. If you must keep the
+coerced value for schema compatibility, ship the companion signal alongside it —
+a `clones_available` column, an `incomplete` block in a manifest, a non-zero exit
+— and be explicit in the PR that the file alone remains ambiguous. A warning on
+stderr is not a channel; it is a courtesy.
+
 **Cross-check totals against detail when the source gives you both.** If a page
 publishes "1,759 contributions in 2024" and your parser extracts zero rows, that
 is a parse failure, not an empty year. A positive summary with an empty detail
@@ -288,6 +312,14 @@ Three details that make refunds safe:
   not select the branch you think.
 - **A missing cap makes the suite hang, not fail.** Run the mutated suite under
   an external timeout; no output within N seconds *is* the reproduction.
+- **Fail one sub-fetch while the primary one succeeds.** Undercounting only
+  appears when part of an item's data lands and part doesn't. Serving a plain
+  non-rate-limit `403`/`404` for just the secondary URL takes the fetcher's skip
+  branch with no retry and no clock to patch — much lighter than driving the
+  persistent-rate-limit path. Pair it with a control test asserting a fully
+  successful run emits *no* incomplete-data warning: the two plausible wrong
+  implementations are dropping the tracking and warning unconditionally, and
+  neither test catches both.
 - **Test the resume, not just the run.** Fail item K, then run again against the
   same state and assert the remaining items are attempted and the completed ones
   are not re-applied. A single-run test cannot see either checkpoint bug.
@@ -301,6 +333,8 @@ Three details that make refunds safe:
 - [ ] Skip/dead branches verified reachable (grep the handler's other callers)
 - [ ] Output written incrementally, or the cheap pass persisted before enrichment
 - [ ] Failed fetches are `None`/absent in the artifact, never a coerced `0`
+- [ ] Availability checked with `is None`; `[]` and `0` stay healthy values
+- [ ] A reader of the exported file alone can tell "unavailable" from "zero"
 - [ ] Summary-vs-detail contradiction raises instead of returning empty
 - [ ] Every retry loop is bounded, counted per unit, and reset after a success
 - [ ] The "who waits" contract is documented and no caller double-sleeps
