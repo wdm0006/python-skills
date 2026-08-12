@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.13.0",
+    "version": "2.14.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability"]
   },
   "plugins": [
     {
@@ -38,7 +38,17 @@
         "./skills/common/sync-jobs",
         "./skills/common/build-artifacts",
         "./skills/common/reproducing-ci-locally",
-        "./skills/common/cross-surface-changes"
+        "./skills/common/cross-surface-changes",
+        "./skills/common/derived-metrics"
+      ]
+    },
+    {
+      "name": "reporting-derived-metrics",
+      "description": "Compute and report statistics, scores and flags from samples that may be too small to support them - undefined dispersion returned as 0.0 and tripping a minimum threshold, sentinel choice, threshold blocks gated on whether the value was measured, reports that narrate findings from absent data, nullability as a public API change, and broad excepts that disguise a metric bug as a normal result",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/derived-metrics"
       ]
     },
     {
@@ -92,7 +102,8 @@
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/python/llm-features"
+        "./skills/python/llm-features",
+        "./skills/common/derived-metrics"
       ]
     },
     {
