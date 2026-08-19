@@ -14,8 +14,24 @@ import sys
 import tomllib
 from datetime import date
 from pathlib import Path
+from typing import Literal
 
 BUMP_TYPES = ("major", "minor", "patch")
+
+# Outcomes of a --changelog request. Only CHANGELOG_ALREADY_RELEASED is an
+# intentional no-op; the other two mean the caller asked for an entry that
+# could not be written.
+CHANGELOG_UPDATED = "updated"
+CHANGELOG_ALREADY_RELEASED = "already-released"
+CHANGELOG_MISSING = "no-changelog"
+CHANGELOG_NO_UNRELEASED = "no-unreleased-heading"
+
+ChangelogOutcome = Literal[
+    "updated",
+    "already-released",
+    "no-changelog",
+    "no-unreleased-heading",
+]
 
 
 def get_current_version(project_path: Path) -> str | None:
@@ -136,18 +152,18 @@ def update_changelog(
     project_path: Path,
     new_version: str,
     dry_run: bool = False,
-) -> bool:
+) -> ChangelogOutcome:
     """Insert a new release heading under the [Unreleased] section of the changelog."""
     changelog = project_path / "CHANGELOG.md"
     if not changelog.exists():
-        return False
+        return CHANGELOG_MISSING
 
     content = changelog.read_text()
 
     # Already released: leave the file untouched so retried releases don't
     # insert a second heading for the same version.
     if re.search(rf'(?m)^##\s*\[?{re.escape(new_version)}\]?(?![\w.\-])', content):
-        return False
+        return CHANGELOG_ALREADY_RELEASED
 
     today = date.today().isoformat()
 
@@ -161,12 +177,12 @@ def update_changelog(
     )
 
     if content == new_content:
-        return False
+        return CHANGELOG_NO_UNRELEASED
 
     if not dry_run:
         changelog.write_text(new_content)
 
-    return True
+    return CHANGELOG_UPDATED
 
 
 def main():
@@ -241,8 +257,19 @@ def main():
         print(f"  - {f}")
 
     if args.changelog:
-        if update_changelog(project_path, new_version, args.dry_run):
-            print(f"  - {project_path / 'CHANGELOG.md'}")
+        changelog = project_path / "CHANGELOG.md"
+        outcome = update_changelog(project_path, new_version, args.dry_run)
+        if outcome == CHANGELOG_UPDATED:
+            print(f"  - {changelog}")
+        elif outcome == CHANGELOG_ALREADY_RELEASED:
+            print(f"  - {changelog}: already has a {new_version} heading, left unchanged")
+        elif outcome == CHANGELOG_MISSING:
+            print(f"  ! Warning: no changelog entry written - {changelog} does not exist")
+        else:
+            print(
+                f"  ! Warning: no changelog entry written - {changelog} has no "
+                "'## [Unreleased]' heading to insert the release under"
+            )
 
     if not updated:
         print("  No files updated")
