@@ -56,6 +56,8 @@ Each step exits non-zero on findings, which fails the job. `bandit -ll` gates on
 
 Instead of four separate steps, run all scanners through the script this skill ships. It aggregates findings and exits non-zero when any is blocking (HIGH/CRITICAL bandit, any vulnerable dependency, ERROR-level semgrep, or any secret), so a single step gates the job.
 
+Exit codes: `1` for a blocking finding, `2` when a requested scanner could not run at all (missing from `PATH`, failed to launch, or timed out), `0` only when every requested scanner ran and nothing blocking was found. A scanner that never ran leaves its class of finding unchecked, so it fails the gate rather than reporting a clean audit; the console summary and the `--output` JSON both name the scanners that did not run.
+
 ```yaml
       - name: Security scan
         run: uv run python scripts/security_scan.py . --output security-report.json
@@ -68,7 +70,7 @@ Instead of four separate steps, run all scanners through the script this skill s
           path: security-report.json
 ```
 
-Skip a scanner that does not apply with `--skip` (choices: `bandit`, `pip-audit`, `semgrep`, `secrets`); for example `--skip semgrep` while tuning rules. The script reports a missing scanner as an error for that tool rather than crashing, so install all four via `uv tool install` first. `if: always()` uploads the JSON even when the scan fails, so findings are inspectable from the run.
+Skip a scanner that does not apply with `--skip` (choices: `bandit`, `pip-audit`, `semgrep`, `secrets`); for example `--skip semgrep` while tuning rules. A skipped scanner is not counted as a failure, so use `--skip` for a scanner you deliberately do not want. The script reports a missing scanner as an error for that tool rather than crashing, and exits `2`, so install all four via `uv tool install` first. `--allow-scanner-failure` restores the tolerant exit `0` for callers that genuinely want it. `if: always()` uploads the JSON even when the scan fails, so findings are inspectable from the run.
 
 ## Pre-commit Hook for detect-secrets
 
