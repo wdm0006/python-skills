@@ -5,6 +5,11 @@ Runs Bandit (static analysis), pip-audit (dependency CVEs), Semgrep (pattern-bas
 SAST), and detect-secrets (hardcoded credentials), aggregates the findings, and
 exits non-zero when any blocking issue is found so it can gate CI.
 
+A scanner that could not run at all is a gate failure too: exit 1 on blocking
+findings, exit 2 when a requested scanner did not run, and 0 only when every
+requested scanner ran clean. Pass --allow-scanner-failure to tolerate scanners
+that could not run.
+
 Usage:
     uv run python scripts/security_scan.py /path/to/project
     uv run python scripts/security_scan.py . --output report.json
@@ -156,6 +161,11 @@ def _describe(finding) -> str:
     return str(finding)
 
 
+def failed_scanners(results: list[ScanResult]) -> list[str]:
+    """Name the requested scanners that could not run (missing, hung, or crashed)."""
+    return [result.tool for result in results if not result.success]
+
+
 def format_report(results: list[ScanResult]) -> str:
     """Format scan results as a readable report."""
     lines = ["=" * 60, "Security Scan Report", "=" * 60, ""]
@@ -183,6 +193,9 @@ def format_report(results: list[ScanResult]) -> str:
 
     lines.append("=" * 60)
     lines.append(f"Total findings: {total_findings} ({total_blocking} blocking)")
+    failed = failed_scanners(results)
+    if failed:
+        lines.append(f"Scanners that did not run: {len(failed)} ({', '.join(failed)})")
     lines.append("=" * 60)
 
     return "\n".join(lines)
@@ -208,6 +221,11 @@ def main():
         choices=["bandit", "pip-audit", "semgrep", "secrets"],
         default=[],
         help="Skip specific scanners",
+    )
+    parser.add_argument(
+        "--allow-scanner-failure",
+        action="store_true",
+        help="Exit 0 when a requested scanner could not run (default: exit 2)",
     )
 
     args = parser.parse_args()
@@ -239,6 +257,8 @@ def main():
     if args.output:
         report_data = {
             "project": str(project_path),
+            "scanners_failed": failed_scanners(results),
+            "scanner_failures": len(failed_scanners(results)),
             "results": [
                 {
                     "tool": r.tool,
@@ -257,6 +277,10 @@ def main():
     # issues, vulnerable dependencies, ERROR-level SAST hits, or any secret).
     if any(r.blocking for r in results):
         sys.exit(1)
+    # A requested scanner that never ran leaves that class of finding unchecked,
+    # so it cannot be reported as a clean audit.
+    if failed_scanners(results) and not args.allow_scanner_failure:
+        sys.exit(2)
     sys.exit(0)
 
 

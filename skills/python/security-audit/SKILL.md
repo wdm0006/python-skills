@@ -8,8 +8,12 @@ description: Audits Python libraries for security vulnerabilities using Bandit, 
 ## Quick Start
 
 ```bash
-# Run all four scanners; exits non-zero on any blocking finding (gates CI):
+# Run all four scanners (gates CI): exit 1 on a blocking finding, exit 2 when a
+# requested scanner could not run, exit 0 only when every scanner ran clean:
 uv run python scripts/security_scan.py .
+
+# Tolerate scanners that are missing or hung (restores exit 0 in that case):
+uv run python scripts/security_scan.py . --allow-scanner-failure
 
 # Or individually:
 uvx bandit -r src/ -ll                       # High-severity static analysis
@@ -114,7 +118,7 @@ not make the security test pass vacuously.
 ```
 
 For detailed patterns, see:
-- **scripts/security_scan.py** — runs all four scanners and exits non-zero on blocking findings (`uv run python scripts/security_scan.py .`)
+- **scripts/security_scan.py** — runs all four scanners and exits non-zero on blocking findings (exit 1) or on a requested scanner that could not run (exit 2, opt out with `--allow-scanner-failure`) (`uv run python scripts/security_scan.py .`)
 - **[VULNERABILITIES.md](VULNERABILITIES.md)** - Vulnerability classes with vulnerable→fixed pairs
 - **[CI_SECURITY.md](CI_SECURITY.md)** - Complete CI workflow, pre-commit, Dependabot, triage
 
