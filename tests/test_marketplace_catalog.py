@@ -72,6 +72,18 @@ class MarketplaceCatalogTests(unittest.TestCase):
                 name = read_frontmatter_name(skill_file)
                 self.assertRegex(section, rf"(?m)^\| \*\*{re.escape(name)}\*\* \|")
 
+    def test_python_library_complete_covers_every_python_and_common_skill(self):
+        expected = {
+            f"./{skill_file.parent.relative_to(ROOT)}"
+            for namespace in ("python", "common")
+            for skill_file in sorted((ROOT / "skills" / namespace).glob("*/SKILL.md"))
+        }
+        complete = next(
+            plugin for plugin in self.manifest["plugins"] if plugin["name"] == "python-library-complete"
+        )
+
+        self.assertEqual(expected - set(complete["skills"]), set())
+
 
 if __name__ == "__main__":
     unittest.main()
