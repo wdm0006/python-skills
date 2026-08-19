@@ -136,7 +136,7 @@ After installation, you can verify the skills are loaded by running:
 | **building-python-communities** | CONTRIBUTING.md, issue templates, PR templates, GitHub automation | [Building Engaging Community](https://mcginniscommawill.com/posts/2025-01-22-building-engaging-community/), [Inner Source Introduction](https://mcginniscommawill.com/posts/2025-02-11-inner-source-introduction/), [From Silos to Shared Libraries](https://mcginniscommawill.com/posts/2025-02-18-silos-to-shared-libraries/) |
 | **reviewing-python-libraries** | Comprehensive library reviews across all quality dimensions | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **building-python-web-apps** | Opinionated reference architecture for production web apps — FastAPI, async SQLAlchemy/Postgres, centralized bcrypt password limits, fail-closed distributed auth rate limiting, Stripe billing, Jinja or SPA frontends, and Dockerized deployment via Terraform | Production web app patterns |
-| **building-python-mcp-servers** | Robust Python MCP servers with FastMCP — tool design, error contracts, CLI/subprocess wrapping, single-file vs packaged distribution, testing, and prompt-injection awareness | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
+| **building-python-mcp-servers** | Robust Python MCP servers with FastMCP — tool design, error contracts, event-loop-safe blocking work, CLI/subprocess wrapping, single-file vs packaged distribution, testing, and prompt-injection awareness | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **building-llm-backed-features** | Application features on top of an LLM API — prompt surfaces that drift apart, filtered evaluator sets that cannot silently become clean passes, config wiring validated at boot, live-model tests kept out of CI, stochastic accuracy evaluation, and output that doesn't over-claim | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 
 ### Go
@@ -202,7 +202,7 @@ After installation, you can verify the skills are loaded by running:
 - **python-library-distribution** — packaging, release management, CLI development, build-artifact shipping.
 - **python-library-quality** — security audit, performance, API design, untrusted-content rendering, external-behavior verification, git hygiene.
 - **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment) + untrusted-content rendering.
-- **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, packaging, testing, prompt-injection awareness).
+- **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, event-loop-safe blocking work, packaging, testing, prompt-injection awareness).
 - **python-llm-features** — LLM-backed features (prompt surfaces, structured outputs, context budgeting, model config wiring, accuracy evaluation).
 
 ### Language-agnostic

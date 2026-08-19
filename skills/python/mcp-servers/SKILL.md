@@ -1,6 +1,6 @@
 ---
 name: building-python-mcp-servers
-description: Builds robust Python MCP (Model Context Protocol) servers with FastMCP — tool design, error contracts, subprocess/CLI wrapping, single-file vs packaged distribution, global-state-free testing, and prompt-injection awareness. Use when writing an MCP server, exposing a tool or CLI to an LLM client, debugging tool registration/packaging, or testing MCP tools.
+description: Builds robust Python MCP (Model Context Protocol) servers with FastMCP — tool design, error contracts, event-loop-safe blocking work, subprocess/CLI wrapping, single-file vs packaged distribution, global-state-free testing, and prompt-injection awareness. Use when writing an MCP server, exposing a tool or CLI to an LLM client, debugging tool registration/packaging, or testing MCP tools.
 ---
 
 # Building Python MCP Servers
@@ -118,6 +118,50 @@ This also avoids **double registration**: a module-level "create all tools" loop
 run directly (`uv run server.py`, as Claude Desktop does) versus via a console
 entry point. Register in exactly one place.
 
+## Keep blocking work off the protocol event loop
+
+Do not assume a framework moves synchronous tool functions to a worker thread.
+Some FastMCP runtimes invoke them inline on the protocol event loop. A SQLite
+query, filesystem walk, dependency traversal, or synchronous HTTP call that takes
+five seconds can therefore block pings and every unrelated request for the same
+five seconds.
+
+Make the tool async and move only the blocking boundary to a thread:
+
+```python
+import asyncio
+
+@mcp.tool()
+async def find_dependents(item_id: int) -> dict:
+    rows = await asyncio.to_thread(repository.find_dependents, item_id)
+    return {"items": [row.to_dict() for row in rows]}
+```
+
+Keep connection ownership in mind. Do not create a SQLite connection on the
+event-loop thread and hand that connection to the worker. Open and close it
+inside `repository.find_dependents`, or use a pool/driver whose concurrency
+contract explicitly permits the handoff. A thread wrapper around a shared,
+thread-affine connection merely trades event-loop starvation for intermittent
+database errors.
+
+Test responsiveness, not just the slow tool's result. Start a deliberately
+blocked repository call, invoke a lightweight tool (or protocol ping) before
+releasing it, and require the lightweight request to finish first:
+
+```python
+slow = asyncio.create_task(call_tool("find_dependents", {"item_id": 42}))
+await entered_worker.wait()
+
+healthy = await asyncio.wait_for(call_tool("health", {}), timeout=0.2)
+assert healthy == {"ok": True}
+
+release_worker.set()
+await slow
+```
+
+A timing assertion on the slow call alone cannot detect event-loop starvation;
+the regression is that independent protocol traffic stops making progress.
+
 ## Sampling is an optional client capability — contain failures in the tool
 
 `ctx.sample(...)` is not guaranteed to work just because the tool itself was
@@ -205,6 +249,8 @@ Subprocess:
 Structure:
 - [ ] No module-level CLI parsing / global state
 - [ ] Tools registered in exactly one place
+- [ ] Blocking database/filesystem/network work moved off the protocol event loop
+- [ ] Concurrency test proves a lightweight request completes while a slow tool is blocked
 
 Distribution & tests:
 - [ ] No server.py / server/ name collision; build includes the whole package
