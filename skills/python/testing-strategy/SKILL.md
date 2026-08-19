@@ -376,6 +376,83 @@ monkeypatch.setattr("mypkg.client.time.sleep", sleeps.append)
 assert sleeps == [reset_wait, 0.1]   # reset wait, then the post-success pause
 ```
 
+## Changing Behavior an Existing Test Already Asserts
+
+Before you change any output, read what the suite already claims about it. Three
+situations look identical from a green run:
+
+1. **Shape assertions only** — `isinstance(x, float)`, `>= 0`, `"minutes" in
+   result`. The behavior is *unspecified*: the test passed before your fix and
+   will pass after it, and would have passed on almost any output. Treat this as
+   no coverage, not as coverage you must preserve.
+2. **The correct value is pinned.** Your "fix" is the regression. Stop.
+3. **The buggy value is pinned.** A confident exact-match assertion on wrong
+   output makes the defect read as tested-and-intended.
+
+Green is not evidence of intent, and the test cannot tell you which of 2 and 3 you
+are in — only the docs, the docstring, or the issue history can. Both shapes occur
+in the same file: a renderer that deliberately drops list markers has a test
+pinning the marker-free output, and the accidental defect two functions over where
+heading text fuses onto the next block has an equally confident pinned test. If
+the intent is written down nowhere, writing it down is part of the fix.
+
+**Grep for every assertion that pins the old value — not just the one the issue
+named.** A ticket cites the obvious single-case test; the same wrong output is
+usually also embedded inside a multi-line `expected` string in some
+`test_mixed_content`-style case, where it does not look like the thing you are
+changing.
+
+```bash
+# search for a distinctive slice of the OLD output, not for the test's name
+rg -l 'HeadingBody text' tests/
+```
+
+**Prefer a differential assertion over a magic constant.** When the number comes
+from a third-party computation you do not control — a readability scorer, a
+tokenizer, a formatter — an exact float pins your test to that library's version.
+If the dependency is declared unpinned (`"textstat"`, no specifier), a patch
+release moves the value and the test goes red with no change in your code. Assert
+the *relationship the fix establishes* instead:
+
+```python
+# BAD — version-brittle, and it only says "some number came out".
+assert readability(MARKDOWN)["flesch"] == 42.80
+
+# GOOD — the property the fix creates: markup must not affect the score.
+assert readability(MARKDOWN)["flesch"] == readability(PLAIN_EQUIVALENT)["flesch"]
+assert strip_markup(MARKDOWN) == PLAIN_EQUIVALENT      # exact, no library constant
+assert len(strip_markup(MARKDOWN).split()) == 27
+```
+
+The differential form needs no constant from the dependency at all, and it still
+goes red the moment the stripper regresses.
+
+**If you do pin a number, measure it — never estimate.** Derived metrics are not
+intuitive, and a tolerance tight enough to be meaningful is tight enough that a
+plausible guess fails on the first CI run. Compute it, then paste the result:
+
+```bash
+uv run python -c "from mypkg import readability; \
+  print(readability(open('tests/data/doc.md').read()))"
+```
+
+Size the tolerance against the bug's own gap rather than your confidence: if the
+buggy and fixed paths differ by ~29 points, `pytest.approx(42.80, abs=1.0)` is
+both a real value assertion and tolerant of a dependency bump.
+
+**To quote the "before" number in the test's comment, load the old module
+directly** — you do not need to check out the old tree:
+
+```bash
+git show main:mypkg/parser.py > /tmp/old_parser.py
+```
+
+```python
+spec = importlib.util.spec_from_file_location("old_parser", "/tmp/old_parser.py")
+old = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(old)
+print(readability(old.strip_markup(MARKDOWN)))   # what the buggy path used to yield
+```
 ## Ambient State: Tests That Only Pass on Your Machine
 
 A test that reads state it never set — environment variables, a module-level
@@ -461,6 +538,10 @@ Testing:
       attributed to one test; control test for the healthy case kept
 - [ ] Absence checked with `is None`, not truthiness (`[]`/`0`/`""` are real values)
 - [ ] Fixture values make the buggy and correct readings produce different results
+- [ ] Existing assertions on changed output classified (shape-only / pins correct
+      value / pins the bug), and every file embedding the old value updated
+- [ ] Values from third-party computations asserted differentially, or measured
+      and pinned with a tolerance sized to the bug's gap — never estimated
 - [ ] No ambient state read unpinned (env vars, module globals, CWD, clock)
 - [ ] Coverage > 85%
 - [ ] Tests run in CI
