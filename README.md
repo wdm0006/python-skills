@@ -83,6 +83,9 @@ Or install a language-agnostic bundle:
 
 # Compute and report statistics, scores, and flags honestly
 /plugin install reporting-derived-metrics@dev-skills
+
+# Load, merge, and validate layered application configuration
+/plugin install wiring-application-config@dev-skills
 ```
 
 ### Alternative: Local Installation
@@ -183,6 +186,7 @@ After installation, you can verify the skills are loaded by running:
 | **reproducing-ci-locally** | Make the local check agree with the runner — deriving the command, paths, marker expression and `env:` from the workflow file rather than the Makefile, running each gate step separately because the first failure hides the rest, pinning the linter version CI resolves (an unpinned formatter that widens file coverage reddens every open PR), building the interpreter and extras the runner builds, fixing divergence in shared config rather than in the YAML, and confirming a run is green instead of explaining a red job away | — |
 | **reporting-derived-metrics** | Compute statistics, scores, and flags from samples that may be too small to support them — undefined dispersion returned as `0.0` and tripping the minimum threshold it is compared against (the least data producing the strongest verdict), `None` vs `0`/`-1`/`NaN` as the sentinel, threshold blocks gated on whether the value was measured, report sentences that narrate findings from absent data, nullability as a public API change, `is None` vs truthiness when `[]`/`0` are real results, and broad excepts that disguise a metric bug as a normal-shaped result | — |
 | **shipping-across-surfaces** | Land a change everywhere the same fact is stated — enumerating the surface inventory (landing copy, structured data, docs, `llms.txt`, changelog plus the version badge repeated in every page's nav, sitemap, README, descriptions embedded in code, and untyped frontend consumers of typed responses), generating a surface instead of restating it, drift tests that compare against the live registry rather than a second hand-written list, never hand-maintaining a snapshot of a surface another codebase owns, paired producer/consumer PRs for format changes, and keeping overloaded product words apart | — |
+| **wiring-application-config** | Load, merge, and validate layered configuration (defaults plus a user YAML/TOML/JSON file or a stored settings object) so a mis-wired key fails loudly — sections the code reads that exist nowhere and sections nothing reads, strictness at the load boundary instead of `.get(key, default)` in every consumer, unknown keys and wrong types dropped with a warning naming the dotted path, `bool` excluded before any integer check, defaults deep-copied so a merge cannot alias them, `get(key, default)`/`??` rather than `or`/`||` for falsy-but-valid values, write-backs that re-read and merge over full defaults, and bootstrap logging ordered so the loader's own warnings survive | — |
 
 ## Plugin Bundles
 
@@ -194,15 +198,15 @@ After installation, you can verify the skills are loaded by running:
 - **shipping-swift-apps** — TestFlight/App Store releases on their own (App Store Connect API key auth, fastlane metadata lanes, headless archive and upload, build-number and version-train rules) for when the build side is already sorted.
 - **rust-crates** — `building-rust-crates` + `keeping-git-repos-clean`.
 - **scala-projects** — `building-scala-projects` + `keeping-git-repos-clean`.
-- **browser-extensions** — `building-browser-extensions` + `shipping-build-artifacts` + `rendering-untrusted-content` + `keeping-git-repos-clean`.
+- **browser-extensions** — `building-browser-extensions` + `wiring-application-config` + `shipping-build-artifacts` + `rendering-untrusted-content` + `keeping-git-repos-clean`.
 
 ### Narrower Python bundles
 
 - **python-library-foundations** — project setup, code quality, testing strategy.
 - **python-library-distribution** — packaging, release management, CLI development, build-artifact shipping.
 - **python-library-quality** — security audit, performance, API design, untrusted-content rendering, external-behavior verification, git hygiene.
-- **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment) + untrusted-content rendering.
-- **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, event-loop-safe blocking work, packaging, testing, prompt-injection awareness).
+- **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment) + untrusted-content rendering + application-config wiring.
+- **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, event-loop-safe blocking work, packaging, testing, prompt-injection awareness) + application-config wiring.
 - **python-llm-features** — LLM-backed features (prompt surfaces, structured outputs, context budgeting, model config wiring, accuracy evaluation).
 
 ### Language-agnostic
@@ -213,6 +217,7 @@ After installation, you can verify the skills are loaded by running:
 - **reproducing-ci-locally** — running the CI gate on your machine so it agrees with the runner (workflow-derived commands and markers, short-circuiting gate steps, pinned linter versions, the runner's interpreter and extras, confirming green).
 - **reporting-derived-metrics** — scoring and analysis pipelines, z-score/outlier checks, quality and anomaly flags, and metrics rollups (unmeasurable is not zero, gate the threshold on whether the value was measured, never narrate a finding from absent data).
 - **shipping-across-surfaces** — landing a user-facing change everywhere the same fact is stated (surface inventory, typed-response/untyped-consumer contract tests, generated instead of restated surfaces, drift tests against the live registry, cross-repo format contracts and direction of ownership, overloaded product terms).
+- **wiring-application-config** — config loaders, merge helpers, schemas, and stored settings objects (check both ends of every key, validate at the load boundary, drop unknown keys with a warning naming the dotted path, never alias the defaults you merged from, never persist a partial settings object).
 
 Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
 
