@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.17.0",
+    "version": "2.18.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge"]
   },
   "plugins": [
     {
@@ -40,7 +40,8 @@
         "./skills/common/reproducing-ci-locally",
         "./skills/common/cross-surface-changes",
         "./skills/common/derived-metrics",
-        "./skills/common/verifying-external-behavior"
+        "./skills/common/verifying-external-behavior",
+        "./skills/common/app-config"
       ]
     },
     {
@@ -98,6 +99,15 @@
       ]
     },
     {
+      "name": "wiring-application-config",
+      "description": "Load, merge and validate layered application configuration so a mis-wired or misspelled key fails loudly instead of reverting to the default - sections the code reads that exist nowhere, sections nothing reads, unvalidated recursive merges, bool passing as int, defaults aliased by a shallow merge, falsy-but-valid values killed by or/||, partial write-backs stickier than a missing file, and bootstrap ordering that swallows the loader's own warnings",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/app-config"
+      ]
+    },
+    {
       "name": "python-llm-features",
       "description": "Build application features on top of an LLM API - prompt surfaces that drift, filtered evaluator sets that cannot silently become clean passes, model config wiring, live-model tests kept out of CI, stochastic accuracy evaluation, and truthful presentation of model output",
       "source": "./",
@@ -114,7 +124,8 @@
       "strict": false,
       "skills": [
         "./skills/python/mcp-servers",
-        "./skills/common/cross-surface-changes"
+        "./skills/common/cross-surface-changes",
+        "./skills/common/app-config"
       ]
     },
     {
@@ -124,7 +135,8 @@
       "strict": false,
       "skills": [
         "./skills/python/web-app-architecture",
-        "./skills/common/rendering-untrusted-content"
+        "./skills/common/rendering-untrusted-content",
+        "./skills/common/app-config"
       ]
     },
     {
@@ -215,6 +227,7 @@
       "strict": false,
       "skills": [
         "./skills/javascript/browser-extensions",
+        "./skills/common/app-config",
         "./skills/common/build-artifacts",
         "./skills/common/rendering-untrusted-content",
         "./skills/common/git-hygiene",
