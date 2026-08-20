@@ -1,6 +1,6 @@
 ---
 name: building-browser-extensions
-description: Builds and tests Manifest V3 browser extensions — service-worker message channels that survive teardown, chrome.storage read-modify-write safety, settings validation in the popup, and a Jest chrome mock that can actually fail. Use when writing or reviewing a background service worker, a popup that reads/writes chrome.storage, an extension's Jest suite, or debugging an extension whose UI silently stops responding.
+description: Builds and tests Manifest V3 browser extensions — service-worker message channels and chrome.* side effects that survive teardown, chrome.storage read-modify-write safety, settings validation in the popup, and a Jest chrome mock that can actually fail. Use when writing or reviewing a background service worker, a popup that reads/writes chrome.storage, an extension's Jest suite, or debugging an extension whose UI silently stops responding.
 ---
 
 # Manifest V3 Extensions
@@ -46,10 +46,25 @@ await loadFromStorage();
 ```
 
 Treat a missing or falsy response as failure, not success — a torn-down worker
-resolves `sendMessage` with `undefined`. The same rule covers any awaited
-teardown work behind an acknowledgement: if the handler reschedules an alarm,
-`await` the `clear`/`create` pair before responding, or the caller refreshes its
-UI from state that has not been rebuilt yet.
+resolves `sendMessage` with `undefined`. The same rule covers every side effect
+behind an acknowledgement. If the handler reschedules an alarm, both operations
+must be awaited:
+
+```js
+async function setupAlarm(intervalMinutes) {
+  await chrome.alarms.clear('scheduled-work');
+  await chrome.alarms.create('scheduled-work', {
+    periodInMinutes: intervalMinutes,
+  });
+}
+```
+
+Awaiting only `clear` is a subtle false success: the handler can acknowledge the
+request while alarm creation is still pending, and a rejected `create` becomes
+an unhandled promise instead of a `{ success: false }` response. Apply the same
+rule to notifications and other `chrome.*` promises — returning from an outer
+`async` function does not wait for a promise that function started but did not
+return or await.
 
 ## `??`, never `||`, for numeric settings
 
@@ -211,8 +226,11 @@ expect(sendResponse).toHaveBeenCalledWith({ success: true });
 ```
 
 `getMockImplementation()` returns the default the reset helper installed, so this
-*composes* with the mock instead of replacing storage behavior. The same gate on
-`alarms.clear` proves alarm rescheduling is acknowledged in the right order.
+*composes* with the mock instead of replacing storage behavior. For alarm
+rescheduling, gate `alarms.create`, not only `alarms.clear`: a clear-gated test
+still passes when creation is fire-and-forget. Assert that both the response and
+any UI refresh remain pending until the create gate is released, then make the
+gate reject and assert that the handler sends its failure response.
 
 **Fake timers are dropped the moment you go real.** `jest.useRealTimers()`
 mid-test discards `setSystemTime`, so any `new Date()` afterward sees wall-clock
@@ -252,6 +270,7 @@ fixing anything.
 MV3 extension health:
 - [ ] every onMessage handler that responds asynchronously returns true and replies on both paths
 - [ ] callers await the response; no setTimeout used to "wait for" a write
+- [ ] every chrome.* side effect behind success is awaited, including the final alarms.create
 - [ ] a missing/falsy sendMessage response is treated as failure
 - [ ] numeric settings read with ?? (0 is valid), never ||
 - [ ] storage writes re-read first and rebuild over DEFAULTS; nested objects merged explicitly
@@ -260,7 +279,7 @@ MV3 extension health:
 - [ ] settings validated in JS (Number.isInteger + range), not by inert HTML min/max
 - [ ] popup binds listeners before loading state; state load degrades to defaults
 - [ ] chrome mock: reset reinstalls default implementations; async responses honored
-- [ ] at least one test gates a write to prove the handler awaits it
+- [ ] tests gate the final side effect (for rescheduling, alarms.create) to prove it is awaited
 - [ ] fake timers never swapped for real timers mid-test
 - [ ] PR-comment workflow step has issues: write AND pull-requests: write
 ```

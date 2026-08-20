@@ -168,7 +168,7 @@ After installation, you can verify the skills are loaded by running:
 
 | Skill | Description |
 |-------|-------------|
-| **building-browser-extensions** | Manifest V3 extensions — service-worker message channels that survive teardown (`return true` + awaited responses), `??`-based numeric settings reads (`0` is a valid hour), lost-update-safe `chrome.storage` writes over defaults, JS-side settings validation (inert HTML `min`/`max`), and a Jest chrome mock that can actually fail |
+| **building-browser-extensions** | Manifest V3 extensions — service-worker message channels and `chrome.*` side effects that survive teardown (`return true` + awaited responses), tests that gate the final side effect instead of an upstream promise, `??`-based numeric settings reads (`0` is a valid hour), lost-update-safe `chrome.storage` writes over defaults, JS-side settings validation (inert HTML `min`/`max`), and a Jest chrome mock that can actually fail |
 
 ### Common (language-agnostic)
 
