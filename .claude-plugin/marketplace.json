@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.20.0",
+    "version": "2.21.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius"]
   },
   "plugins": [
     {
@@ -43,7 +43,8 @@
         "./skills/common/derived-metrics",
         "./skills/common/verifying-external-behavior",
         "./skills/common/app-config",
-        "./skills/common/concurrent-branches"
+        "./skills/common/concurrent-branches",
+        "./skills/common/destructive-operations"
       ]
     },
     {
@@ -122,6 +123,15 @@
       ]
     },
     {
+      "name": "guarding-destructive-operations",
+      "description": "Put real preconditions on operations that delete, overwrite, or rewrite history, and on code that turns a caller-supplied name into a path - refusing instead of warning, guards placed ahead of the first mutation, structural ownership checks rather than string prefixes, name validation plus resolved-path containment as two independent checks, the deliberate dry-run gap, and mutation-testing each half separately",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/destructive-operations"
+      ]
+    },
+    {
       "name": "python-llm-features",
       "description": "Build application features on top of an LLM API - prompt surfaces that drift, filtered evaluator sets that cannot silently become clean passes, model config wiring, live-model tests kept out of CI, stochastic accuracy evaluation, and truthful presentation of model output",
       "source": "./",
@@ -188,6 +198,7 @@
         "./skills/python/api-design",
         "./skills/common/rendering-untrusted-content",
         "./skills/common/verifying-external-behavior",
+        "./skills/common/destructive-operations",
         "./skills/common/git-hygiene",
         "./skills/common/github-actions"
       ]

@@ -92,6 +92,9 @@ Or install a language-agnostic bundle:
 
 # Keep expensive resources off cheap code paths
 /plugin install deferring-heavy-dependencies@dev-skills
+
+# Guard deletes, history rewrites, and caller-supplied file paths
+/plugin install guarding-destructive-operations@dev-skills
 ```
 
 ### Alternative: Local Installation
@@ -195,6 +198,7 @@ After installation, you can verify the skills are loaded by running:
 | **shipping-across-surfaces** | Land a change everywhere the same fact is stated — enumerating the surface inventory (landing copy, structured data, docs, `llms.txt`, changelog plus the version badge repeated in every page's nav, sitemap, README, descriptions embedded in code, and untyped frontend consumers of typed responses), generating a surface instead of restating it, drift tests that compare against the live registry rather than a second hand-written list, never hand-maintaining a snapshot of a surface another codebase owns, paired producer/consumer PRs for format changes, and keeping overloaded product words apart | — |
 | **wiring-application-config** | Load, merge, and validate layered configuration (defaults plus a user YAML/TOML/JSON file or a stored settings object) so a mis-wired key fails loudly — sections the code reads that exist nowhere and sections nothing reads, strictness at the load boundary instead of `.get(key, default)` in every consumer, unknown keys and wrong types dropped with a warning naming the dotted path, `bool` excluded before any integer check, defaults deep-copied so a merge cannot alias them, `get(key, default)`/`??` rather than `or`/`||` for falsy-but-valid values, write-backs that re-read and merge over full defaults, and bootstrap logging ordered so the loader's own warnings survive | — |
 | **concurrent-branches** | Resolve conflicts when several branches are open against one repo at once — finding the hotspot files nearly every commit touches, additive registries unioned rather than chosen (a taken side deletes a component that is still on disk), version and sequence fields recomputed from the integration branch instead of merged, generated artifacts (minified bundles, built PDFs, compiled schemas) rebuilt from resolved sources rather than text- or binary-merged, files serialized from maps sorted by a stable key so diffs stay reviewable, shared identifiers appended and never renumbered, duplicate test names after a union merge, and re-running the real gate because neither branch's CI covered their union | — |
+| **guarding-destructive-operations** | Put real preconditions on operations with no undo — irreversible bulk deletes and history rewrites that are only correct in a dedicated single-purpose target, refusing rather than warning and shipping no `--force`, placing the guard ahead of the first statement with an effect so a rejected run leaves everything byte-identical, structural ownership checks (`p == base or p.startswith(base + "/")`) instead of a bare prefix that admits `base-backup/`, name validation *and* resolved-path containment as two independent checks (only the second stops a symlink inside the directory), the deliberate dry-run gap, broad excepts upstream that turn a refusal into an ordinary result shape, and mutating each half of the guard separately | — |
 
 ## Plugin Bundles
 
@@ -228,6 +232,7 @@ After installation, you can verify the skills are loaded by running:
 - **wiring-application-config** — config loaders, merge helpers, schemas, and stored settings objects (check both ends of every key, validate at the load boundary, drop unknown keys with a warning naming the dotted path, never alias the defaults you merged from, never persist a partial settings object).
 - **merging-concurrent-branches** — rebasing or merging a branch into a repo taking parallel contributions (hotspot inventory, union vs. recompute vs. rebuild as three different correct resolutions, deterministic serialization, append-only identifiers, and the real gate re-run on the merged tree).
 - **deferring-heavy-dependencies** — a cheap operation that costs hundreds of milliseconds, or adding an expensive resource to a shared constructor or factory (lazy fields, factories split by need, cold-process per-call timing, one-time import vs repeated load, and asserting the loader is never called on a model-free path).
+- **guarding-destructive-operations** — `--rebuild`/`--reset`/`--purge` commands, bulk deletes, history rewrites, and any code that turns an argument into a file path (refuse instead of warn, guard before the first mutation, structural not string-prefix classification, validate the name *and* contain the resolved path, mutate each half separately in tests).
 
 Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
 
