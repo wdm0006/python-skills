@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.18.0",
+    "version": "2.19.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts"]
   },
   "plugins": [
     {
@@ -41,7 +41,8 @@
         "./skills/common/cross-surface-changes",
         "./skills/common/derived-metrics",
         "./skills/common/verifying-external-behavior",
-        "./skills/common/app-config"
+        "./skills/common/app-config",
+        "./skills/common/concurrent-branches"
       ]
     },
     {
@@ -105,6 +106,18 @@
       "strict": false,
       "skills": [
         "./skills/common/app-config"
+      ]
+    },
+    {
+      "name": "merging-concurrent-branches",
+      "description": "Resolve conflicts when several branches are open against one repo at once - the hotspot files every change touches, additive registries unioned instead of chosen, version counters recomputed from the integration branch, generated artifacts rebuilt rather than merged, deterministic serialization so diffs stay reviewable, shared identifiers appended and never renumbered, and re-running the real gate because a clean auto-merge is not a passing test",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/concurrent-branches",
+        "./skills/common/build-artifacts",
+        "./skills/common/reproducing-ci-locally",
+        "./skills/common/git-hygiene"
       ]
     },
     {
