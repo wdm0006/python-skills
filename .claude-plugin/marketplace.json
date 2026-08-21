@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.19.0",
+    "version": "2.20.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading"]
   },
   "plugins": [
     {
@@ -26,6 +26,7 @@
         "./skills/python/packaging",
         "./skills/python/release-management",
         "./skills/python/performance",
+        "./skills/python/lazy-dependencies",
         "./skills/python/cli-development",
         "./skills/python/community",
         "./skills/python/library-review",
@@ -183,11 +184,21 @@
       "skills": [
         "./skills/python/security-audit",
         "./skills/python/performance",
+        "./skills/python/lazy-dependencies",
         "./skills/python/api-design",
         "./skills/common/rendering-untrusted-content",
         "./skills/common/verifying-external-behavior",
         "./skills/common/git-hygiene",
         "./skills/common/github-actions"
+      ]
+    },
+    {
+      "name": "deferring-heavy-dependencies",
+      "description": "Keep expensive resources off code paths that never use them - constructor work every caller pays for, one-size factories that load the heaviest member for the cheapest request, load-and-unload-per-call caches that are not caches, per-call timing in a fresh process, telling a one-time import from a repeated model load, and the test fallout of making a field lazy",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/python/lazy-dependencies"
       ]
     },
     {
