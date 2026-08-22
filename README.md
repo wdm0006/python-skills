@@ -89,6 +89,9 @@ Or install a language-agnostic bundle:
 
 # Resolve conflicts across branches open against one repo at once
 /plugin install merging-concurrent-branches@dev-skills
+
+# Keep expensive resources off cheap code paths
+/plugin install deferring-heavy-dependencies@dev-skills
 ```
 
 ### Alternative: Local Installation
@@ -138,6 +141,7 @@ After installation, you can verify the skills are loaded by running:
 | **packaging-python-libraries** | pyproject.toml, PyPI publishing, trusted publishing, wheel building | [pyproject.toml Explained](https://mcginniscommawill.com/posts/2025-01-26-pyproject-toml-explained/), [Publishing PyGeohash](https://mcginniscommawill.com/posts/2025-04-06-pygeohash-publishing/) |
 | **managing-python-releases** | Semantic versioning, changelogs, release automation, deprecation workflows | [Semantic Versioning](https://mcginniscommawill.com/posts/2025-01-28-semantic-versioning/) |
 | **optimizing-python-performance** | Profiling, memory analysis, benchmarking, optimization strategies | [Performance Benchmarking](https://mcginniscommawill.com/posts/2025-02-22-testing-benchmark/), [Profiling with PyInstrument](https://mcginniscommawill.com/posts/2025-02-25-testing-profiling-pyinstrument/), [Memory Profiling with Memray](https://mcginniscommawill.com/posts/2025-03-01-testing-profiling-memray/) |
+| **deferring-heavy-dependencies** | Keeping ML models, dictionaries and large imports off cheap code paths — lazy fields instead of constructor work, factories split by what the path needs, per-call timing in a fresh process, one-time import vs repeated model load, and the tests that only now bite | — |
 | **building-python-clis** | Click/Typer CLIs, command groups, shell completion, CLI testing | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **building-python-communities** | CONTRIBUTING.md, issue templates, PR templates, GitHub automation | [Building Engaging Community](https://mcginniscommawill.com/posts/2025-01-22-building-engaging-community/), [Inner Source Introduction](https://mcginniscommawill.com/posts/2025-02-11-inner-source-introduction/), [From Silos to Shared Libraries](https://mcginniscommawill.com/posts/2025-02-18-silos-to-shared-libraries/) |
 | **reviewing-python-libraries** | Comprehensive library reviews across all quality dimensions | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
@@ -208,7 +212,7 @@ After installation, you can verify the skills are loaded by running:
 
 - **python-library-foundations** — project setup, code quality, testing strategy.
 - **python-library-distribution** — packaging, release management, CLI development, build-artifact shipping.
-- **python-library-quality** — security audit, performance, API design, untrusted-content rendering, external-behavior verification, git hygiene.
+- **python-library-quality** — security audit, performance, heavy-dependency deferral, API design, untrusted-content rendering, external-behavior verification, git hygiene.
 - **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment) + untrusted-content rendering + application-config wiring.
 - **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, event-loop-safe blocking work, packaging, testing, prompt-injection awareness) + application-config wiring.
 - **python-llm-features** — LLM-backed features (prompt surfaces, structured outputs, context budgeting, model config wiring, accuracy evaluation).
@@ -223,6 +227,7 @@ After installation, you can verify the skills are loaded by running:
 - **shipping-across-surfaces** — landing a user-facing change everywhere the same fact is stated (surface inventory, typed-response/untyped-consumer contract tests, generated instead of restated surfaces, drift tests against the live registry, cross-repo format contracts and direction of ownership, overloaded product terms).
 - **wiring-application-config** — config loaders, merge helpers, schemas, and stored settings objects (check both ends of every key, validate at the load boundary, drop unknown keys with a warning naming the dotted path, never alias the defaults you merged from, never persist a partial settings object).
 - **merging-concurrent-branches** — rebasing or merging a branch into a repo taking parallel contributions (hotspot inventory, union vs. recompute vs. rebuild as three different correct resolutions, deterministic serialization, append-only identifiers, and the real gate re-run on the merged tree).
+- **deferring-heavy-dependencies** — a cheap operation that costs hundreds of milliseconds, or adding an expensive resource to a shared constructor or factory (lazy fields, factories split by need, cold-process per-call timing, one-time import vs repeated load, and asserting the loader is never called on a model-free path).
 
 Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
 
