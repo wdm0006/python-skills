@@ -211,8 +211,40 @@ expect(sendResponse).toHaveBeenCalledWith({ success: true });
 ```
 
 `getMockImplementation()` returns the default the reset helper installed, so this
-*composes* with the mock instead of replacing storage behavior. The same gate on
-`alarms.clear` proves alarm rescheduling is acknowledged in the right order.
+*composes* with the mock instead of replacing storage behavior.
+
+For a multi-step side effect, gate the **last promise the acknowledgement claims
+is complete**, not merely an earlier step. Gating `alarms.clear` does not prove
+that `alarms.create` is awaited: this broken implementation still passes a
+clear-gated test while replying before the new alarm exists.
+
+```js
+async function setupAlarm() {
+  await chrome.alarms.clear('reminder');
+  chrome.alarms.create('reminder', schedule); // BUG — floating promise
+}
+```
+
+Gate `create` itself and assert both the response and the externally visible
+effect remain pending until release:
+
+```js
+let releaseCreate;
+const createGate = new Promise((r) => { releaseCreate = r; });
+chrome.alarms.create.mockImplementation(() => createGate);
+
+listener({ action: 'updateSettings' }, {}, sendResponse);
+for (let i = 0; i < 50; i++) await Promise.resolve();
+expect(sendResponse).not.toHaveBeenCalled();
+
+releaseCreate();
+for (let i = 0; i < 50; i++) await Promise.resolve();
+expect(sendResponse).toHaveBeenCalledWith({ success: true });
+```
+
+Apply the same rule to notification creation, storage writes, and any helper
+whose name implies that a sequence has finished: the helper must await every
+nested promise before its caller can truthfully acknowledge success.
 
 **Fake timers are dropped the moment you go real.** `jest.useRealTimers()`
 mid-test discards `setSystemTime`, so any `new Date()` afterward sees wall-clock
@@ -261,6 +293,7 @@ MV3 extension health:
 - [ ] popup binds listeners before loading state; state load degrades to defaults
 - [ ] chrome mock: reset reinstalls default implementations; async responses honored
 - [ ] at least one test gates a write to prove the handler awaits it
+- [ ] multi-step effects are tested by gating the terminal promise, not only an earlier step
 - [ ] fake timers never swapped for real timers mid-test
 - [ ] PR-comment workflow step has issues: write AND pull-requests: write
 ```
