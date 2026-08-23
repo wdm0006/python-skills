@@ -59,7 +59,7 @@
     },
     {
       "name": "normalizing-text-for-measurement",
-      "description": "Strip, parse, and segment a document before something else measures it - close tokens that emit no separator and fuse two blocks into one word, character-based metrics that bill markup syntax as content while word-based metrics stay clean, sibling consumers that skip the normalizer, parser presets whose rule set reclassifies a construct, sections keyed by a non-unique heading that collapse and double-count into an ancestor, deliberate lossiness mistaken for a bug, and regression tests that assert markdown-equals-plain-equivalent instead of a float from an unpinned library",
+      "description": "Strip, parse, and segment a document before something else measures it - close tokens that emit no separator and fuse two blocks into one word, character-based metrics inflated by leftover syntax while word-based metrics break on boundaries the strip never inserted, sibling consumers that skip the normalizer, parser presets whose rule set reclassifies a construct, sections keyed by a non-unique heading that collapse and double-count into an ancestor, deliberate lossiness mistaken for a bug, and regression tests that assert markdown-equals-plain-equivalent instead of a float from an unpinned library",
       "source": "./",
       "strict": false,
       "skills": [

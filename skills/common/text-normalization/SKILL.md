@@ -1,6 +1,6 @@
 ---
 name: normalizing-text-for-measurement
-description: Strip, parse, and segment a document before something else measures it — normalizers that fuse two blocks into one word because a close-token emits no separator, character-based metrics (reading time, token budgets, size limits) that bill markup syntax as content while word-based metrics stay clean, sibling consumers that skip the normalizer entirely, parser presets whose rule set silently reclassifies a construct, sections grouped by a non-unique heading key that collapse and double-count into an ancestor, and deliberate lossiness that the next reader mistakes for a bug. Use when writing or reviewing a markdown/HTML stripper, a plain-text extractor, a section or paragraph splitter, a reading-time/word-count/readability/token-count function, a dedup key or checksum built from prose, or a search-index preprocessing step.
+description: Strip, parse, and segment a document before something else measures it — normalizers that fuse two blocks into one word because a close-token emits no separator, the two metric classes failing on different residue — character-based ones (reading time, token budgets, size limits) inflated by leftover syntax, word-based ones (word count, readability) corrupted by boundaries the strip never inserted — sibling consumers that skip the normalizer entirely, parser presets whose rule set silently reclassifies a construct, sections grouped by a non-unique heading key that collapse and double-count into an ancestor, and deliberate lossiness that the next reader mistakes for a bug. Use when writing or reviewing a markdown/HTML stripper, a plain-text extractor, a section or paragraph splitter, a reading-time/word-count/readability/token-count function, a dedup key or checksum built from prose, or a search-index preprocessing step.
 ---
 
 # Normalizing Text for Measurement
@@ -46,28 +46,32 @@ a separator.** Enumerate the close-token types your parser emits (`heading_close
 one explicitly. A stripper that handles two of six is not "mostly right"; it is
 wrong on every document containing the other four.
 
-## Character-based metrics bill markup as content; word-based metrics don't
+## Both metric classes need normalized text — they break on different residue
 
-This asymmetry decides which of your metrics need auditing.
+Every metric consumes normalized text. Classifying a metric does not tell you
+whether it needs the normalizer; it tells you which *failure* to hunt for first.
 
-- **Word- and syllable-based** metrics (word count, readability grade levels,
-  syllable ratios) tokenize on whitespace and punctuation, so stray `|` and `---`
-  delimiters mostly disappear on their own. Table pipes leave readability scores
-  essentially unchanged.
 - **Character-based** metrics (reading time computed as `chars × ms_per_char`,
   byte-size limits, character quotas, rough token estimates) count every
-  character of syntax as something a human reads.
+  character of syntax as something a human reads. They are ruined by **leftover
+  syntax characters**: a link's target URL, an image's path, fence delimiters,
+  table pipes. On link- and image-heavy prose a character-based reading time can
+  run *roughly double* the true figure; a single small table adds a noticeable
+  double-digit percentage. The overshoot grows with markup density, so it is
+  worst on exactly the documents (docs pages, READMEs, changelogs) the estimate
+  matters most for.
+- **Word- and syllable-based** metrics (word count, readability grade levels,
+  syllable ratios) tokenize on whitespace and punctuation, so leftover
+  delimiters largely wash out — table pipes leave readability scores essentially
+  unchanged. What ruins them is a **lost block boundary**: the fused heading in
+  the previous section corrupts the word and syllable stream itself, and no
+  amount of downstream tokenizing recovers it.
 
-So a link's target URL, an image's path, fence delimiters, and table pipes are
-all billed. On link- and image-heavy prose a character-based reading time can run
-*roughly double* the true figure; a single small table adds a noticeable
-double-digit percentage. The overshoot grows with markup density, which means it
-is worst on exactly the documents (docs pages, READMEs, changelogs) the estimate
-matters most for.
-
-Audit rule: for each metric, ask whether it is character-based. If it is, it
-**must** consume normalized text, and its tests must compare against a plain-text
-equivalent rather than assert a shape.
+Audit rule: for every metric, confirm it consumes normalized text. Then check
+the failure its class is blind to — character-based ones for syntax that
+survived the strip, word-based ones for boundaries the strip failed to insert.
+Both are verified the same way, by comparing against a plain-text equivalent
+rather than asserting a shape.
 
 ## Enumerate every consumer of the normalizer
 
@@ -203,8 +207,9 @@ broken code and reads as coverage it is not.
 
 - [ ] Every block-level close token the parser emits has an explicit separator
       branch; the list was enumerated from the parser, not from memory
-- [ ] Each metric classified as character-based or word-based; every
-      character-based one consumes normalized text
+- [ ] Every metric consumes normalized text; character-based ones additionally
+      audited for leftover syntax characters, word-based ones for fused block
+      boundaries
 - [ ] Every call site of the measurer goes through the normalizer — including
       segmented (`section`/`paragraph`) paths, not just the full-document path
 - [ ] Number of production consumers of the normalizer is known, and a change to
