@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.21.0",
+    "version": "2.22.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction"]
   },
   "plugins": [
     {
@@ -41,6 +41,7 @@
         "./skills/common/reproducing-ci-locally",
         "./skills/common/cross-surface-changes",
         "./skills/common/derived-metrics",
+        "./skills/common/text-normalization",
         "./skills/common/verifying-external-behavior",
         "./skills/common/app-config",
         "./skills/common/concurrent-branches",
@@ -54,6 +55,15 @@
       "strict": false,
       "skills": [
         "./skills/common/derived-metrics"
+      ]
+    },
+    {
+      "name": "normalizing-text-for-measurement",
+      "description": "Strip, parse, and segment a document before something else measures it - close tokens that emit no separator and fuse two blocks into one word, character-based metrics inflated by leftover syntax while word-based metrics break on boundaries the strip never inserted, sibling consumers that skip the normalizer, parser presets whose rule set reclassifies a construct, sections keyed by a non-unique heading that collapse and double-count into an ancestor, deliberate lossiness mistaken for a bug, and regression tests that assert markdown-equals-plain-equivalent instead of a float from an unpinned library",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/text-normalization"
       ]
     },
     {
