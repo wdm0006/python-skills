@@ -5,9 +5,9 @@ Runs Bandit (static analysis), pip-audit (dependency CVEs), Semgrep (pattern-bas
 SAST), and detect-secrets (hardcoded credentials), aggregates the findings, and
 exits non-zero when any blocking issue is found so it can gate CI.
 
-A scanner that could not run at all is a gate failure too: exit 1 on blocking
-findings, exit 2 when a requested scanner did not run, and 0 only when every
-requested scanner ran clean. Pass --allow-scanner-failure to tolerate scanners
+A scanner that could not run at all — or whose output could not be parsed — is a
+gate failure too: exit 1 on blocking findings, exit 2 when a requested scanner
+produced no usable result, and 0 only when every requested scanner ran clean. Pass --allow-scanner-failure to tolerate scanners
 that could not run.
 
 Usage:
@@ -28,6 +28,10 @@ SCAN_TIMEOUT = 300  # seconds
 
 # Cap per-tool findings printed to the console; the full set still goes to --output.
 MAX_FINDINGS_SHOWN = 10
+
+# Raised while reading a scanner's stdout that is not JSON, or is JSON in a
+# structure this script cannot walk.
+PARSE_ERRORS = (json.JSONDecodeError, AttributeError, TypeError)
 
 
 @dataclass
@@ -63,6 +67,17 @@ def _run(cmd: list[str], tool: str, install_hint: str, ok_returncodes=(0, 1)):
     return result.stdout, None
 
 
+def _unparseable(tool: str, reason: str) -> ScanResult:
+    """Record a scanner that ran but emitted output this script cannot consume.
+
+    The reason is the exception's own short message; the scanner's payload is
+    never embedded, so a truncated or diagnostic report stays readable.
+    """
+    return ScanResult(
+        tool, False, error=f"{tool} produced output that could not be parsed: {reason}"
+    )
+
+
 def run_bandit(project_path: Path) -> ScanResult:
     """Run Bandit static security analysis. Blocks on HIGH/CRITICAL findings."""
     target = project_path / "src"
@@ -77,11 +92,14 @@ def run_bandit(project_path: Path) -> ScanResult:
     if err:
         return err
 
-    data = json.loads(stdout) if stdout else {"results": []}
-    findings = data.get("results", [])
-    blocking = sum(
-        1 for f in findings if f.get("issue_severity", "").upper() in ("HIGH", "CRITICAL")
-    )
+    try:
+        data = json.loads(stdout) if stdout else {"results": []}
+        findings = data.get("results", [])
+        blocking = sum(
+            1 for f in findings if f.get("issue_severity", "").upper() in ("HIGH", "CRITICAL")
+        )
+    except PARSE_ERRORS as e:
+        return _unparseable("bandit", str(e))
     return ScanResult("bandit", True, findings, blocking)
 
 
@@ -95,10 +113,13 @@ def run_pip_audit(project_path: Path) -> ScanResult:
     if err:
         return err
 
-    data = json.loads(stdout) if stdout else []
-    # pip-audit returns either a bare list or {"dependencies": [...]} across versions.
-    deps = data.get("dependencies", []) if isinstance(data, dict) else data
-    findings = [d for d in deps if d.get("vulns")]
+    try:
+        data = json.loads(stdout) if stdout else []
+        # pip-audit returns either a bare list or {"dependencies": [...]} across versions.
+        deps = data.get("dependencies", []) if isinstance(data, dict) else data
+        findings = [d for d in deps if d.get("vulns")]
+    except PARSE_ERRORS as e:
+        return _unparseable("pip-audit", str(e))
     return ScanResult("pip-audit", True, findings, blocking=len(findings))
 
 
@@ -112,11 +133,14 @@ def run_semgrep(project_path: Path) -> ScanResult:
     if err:
         return err
 
-    data = json.loads(stdout) if stdout else {"results": []}
-    findings = data.get("results", [])
-    blocking = sum(
-        1 for f in findings if f.get("extra", {}).get("severity", "").upper() == "ERROR"
-    )
+    try:
+        data = json.loads(stdout) if stdout else {"results": []}
+        findings = data.get("results", [])
+        blocking = sum(
+            1 for f in findings if f.get("extra", {}).get("severity", "").upper() == "ERROR"
+        )
+    except PARSE_ERRORS as e:
+        return _unparseable("semgrep", str(e))
     return ScanResult("semgrep", True, findings, blocking)
 
 
@@ -130,12 +154,15 @@ def check_secrets(project_path: Path) -> ScanResult:
     if err:
         return err
 
-    data = json.loads(stdout) if stdout else {"results": {}}
-    findings = [
-        {"file": file_path, "type": secret.get("type"), "line": secret.get("line_number")}
-        for file_path, secrets in data.get("results", {}).items()
-        for secret in secrets
-    ]
+    try:
+        data = json.loads(stdout) if stdout else {"results": {}}
+        findings = [
+            {"file": file_path, "type": secret.get("type"), "line": secret.get("line_number")}
+            for file_path, secrets in data.get("results", {}).items()
+            for secret in secrets
+        ]
+    except PARSE_ERRORS as e:
+        return _unparseable("detect-secrets", str(e))
     return ScanResult("detect-secrets", True, findings, blocking=len(findings))
 
 

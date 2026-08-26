@@ -53,6 +53,119 @@ class RunFailureTests(unittest.TestCase):
         self.assertIn("timed out", err.error)
 
 
+class ParseFailureTests(unittest.TestCase):
+    """A scanner whose output cannot be read is a failed scan, not a traceback."""
+
+    RUNNERS = (
+        ("run_bandit", "bandit"),
+        ("run_pip_audit", "pip-audit"),
+        ("run_semgrep", "semgrep"),
+        ("check_secrets", "detect-secrets"),
+    )
+
+    @staticmethod
+    @contextlib.contextmanager
+    def stdout(text):
+        with mock.patch.object(SECURITY_SCAN, "_run", lambda *a, **k: (text, None)):
+            yield
+
+    def test_malformed_json_is_an_unsuccessful_result(self):
+        for attr, tool in self.RUNNERS:
+            with self.subTest(runner=attr), self.stdout("not-json"):
+                scan = getattr(SECURITY_SCAN, attr)(Path("."))
+
+                self.assertFalse(scan.success)
+                self.assertEqual(scan.tool, tool)
+                self.assertEqual(scan.findings, [])
+                self.assertEqual(scan.blocking, 0)
+                self.assertIn(tool, scan.error)
+                self.assertIn("could not be parsed", scan.error)
+
+    def test_unusable_json_structure_is_an_unsuccessful_result(self):
+        # Well-formed JSON of the wrong shape, e.g. a diagnostic array.
+        for attr, tool in self.RUNNERS:
+            with self.subTest(runner=attr), self.stdout('["diagnostic", 1]'):
+                scan = getattr(SECURITY_SCAN, attr)(Path("."))
+
+                self.assertFalse(scan.success)
+                self.assertEqual(scan.tool, tool)
+                self.assertEqual(scan.blocking, 0)
+                self.assertIn("could not be parsed", scan.error)
+
+    def test_error_does_not_embed_the_scanner_payload(self):
+        payload = "x" * 10_000
+        for attr, _tool in self.RUNNERS:
+            with self.subTest(runner=attr), self.stdout(payload):
+                scan = getattr(SECURITY_SCAN, attr)(Path("."))
+
+                self.assertFalse(scan.success)
+                self.assertNotIn(payload, scan.error)
+                self.assertLess(len(scan.error), 200)
+
+    def test_valid_output_still_reports_its_findings(self):
+        cases = {
+            "run_bandit": (
+                json.dumps(
+                    {
+                        "results": [
+                            {"issue_text": "eval", "issue_severity": "HIGH"},
+                            {"issue_text": "assert", "issue_severity": "LOW"},
+                        ]
+                    }
+                ),
+                2,
+                1,
+            ),
+            "run_pip_audit": (
+                json.dumps(
+                    {
+                        "dependencies": [
+                            {"name": "requests", "version": "1.0", "vulns": [{"id": "PYSEC-1"}]},
+                            {"name": "attrs", "version": "23.1", "vulns": []},
+                        ]
+                    }
+                ),
+                1,
+                1,
+            ),
+            "run_semgrep": (
+                json.dumps(
+                    {
+                        "results": [
+                            {"check_id": "a", "extra": {"severity": "ERROR"}},
+                            {"check_id": "b", "extra": {"severity": "WARNING"}},
+                        ]
+                    }
+                ),
+                2,
+                1,
+            ),
+            "check_secrets": (
+                json.dumps(
+                    {"results": {"a.py": [{"type": "AWS Key", "line_number": 3}]}}
+                ),
+                1,
+                1,
+            ),
+        }
+        for attr, (payload, findings, blocking) in cases.items():
+            with self.subTest(runner=attr), self.stdout(payload):
+                scan = getattr(SECURITY_SCAN, attr)(Path("."))
+
+                self.assertTrue(scan.success, scan.error)
+                self.assertEqual(len(scan.findings), findings)
+                self.assertEqual(scan.blocking, blocking)
+
+    def test_empty_output_is_still_a_clean_scan(self):
+        for attr, _tool in self.RUNNERS:
+            with self.subTest(runner=attr), self.stdout(""):
+                scan = getattr(SECURITY_SCAN, attr)(Path("."))
+
+                self.assertTrue(scan.success, scan.error)
+                self.assertEqual(scan.findings, [])
+                self.assertEqual(scan.blocking, 0)
+
+
 class ReportTests(unittest.TestCase):
     """The console summary must not read as a clean audit when nothing ran."""
 
@@ -170,6 +283,38 @@ class ExitCodeTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertNotIn("did not run", output)
+
+    def run_main_over_scanner_output(self, stdout, *extra_args):
+        """Drive main() through the real runners with only the subprocess mocked."""
+        argv = ["security_scan.py", str(self.project), *extra_args]
+        out = io.StringIO()
+        original_argv = sys.argv
+        sys.argv = argv
+        try:
+            with (
+                mock.patch.object(SECURITY_SCAN, "_run", lambda *a, **k: (stdout, None)),
+                contextlib.redirect_stdout(out),
+                self.assertRaises(SystemExit) as raised,
+            ):
+                SECURITY_SCAN.main()
+        finally:
+            sys.argv = original_argv
+        return raised.exception.code, out.getvalue()
+
+    def test_unparseable_output_reaches_the_report_and_exits_two(self):
+        code, output = self.run_main_over_scanner_output("not-json")
+
+        self.assertEqual(code, 2)
+        self.assertIn("Total findings: 0 (0 blocking)", output)
+        self.assertIn(
+            "Scanners that did not run: 4 (bandit, pip-audit, semgrep, detect-secrets)", output
+        )
+
+    def test_allow_scanner_failure_tolerates_unparseable_output(self):
+        code, output = self.run_main_over_scanner_output("not-json", "--allow-scanner-failure")
+
+        self.assertEqual(code, 0)
+        self.assertIn("did not run", output)
 
     def test_json_report_records_the_scanners_that_did_not_run(self):
         results = self.clean()
