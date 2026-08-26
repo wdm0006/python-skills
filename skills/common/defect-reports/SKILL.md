@@ -85,15 +85,17 @@ maintainer has to re-close it.
 
 The same discipline applies to numbers you are *quoting*. Figures in an older
 issue may not reproduce, because a dependency the value depends on is unpinned
-and the installed version has changed. Re-measure before restating, and publish
-the measurement with the version, the command, and the date attached — an undated
-number cannot be re-checked by the person reading it.
+and the installed version has changed. Re-measure before restating, and record it
+with the command, output, and date — see
+[verifying-external-behavior](../verifying-external-behavior/SKILL.md) for why an
+undated measurement cannot be re-checked, and
+[shipping-across-surfaces](../cross-surface-changes/SKILL.md) for choosing between
+two records that cover the same fact.
 
-**When two records cover the same fact, cite the more rigorously derived one** —
-a measured benchmark row over a read-the-source claim — and quote the protocol
-that produced it (the split, the warmup, the seed, the version) next to the
-number. Two artifacts quoting the same metric under different protocols read as a
-regression to anyone comparing them.
+**Quote the protocol next to the figure**, not only in whatever artifact produced
+it: the split, the warmup, the seed, the version. Two documents quoting the same
+metric under different protocols read as a regression to anyone comparing them,
+and the reader has no way to tell that they are not comparable.
 
 ## Your earlier note is a claim, not evidence
 
@@ -129,7 +131,7 @@ echo 'exit 1' > .git/hooks/pre-commit
 
 # Narrow — fails exactly the operation whose failure you want to observe.
 cat > .git/hooks/commit-msg <<'EOF'
-grep -q 'mirror from source-b' "$1" && exit 1
+grep -q 'sync from source-b' "$1" && exit 1
 exit 0
 EOF
 ```
@@ -152,10 +154,11 @@ turn a named test red. A mutation that nothing catches is worth reporting as a
 coverage gap; a mutation nobody would ever write is noise that makes the rest of
 the report look padded.
 
-State which test each mutation trips, and which assertion inside it. "Deleting
-the null-skip fails the integration test on `"error" not in result`, not on the
-flag assertion" is a useful sentence — it tells the reader the guard is
-load-bearing at a different layer than they assumed.
+State which test each mutation trips, and which assertion inside it — a guard
+often turns out to be load-bearing at a different layer than the report assumed,
+and the assertion name is what reveals it. See
+[reporting-derived-metrics](../derived-metrics/SKILL.md) for a worked example of
+reading that signal.
 
 ## A red gate is not an aside
 
