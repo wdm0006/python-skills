@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.22.0",
+    "version": "2.23.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction", "defect-reports", "issue-writing", "reproduction", "dead-code", "retractions"]
   },
   "plugins": [
     {
@@ -45,7 +45,8 @@
         "./skills/common/verifying-external-behavior",
         "./skills/common/app-config",
         "./skills/common/concurrent-branches",
-        "./skills/common/destructive-operations"
+        "./skills/common/destructive-operations",
+        "./skills/common/defect-reports"
       ]
     },
     {
@@ -130,6 +131,15 @@
         "./skills/common/build-artifacts",
         "./skills/common/reproducing-ci-locally",
         "./skills/common/git-hygiene"
+      ]
+    },
+    {
+      "name": "writing-defect-reports",
+      "description": "Establish a finding before you publish it and correct it after - headlines that overstate what reproduces at the layer a user sees, reporting code no entry point reaches, guards that only match the fixture written beside them, caveats the project's own records already answered, prior notes re-verified against the tree rather than against the note, the narrowest injection point that reproduces a failure, probe output a harness swallows, red gates described as pre-existing, and withdrawing a published claim in the thread where it was published",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/defect-reports"
       ]
     },
     {
