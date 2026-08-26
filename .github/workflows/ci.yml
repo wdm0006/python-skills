@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      # The helper scripts need 3.11+ (tomllib) and 3.10+ (PEP 604 unions).
+      - name: Run the test suite with pytest
+        run: uv run --no-project --with 'pytest>=9' python -m pytest tests
+
+      # The repo's documented command, and the check that the suite still runs
+      # under plain stdlib unittest with nothing installed.
+      - name: Run the test suite with unittest
+        run: uv run --no-project python -m unittest discover -s tests

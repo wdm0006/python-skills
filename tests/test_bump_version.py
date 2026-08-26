@@ -55,6 +55,39 @@ version = "8.8.8"
 """
 
 
+class VersionMathTests(unittest.TestCase):
+    """parse_version and bump_version are the pure core of the script."""
+
+    def test_parse_version_splits_a_three_part_version(self):
+        self.assertEqual(BUMP_VERSION.parse_version("1.2.3"), (1, 2, 3))
+        self.assertEqual(BUMP_VERSION.parse_version("10.0.07"), (10, 0, 7))
+
+    def test_parse_version_rejects_anything_else(self):
+        for version in ("1.2", "1.2.3.4", "1.2.x", "v1.2.3", "1.2.-3", "1.2.3 ", "", "1.2.²"):
+            with self.subTest(version=version), self.assertRaises(ValueError):
+                BUMP_VERSION.parse_version(version)
+
+    def test_bump_types_move_the_expected_component(self):
+        cases = [
+            ("1.2.3", "major", "2.0.0"),
+            ("1.2.3", "minor", "1.3.0"),
+            ("1.2.3", "patch", "1.2.4"),
+            ("0.9.9", "minor", "0.10.0"),
+            ("1.9.0", "major", "2.0.0"),
+        ]
+        for current, spec, expected in cases:
+            with self.subTest(current=current, spec=spec):
+                self.assertEqual(BUMP_VERSION.bump_version(current, spec), expected)
+
+    def test_explicit_version_is_used_verbatim(self):
+        self.assertEqual(BUMP_VERSION.bump_version("1.2.3", "1.5.0"), "1.5.0")
+        self.assertEqual(BUMP_VERSION.bump_version("1.2.3", "0.1.0"), "0.1.0")
+
+    def test_explicit_version_must_be_well_formed(self):
+        with self.assertRaises(ValueError):
+            BUMP_VERSION.bump_version("1.2.3", "1.5")
+
+
 class ProjectVersionTests(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -229,6 +262,54 @@ class ChangelogReportingTests(unittest.TestCase):
         self.assertIn("Warning", output)
         self.assertIn("## [Unreleased]", output)
         self.assertEqual(self.changelog.read_bytes(), before)
+
+
+class ExplicitVersionCommandTests(unittest.TestCase):
+    """`bump_version.py X.Y.Z` must set that version, not only major/minor/patch."""
+
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        # main() resolves --project, so match that here (/var -> /private/var).
+        self.project = Path(self.temp_dir.name).resolve()
+        self.addCleanup(self.temp_dir.cleanup)
+        self.pyproject = self.project / "pyproject.toml"
+        self.pyproject.write_text(PYPROJECT)
+
+    def run_main(self, *args):
+        argv = ["bump_version.py", *args, "--project", str(self.project)]
+        out = io.StringIO()
+        original_argv = sys.argv
+        sys.argv = argv
+        try:
+            with contextlib.redirect_stdout(out):
+                BUMP_VERSION.main()
+        finally:
+            sys.argv = original_argv
+        return out.getvalue()
+
+    def test_positional_version_sets_that_exact_version(self):
+        output = self.run_main("1.5.0")
+
+        self.assertIn("Version: 1.2.3 -> 1.5.0", output)
+        self.assertIn('version = "1.5.0"', self.pyproject.read_text())
+        self.assertEqual(BUMP_VERSION.get_current_version(self.project), "1.5.0")
+
+    def test_positional_version_flag_form_agrees(self):
+        self.run_main("--version", "1.5.0")
+
+        self.assertEqual(BUMP_VERSION.get_current_version(self.project), "1.5.0")
+
+    def test_positional_bump_type_still_works(self):
+        self.run_main("minor")
+
+        self.assertEqual(BUMP_VERSION.get_current_version(self.project), "1.3.0")
+
+    def test_lower_positional_version_is_refused_without_allow_downgrade(self):
+        with self.assertRaises(SystemExit) as raised:
+            self.run_main("1.0.0")
+
+        self.assertEqual(raised.exception.code, 1)
+        self.assertEqual(BUMP_VERSION.get_current_version(self.project), "1.2.3")
 
 
 if __name__ == "__main__":
