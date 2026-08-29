@@ -262,21 +262,12 @@ to a temp file when you need to see inside a run.
 ## PR-comment CI steps need two permissions
 
 A workflow step that comments on a pull request via the issues API needs **both**
-`issues: write` and `pull-requests: write`; with only the first it fails 403 after
-every build/lint/test step has passed. Confirm it against the 403's
-`x-accepted-github-permissions` header rather than guessing.
-
-```yaml
-permissions:
-  contents: read
-  issues: write
-  pull-requests: write
-```
-
-Watch for the masking: such a step is often gated
-`if: github.event.action == 'opened'`, so pushing another commit re-runs the
+`issues: write` and `pull-requests: write`, and such a step is usually gated
+`if: github.event.action == 'opened'` — so pushing another commit re-runs the
 workflow as `synchronize`, skips the step, and turns the job green without
-fixing anything.
+fixing anything. See
+**[permissioning-ci-workflows](../../common/ci-permissions/SKILL.md)** for the
+scope rules and how to re-verify an event-conditioned step.
 
 ## Checklist
 
