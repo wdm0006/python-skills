@@ -1,6 +1,6 @@
 ---
 name: running-resumable-sync-jobs
-description: Design and review long-running batch or sync jobs that process many items against a remote API and persist checkpoint state — exit codes that report partial failure, checkpoints that are safe to resume, per-item tolerance vs. fatal abort, telling "zero" apart from "couldn't fetch", bounded retries, honest dry-runs, and compensating reserved resources. Use when writing or reviewing a mirror/sync command, a nightly cron job, an importer, a paginated fetcher, or a background worker that consumes quota.
+description: Design and review long-running batch or sync jobs that process many items against a remote API and persist checkpoint state — exit codes that report partial failure, checkpoints that are safe to resume, per-item tolerance vs. fatal abort, telling "zero" apart from "couldn't fetch", bounded retries, honest dry-runs, timezone-safe incremental cursors, and compensating reserved resources. Use when writing or reviewing a mirror/sync command, a nightly cron job, an importer, a paginated fetcher, or a background worker that consumes quota.
 ---
 
 # Running Resumable Sync Jobs
@@ -238,6 +238,49 @@ The general rule: an incremental cursor must be exclusive only at the exact
 granularity it is stored at. If your merge step is keyed and idempotent — and it
 should be — re-processing the boundary unit costs nothing and closes the hole.
 
+Granularity is only half of it. The other half is **which zone each side of the
+comparison is expressed in** — and getting that wrong produces a bug whose
+direction depends on where the job runs.
+
+The setup is ordinary: the cursor is stamped with a wall-clock `now()` in the
+machine's local zone, while the remote keys its data by `YYYY-MM-DD` in UTC. The
+obvious fix — truncate the cursor "to a day" — is a silent no-op, because it
+truncates in whatever zone the cursor happens to carry:
+
+```python
+# Bad — midnight *local*. West of UTC that lands after the UTC-parsed boundary
+# day, so the boundary day is still skipped — the exact hole you set out to close.
+since_day = since.replace(hour=0, minute=0, second=0, microsecond=0)
+day = datetime.strptime(row["date"], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+if day < since_day:
+    continue
+
+# Good — convert the cursor into the zone the remote's days are defined in,
+# *then* truncate. Both sides now denote the same instant.
+since_day = since.astimezone(timezone.utc).replace(
+    hour=0, minute=0, second=0, microsecond=0
+)
+```
+
+For a cursor of `2024-01-15T14:00`, the bad version skips the boundary day at
+UTC-5 but not at UTC or UTC+1. Comparing calendar *dates* instead
+(`day.date() < since.date()`) has the same defect mirrored: east of UTC the local
+date runs ahead of the UTC date, so a cursor of `2024-01-16T00:30+01:00` skips
+UTC day `01-15` — which was the incomplete one.
+
+So the sign of the offset decides which failure you get: west of UTC you
+over-fetch (free, if the merge is idempotent), east of UTC you silently
+under-collect. Both look identical from a UTC runner.
+
+Two rules:
+
+- **Normalize both sides to one explicitly named zone before comparing** — not to
+  "whichever zone each value already carries." `astimezone()` on a *naive* cursor
+  assumes local, which is right only if local `now()` is what stamped it.
+- **Better, remove the zone from the comparison entirely**: store the cursor in
+  the units you compare at — the remote's own `YYYY-MM-DD` string, or an
+  explicitly-UTC instant — so no later reader has to guess what it meant.
+
 ## Dry-run must perform every in-memory mutation the real run does
 
 Gate persistence and external side effects. Never gate the in-memory state
@@ -320,6 +363,11 @@ Three details that make refunds safe:
   successful run emits *no* incomplete-data warning: the two plausible wrong
   implementations are dropping the tracking and warning unconditionally, and
   neither test catches both.
+- **Pin the timezone, and test both sides of UTC.** A cursor comparison that
+  mixes zones fails in opposite directions east and west of UTC, and not at all
+  on the UTC runner that CI uses. Set `TZ` (or construct the cursor with an
+  explicit `tzinfo`) and assert the boundary unit is re-included at a negative
+  offset, a positive one, and UTC. One zone proves nothing.
 - **Test the resume, not just the run.** Fail item K, then run again against the
   same state and assert the remaining items are attempted and the completed ones
   are not re-applied. A single-run test cannot see either checkpoint bug.
@@ -338,6 +386,8 @@ Three details that make refunds safe:
 - [ ] Summary-vs-detail contradiction raises instead of returning empty
 - [ ] Every retry loop is bounded, counted per unit, and reset after a success
 - [ ] The "who waits" contract is documented and no caller double-sleeps
+- [ ] Cursor comparisons normalize both sides to one named zone, and are tested
+      east and west of UTC — not just on the UTC runner
 - [ ] Incremental cursor re-includes the boundary unit; merge is idempotent
 - [ ] Dry-run mutates in-memory state identically; only writes are gated
 - [ ] Reservations have a compensating, period-guarded, non-negative refund
