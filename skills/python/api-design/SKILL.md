@@ -1,6 +1,6 @@
 ---
 name: designing-python-apis
-description: Designs intuitive Python library APIs following principles of simplicity, consistency, and discoverability. Handles API evolution, deprecation, breaking changes, and error handling. Use when designing new library APIs, reviewing existing APIs for improvements, or managing API versioning and deprecations.
+description: Designs intuitive Python library APIs following principles of simplicity, consistency, and discoverability. Handles public re-exports, API evolution, deprecation, breaking changes, and error handling. Use when designing or reviewing a library API, exposing a symbol from a package __init__, or managing API versioning and deprecations.
 ---
 
 # Python API Design
@@ -182,6 +182,53 @@ that exit non-zero by design and write results to **stdout** — reporting a
 successful run as an empty `"Error: "`. Inspect stdout and the actual exit
 semantics before deciding it failed.
 
+## Test the public import path, not only the implementation module
+
+A package can expose two functions with the same name and only one can work:
+
+```python
+# mylib/__init__.py
+def initialize_parser() -> None:
+    pass                         # stale placeholder
+
+# mylib/parser.py
+def initialize_parser() -> None:
+    global _parser
+    _parser = build_parser()     # real implementation
+```
+
+Internal tests that import `mylib.parser.initialize_parser` all pass, while the
+documented `from mylib import initialize_parser` call does nothing. This is an
+API break even though neither definition is individually invalid.
+
+Re-export the canonical object instead of wrapping or copying it:
+
+```python
+# mylib/__init__.py
+from .parser import initialize_parser
+
+__all__ = ["initialize_parser"]
+```
+
+Then test through the path users are told to import. An identity assertion is a
+cheap drift guard, and one behavior assertion proves the public route performs
+the required initialization:
+
+```python
+import mylib
+from mylib import parser
+
+def test_public_initializer_is_canonical():
+    assert mylib.initialize_parser is parser.initialize_parser
+    mylib.initialize_parser()
+    assert parser.is_initialized()
+```
+
+Apply the behavior check to convenience exports, compatibility adapters, console
+entry-point targets, and documented import snippets. Use identity only when the
+public name is intended to be a direct alias. Testing only the leaf module proves
+the implementation; it says nothing about whether the public API reaches it.
+
 ## Deprecation
 
 Deprecate gracefully: warn now, document the removal version, and remove only in a
@@ -219,6 +266,10 @@ Parameters:
 - [ ] Minimal required parameters
 - [ ] Sensible defaults
 - [ ] Keyword-only after positional clarity
+
+Exports:
+- [ ] Direct package exports reference the canonical implementation, not a stale stub
+- [ ] Tests import through the documented public path and assert real behavior
 
 Errors:
 - [ ] Custom exceptions with context
