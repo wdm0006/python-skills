@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.23.0",
+    "version": "2.24.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction", "defect-reports", "issue-writing", "reproduction", "dead-code", "retractions"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction", "defect-reports", "issue-writing", "reproduction", "dead-code", "retractions", "github-actions", "workflow-permissions", "github-token", "fork-pull-requests"]
   },
   "plugins": [
     {
@@ -32,6 +32,7 @@
         "./skills/python/library-review",
         "./skills/common/git-hygiene",
         "./skills/common/github-actions",
+        "./skills/common/ci-permissions",
         "./skills/python/web-app-architecture",
         "./skills/python/mcp-servers",
         "./skills/python/llm-features",
@@ -74,6 +75,15 @@
       "strict": false,
       "skills": [
         "./skills/common/reproducing-ci-locally"
+      ]
+    },
+    {
+      "name": "permissioning-ci-workflows",
+      "description": "Give a CI job exactly the credentials it needs and know when it has none - explicit permissions blocks instead of the repo-wide default token scope, the 403 header that names the missing scope, one API call needing two scopes, fork pull requests running with a read-only token and no secrets, event-conditioned steps that skip on the re-run and go green, why pull_request_target is not the workaround, and preferring checks that need no credential",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/ci-permissions"
       ]
     },
     {
