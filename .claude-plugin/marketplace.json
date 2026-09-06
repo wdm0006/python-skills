@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.23.0",
+    "version": "2.24.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction", "defect-reports", "issue-writing", "reproduction", "dead-code", "retractions"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction", "defect-reports", "issue-writing", "reproduction", "dead-code", "retractions", "heavy-tailed", "median-vs-mean", "outliers", "effect-size", "benchmark-reporting"]
   },
   "plugins": [
     {
@@ -51,7 +51,7 @@
     },
     {
       "name": "reporting-derived-metrics",
-      "description": "Compute and report statistics, scores and flags from samples that may be too small to support them - undefined dispersion returned as 0.0 and tripping a minimum threshold, sentinel choice, threshold blocks gated on whether the value was measured, reports that narrate findings from absent data, nullability as a public API change, and broad excepts that disguise a metric bug as a normal result",
+      "description": "Compute and report statistics, scores and flags from samples that may be too small - or too heavy-tailed - to support them: undefined dispersion returned as 0.0 and tripping a minimum threshold, sentinel choice, threshold blocks gated on whether the value was measured, reports that narrate findings from absent data, nullability as a public API change, broad excepts that disguise a metric bug as a normal result, and cohort comparisons where one outlier makes the mean point the opposite way to the median",
       "source": "./",
       "strict": false,
       "skills": [
