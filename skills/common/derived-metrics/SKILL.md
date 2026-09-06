@@ -1,6 +1,6 @@
 ---
 name: reporting-derived-metrics
-description: Compute statistics, scores, and flags from samples that may be too small to support them — undefined dispersion returned as 0.0 and tripping a minimum threshold, sentinel choice (None vs 0 vs NaN), threshold blocks gated on "was this measured", reports that narrate findings from absent data, nullability as a public API change, `is None` vs truthiness, and broad excepts that turn a metric bug into a normal-shaped result. Use when writing or reviewing a scoring/analysis pipeline, a z-score or outlier check, a quality or anomaly flag, a metrics rollup, or any function that reduces a list of observations to one number a threshold reads.
+description: Compute statistics, scores, and flags from samples that may be too small to support them — undefined dispersion returned as 0.0 and tripping a minimum threshold, sentinel choice (None vs 0 vs NaN), threshold blocks gated on "was this measured", reports that narrate findings from absent data, nullability as a public API change, `is None` vs truthiness, broad excepts that turn a metric bug into a normal-shaped result, and heavy-tailed samples where the mean points the opposite way to the median. Use when writing or reviewing a scoring/analysis pipeline, a z-score or outlier check, a quality or anomaly flag, a metrics rollup, a benchmark or cohort comparison, or any function that reduces a list of observations to one number a threshold or a report reads.
 ---
 
 # Reporting Derived Metrics
@@ -98,6 +98,68 @@ The score was not acceptable. It was absent. Two rules:
   as "nothing wrong". When a metric could not be computed, say so explicitly
   ("requires at least two scored segments") rather than emitting nothing.
 
+## When the distribution defeats the summary
+
+Everything above is about a sample too small to support a statistic. This is the
+other axis: `n` is large, the statistic is well defined, and the *summary* still
+misleads — because one observation carries it.
+
+Reducing a heavy-tailed sample to a mean is how a comparison ends up pointing the
+wrong way. Two cohorts, ~100 items each, several per-item features — and several
+of the comparisons do not survive the swap from mean to median:
+
+| feature     | mean A / mean B | median A / median B | mean says      | median says   |
+| ----------- | --------------- | ------------------- | -------------- | ------------- |
+| perplexity  | 333.9 / 96.2    | 42.5 / 80.1         | 3.5x higher    | 1.9x *lower*  |
+| burstiness  | 837.2 / 24.6    | 99.4 / 58.3         | 34x higher     | 1.7x higher   |
+
+The first row reverses outright; the second keeps its direction but collapses
+from a decisive-looking 34x to a marginal 1.7x.
+
+One degenerate item — a single value ~600x the cohort median — is enough to carry
+the mean of a 100-item cohort past the other one. Write "A scores higher than B"
+from that mean and the sentence is backwards for almost every item in the sample.
+
+Four rules, plus two things that are expensive to learn the hard way:
+
+- **Report `n`, median, and mean together**, always. Not one of them.
+- **When the mean and the median disagree in direction, the disagreement *is* the
+  finding.** It says the feature is outlier-driven. Do not resolve it by picking
+  the summary that matches your hypothesis, and do not average it away — say the
+  cohorts do not separate robustly on that feature.
+- **A mean-based effect size is not a robustness claim.** Cohen's *d* is
+  `(mean₁ − mean₂) / pooled_sd`; it inherits the exact sensitivity that produced
+  the flip and reverses with it. If you need an effect size on a heavy-tailed
+  feature, use a rank-based one (Mann–Whitney *U* / rank-biserial correlation) or
+  a median difference with a bootstrap confidence interval.
+- **Look at `max` and the top few values before you report anything**, and state
+  whether you trimmed. "Mean excluding the top 1%" is a defensible figure;
+  a mean whose provenance is one unexamined outlier is not.
+
+```python
+# Bad — one line, one number, and it can be the opposite of the typical case.
+print(f"{feature}: A={statistics.mean(a):.2f} B={statistics.mean(b):.2f}")
+
+# Good — n, both summaries, and the tail that decides which one to trust.
+for label, xs in (("A", a), ("B", b)):
+    top = sorted(xs, reverse=True)[:3]
+    print(f"{feature} {label}: n={len(xs)} median={statistics.median(xs):.2f} "
+          f"mean={statistics.mean(xs):.2f} top3={top}")
+```
+
+**The summary is only over the rows that actually loaded.** A streaming read that
+aborts partway (a CSV field exceeding the parser's default field-size limit, a
+truncated download) leaves a plausible-looking partial result, and pre-converted
+copies of a large dataset frequently cover only a prefix of the groups while
+still advertising a row count. Assert the expected row count — and the expected
+number of distinct groups — before summarizing anything.
+
+**A separation computed from hand-authored inputs measures your thresholds
+against your own assumptions.** Feature dictionaries written to look "typical of
+A" and "typical of B", fed to the same threshold function that classifies them,
+produce a result that cannot fail. Accuracy claims need labeled real data; see
+**building-llm-backed-features** for evaluation-set design.
+
 ## Nullability is a public API change, not an implementation detail
 
 The moment a metric can be `None`, the field is `float | null` for everyone
@@ -193,6 +255,10 @@ and log the swallowed exception with a traceback rather than only folding its
 - [ ] Nullable metric landed across schema, serializer, renderer, rollup, docs
 - [ ] Availability checked with `is None`; `[]`/`0`/`0.0` treated as real results
 - [ ] Guards made redundant by a new gate deleted; type validated at the boundary
+- [ ] Every cross-sample comparison reports `n`, median and mean; a mean/median
+      disagreement is reported as the finding, not resolved silently
+- [ ] Effect sizes on heavy-tailed features are rank-based, and the row count the
+      summary covers was asserted before summarizing
 - [ ] Metric tests assert `"error" not in result`, not just the result's shape
 - [ ] Single- and zero-observation fixtures assert value, flag, and reason
 - [ ] Mutation-tested both ways: restore the `0.0` return, and drop the gate
