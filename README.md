@@ -99,6 +99,9 @@ Or install a language-agnostic bundle:
 # Guard deletes, history rewrites, and caller-supplied file paths
 /plugin install guarding-destructive-operations@dev-skills
 
+# Check a score-threshold-flag pipeline separates before trusting or tuning it
+/plugin install calibrating-thresholds-and-baselines@dev-skills
+
 # Establish a finding before you publish it, and correct it after
 /plugin install writing-defect-reports@dev-skills
 ```
