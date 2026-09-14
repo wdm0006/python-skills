@@ -158,7 +158,10 @@ number of distinct groups — before summarizing anything.
 against your own assumptions.** Feature dictionaries written to look "typical of
 A" and "typical of B", fed to the same threshold function that classifies them,
 produce a result that cannot fail. Accuracy claims need labeled real data; see
-**building-llm-backed-features** for evaluation-set design.
+**building-llm-backed-features** for evaluation-set design. Stored baseline
+constants have the same problem one layer down — see
+**calibrating-thresholds-and-baselines** for checking where a threshold's
+reference numbers came from and whether the flag it drives separates anything.
 
 ## Nullability is a public API change, not an implementation detail
 

@@ -6,9 +6,9 @@
   },
   "metadata": {
     "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.24.0",
+    "version": "2.25.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction", "defect-reports", "issue-writing", "reproduction", "dead-code", "retractions", "heavy-tailed", "median-vs-mean", "outliers", "effect-size", "benchmark-reporting"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction", "defect-reports", "issue-writing", "reproduction", "dead-code", "retractions", "heavy-tailed", "median-vs-mean", "outliers", "effect-size", "benchmark-reporting", "calibration", "baselines", "false-positive-rate", "anomaly-detection", "units", "fire-rates"]
   },
   "plugins": [
     {
@@ -46,7 +46,8 @@
         "./skills/common/app-config",
         "./skills/common/concurrent-branches",
         "./skills/common/destructive-operations",
-        "./skills/common/defect-reports"
+        "./skills/common/defect-reports",
+        "./skills/common/threshold-calibration"
       ]
     },
     {
@@ -131,6 +132,16 @@
         "./skills/common/build-artifacts",
         "./skills/common/reproducing-ci-locally",
         "./skills/common/git-hygiene"
+      ]
+    },
+    {
+      "name": "calibrating-thresholds-and-baselines",
+      "description": "Check that a score-threshold-flag pipeline separates anything before trusting or tuning it - reference constants that are hand-authored but formatted as measurements, a feature whose units do not match the constant it is compared against, per-class fire rates exposing a flag that fires on nearly every item of both classes, rate features confounded by item length, confidence scores where one feature family contributes once per sub-feature, threshold sweeps hardcoded to one comparison direction and one statistic, and separating decision-carrying features from display-only ones",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/threshold-calibration",
+        "./skills/common/derived-metrics"
       ]
     },
     {
