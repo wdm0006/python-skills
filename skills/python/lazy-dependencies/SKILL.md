@@ -37,8 +37,12 @@ class TextAnalyzer:
         return self._spell_checker
 ```
 
-`functools.cached_property` is the same thing with less code; use the explicit
-form when you also need to reset or pre-populate the slot (see below).
+`functools.cached_property` covers the common case with less code, but it is not
+equivalent: since 3.12 it has no lock around the first call (so concurrent first
+access can compute twice), and its reset/pre-populate idiom (`del obj.x`,
+`obj.x = val`) is easy to get wrong — deleting a never-computed attribute raises
+`AttributeError`. Use the explicit form when you need controlled locking or a
+guaranteed-safe reset path.
 
 Deferring is only safe when construction has no side effect the caller depends
 on ordering-wise — opening a file, binding a port, registering a signal handler.
