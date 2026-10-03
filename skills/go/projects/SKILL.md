@@ -222,8 +222,27 @@ req.Header.Set("User-Agent", "project/1.0 (+https://github.com/owner/project)")
 resp, err := client.Do(req)
 ```
 
+Three details that bite in practice:
+
+- **A UA is not cosmetic.** Some hosts answer the default `Go-http-client` agent
+  with a 403, so the failure looks like an auth or outage problem. Send a
+  descriptive one.
+- **Pin `Accept-Language` when a parser matches display text.** A prose regex
+  (`N items on …`) is only valid for the locale it was written against;
+  without the header, a localized response parses to zero matches with no error.
+  Set `req.Header.Set("Accept-Language", "en-US,en;q=0.9")`. Pinning narrows the
+  hazard, it does not remove it — prefer a machine-readable attribute
+  (`data-date`, a JSON endpoint) when the source offers one.
+- **Hold the client in a package-level `var`** (`var httpClient = &http.Client{...}`)
+  so tests can swap its transport for an `httptest` server and assert the headers
+  and timeout were actually set.
+
 Regex/markup-based scraping is inherently fragile — a timeout + UA is the
-minimum robustness; treat parse failures as errors, not silent empties.
+minimum robustness; treat parse failures as errors, not silent empties. If you
+add a "parsed zero results" guard, test it against a *captured real page*: a
+sanity check that looks for a total on one line (`([\d,]+) items`) never
+fires when the live markup wraps that total across indented lines, so it only
+ever triggers on hand-written fixtures.
 
 ## Checklist
 
@@ -239,5 +258,5 @@ Go project health:
 - [ ] dry-run applies planning-state transitions and suppresses only external writes
 - [ ] bounded text is truncated on UTF-8 rune boundaries through one shared helper
 - [ ] git/gh wrappers depend on an injectable Runner, not os/exec + stderr string-matching
-- [ ] outbound HTTP sets Timeout and User-Agent
+- [ ] outbound HTTP sets Timeout and User-Agent (and Accept-Language if parsing display text)
 ```
