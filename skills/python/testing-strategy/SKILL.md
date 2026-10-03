@@ -260,6 +260,43 @@ fixtures forever, while the live document renders those tokens across indented
 lines. Capture at least one fixture from the real source, commit it, and point the
 guard's test at that.
 
+## A Surviving Mutation Is Not Always a Test Gap
+
+Delete a branch, run the suite, stay green — the reflex is to write a test for it.
+First ask whether the branch changes behavior at all. An *equivalent mutant* is code
+whose removal is unobservable, and no test can (or should) pin it.
+
+```python
+def get_count(self, user, day):
+    inner = self.counts.get(user)
+    if inner is None:          # looks like a guard; is it?
+        return 0
+    return inner.get(day, 0)   # `self.counts.get(user, {}).get(day, 0)` is identical
+```
+
+Common shapes: an early return whose fall-through already yields the same value
+(indexing an empty or missing mapping on a *read* returns the default); a
+`len(x) < n or` short-circuit that a safer idiom (`str.endswith`) makes redundant;
+a defensive init that only matters for one construction path.
+
+- **Classify before writing.** Remove the line, and if the suite stays green, try to
+  construct an input where the results differ. Can't? It's inert — delete it or
+  leave it, but don't write a test named as if it guards it. A test titled
+  "missing user returns zero" that passes with the branch deleted claims coverage it
+  doesn't have.
+- **Some branches are live only via one path.** A lazily-initialised nested
+  container may panic when its init is removed — but only on a bare, hand-built
+  object. A fixture produced by the loader/factory is already normalised, so it
+  can never exercise the init. Build the fixture the way the failing path would.
+- **A short-circuit can be live for a reason a rewrite hides.** A raw slice
+  `name[-11:]` needs its length guard to avoid an index error; `endswith` returns
+  the same answer without one. Mutating just the guard (not the whole function)
+  shows which kind you have, and the boundary input (exactly the suffix, or one
+  character short) is the fixture that proves it.
+- **Say so in the PR.** "Branch X is behaviorally inert (mutation leaves all N tests
+  green; no input distinguishes it)" is a finding, not a failure. Report only
+  mutations that model a plausible regression *and* turn a named test red.
+
 ## Mutate in Both Directions: A Guard Can Also Fire Too Often
 
 A fix that adds a conditional — a warning on incomplete data, a validation check,
@@ -534,6 +571,7 @@ Testing:
 - [ ] Edge cases covered (empty, boundary, error)
 - [ ] No external service dependencies (mock them)
 - [ ] Each regression test verified red against the reverted fix
+- [ ] A surviving mutation was classified (inert code vs. real gap) before any test was written
 - [ ] New guards mutated both ways (never fires / always fires), each mutation
       attributed to one test; control test for the healthy case kept
 - [ ] Absence checked with `is None`, not truthiness (`[]`/`0`/`""` are real values)
