@@ -112,8 +112,8 @@ def update_version(
             body_start, body_end = project_table.span(1)
             body = content[body_start:body_end]
             new_body = re.sub(
-                r'(?m)^(\s*version\s*=\s*)"[^"]+"',
-                rf'\g<1>"{new_version}"',
+                r'(?m)^([ \t]*version[ \t]*=[ \t]*)(["\'])[^"\'\n]+\2(?=[ \t]*(?:#.*)?$)',
+                rf'\g<1>\g<2>{new_version}\g<2>',
                 body,
                 count=1,
             )
@@ -273,6 +273,14 @@ def main():
 
     if not updated:
         print("  No files updated")
+
+    pyproject = project_path / "pyproject.toml"
+    if new_version != current and str(pyproject) not in updated:
+        print(
+            f"Error: read version {current} from {pyproject} but could not rewrite it; "
+            "no release instructions printed."
+        )
+        sys.exit(1)
 
     if args.dry_run:
         print("\n[DRY RUN] No changes made")
