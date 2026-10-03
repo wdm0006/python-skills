@@ -251,6 +251,23 @@ is a parse failure, not an empty year. A positive summary with an empty detail
 set must raise; zero-or-absent summary with an empty detail set is a valid empty
 result.
 
+**Make sure the guard can fire on real markup.** A cross-check regex written
+against a hand-typed fixture is routinely inert in production: real HTML wraps
+and indents, so `1,759\n      contributions\n        in 2024` never matches a
+single-line `([\d,]+) contributions? in 2024`. A guard that never matches
+degrades to "no summary found", which the rule above treats as a *valid* empty
+result — the failure it exists to catch passes silently.
+
+- Match with `\s+` between words (or normalize whitespace first), never literal
+  spaces.
+- Measure it once: capture the real page, run the guard on it, and keep that
+  capture as a fixture.
+- Don't replace the synthetic fixtures that exercise the guard with real
+  captures until the guard is whitespace-tolerant — the synthetic ones may be
+  its only coverage.
+- Better still, key the parse on an authoritative attribute (a `data-date`,
+  an ID) rather than display text, so locale and wrapping can't matter.
+
 ## Bound every retry, and count per unit of work
 
 A `continue` on a "retry" signal, inside a pagination loop, with no counter,
@@ -452,6 +469,7 @@ Three details that make refunds safe:
 - [ ] Availability checked with `is None`; `[]` and `0` stay healthy values
 - [ ] A reader of the exported file alone can tell "unavailable" from "zero"
 - [ ] Summary-vs-detail contradiction raises instead of returning empty
+- [ ] That cross-check is whitespace-tolerant and verified against real captured markup
 - [ ] Every retry loop is bounded, counted per unit, and reset after a success
 - [ ] The "who waits" contract is documented and no caller double-sleeps
 - [ ] Cursor comparisons normalize both sides to one named zone, and are tested
