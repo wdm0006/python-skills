@@ -201,6 +201,25 @@ it's pre-existing, **prove it**: check out the base commit and run the same
 command there. An unverified "pre-existing / out of scope" is how a base branch
 becomes permanently red.
 
+Build the control without disturbing your branch: export the base commit to a
+scratch directory and run the one failing test there with the same interpreter.
+
+```bash
+T=$(mktemp -d) && git archive origin/main | tar -x -C "$T" && cd "$T"
+/path/to/venv/bin/python -m pytest tests/test_x.py::test_y
+```
+
+**Verify the control tested the base, not your branch.** If the venv holds an
+editable install of your working tree, an import hook can resolve the package to
+*your* code ahead of the current directory, and the "control" silently re-tests
+your branch. Print the module's location from inside the control
+(`python -c "import pkg; print(pkg.__file__)"`) and confirm it points into the
+scratch directory. Check this once per project; behavior differs by build backend.
+
+If the failure reproduces on the base, say so with that evidence. If the cause is
+an unpinned dependency, the red check will move with the date of the install, not
+with your diff — see "Pin what gates the build" above.
+
 Two traps in the log itself:
 
 - A step gated on an event (`if: github.event.action == 'opened'`) is skipped
