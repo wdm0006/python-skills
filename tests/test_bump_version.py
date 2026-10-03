@@ -312,5 +312,74 @@ class ExplicitVersionCommandTests(unittest.TestCase):
         self.assertEqual(BUMP_VERSION.get_current_version(self.project), "1.2.3")
 
 
+SIBLING_VERSIONS = """
+[tool.other]
+version = {q}9.9.9{q}
+"""
+
+
+class QuoteStyleTests(unittest.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.project = Path(self.temp_dir.name).resolve()
+        self.addCleanup(self.temp_dir.cleanup)
+        self.pyproject = self.project / "pyproject.toml"
+
+    def write(self, q, version_line=None):
+        version_line = version_line or f"version = {q}1.2.3{q}"
+        self.pyproject.write_text(
+            "[tool.before]\n"
+            f"version = {q}7.7.7{q}\n\n"
+            f"[project]\nname = \"demo\"\n{version_line}\n"
+            + SIBLING_VERSIONS.format(q=q)
+        )
+
+    def run_main(self, *args):
+        original_argv = sys.argv
+        sys.argv = ["bump_version.py", *args, "--project", str(self.project)]
+        out = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(out):
+                BUMP_VERSION.main()
+        except SystemExit as exit_:
+            return exit_.code, out.getvalue()
+        finally:
+            sys.argv = original_argv
+        return 0, out.getvalue()
+
+    def test_both_quote_styles_update_only_project_version(self):
+        for q in ('"', "'"):
+            with self.subTest(quote=q):
+                self.write(q)
+                updated = BUMP_VERSION.update_version(self.project, "1.2.4")
+
+                self.assertEqual(updated, [str(self.pyproject)])
+                text = self.pyproject.read_text()
+                self.assertIn(f"version = {q}1.2.4{q}", text)
+                self.assertIn(f"version = {q}7.7.7{q}", text)
+                self.assertIn(f"version = {q}9.9.9{q}", text)
+                self.assertEqual(BUMP_VERSION.get_current_version(self.project), "1.2.4")
+
+    def test_unrewritable_project_version_fails_without_release_instructions(self):
+        self.write('"', 'version = """1.2.3"""')
+        before = self.pyproject.read_text()
+
+        code, output = self.run_main("patch")
+
+        self.assertEqual(code, 1)
+        self.assertNotIn("Version bumped", output)
+        self.assertNotIn("git tag", output)
+        self.assertNotIn("git push", output)
+        self.assertEqual(self.pyproject.read_text(), before)
+
+    def test_same_version_is_not_reported_as_failure(self):
+        self.write("'")
+
+        code, output = self.run_main("1.2.3")
+
+        self.assertEqual(code, 0)
+        self.assertIn("Version bumped", output)
+
+
 if __name__ == "__main__":
     unittest.main()
