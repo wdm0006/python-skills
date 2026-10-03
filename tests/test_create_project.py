@@ -74,6 +74,31 @@ class CreateProjectTests(unittest.TestCase):
         for python_file in project.rglob("*.py"):
             py_compile.compile(python_file, doraise=True)
 
+    def test_generated_license_metadata_uses_spdx_expression(self):
+        project = CREATE_PROJECT.create_project("sample-lib")
+
+        with (project / "pyproject.toml").open("rb") as file:
+            metadata = tomllib.load(file)["project"]
+        self.assertEqual(metadata["license"], "MIT")
+        self.assertEqual(metadata["classifiers"], [
+            "Development Status :: 3 - Alpha",
+            "Intended Audience :: Developers",
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
+            "Programming Language :: Python :: 3.12",
+            "Programming Language :: Python :: 3.13",
+        ])
+
+    def test_generated_license_file_contains_mit_terms(self):
+        project = CREATE_PROJECT.create_project("sample-lib")
+
+        license_text = (project / "LICENSE").read_text()
+        self.assertTrue(license_text.startswith("MIT License\n"))
+        self.assertIn("Permission is hereby granted, free of charge", license_text)
+        self.assertIn("The above copyright notice and this permission notice", license_text)
+        self.assertIn('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY', license_text)
+
     def test_generated_python_files_end_with_single_newline(self):
         project = CREATE_PROJECT.create_project("sample-lib")
 

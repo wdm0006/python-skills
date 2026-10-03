@@ -66,14 +66,13 @@ def create_project(
         description = {_toml_string(description)}
         readme = "README.md"
         requires-python = ">=3.10"
-        license = {{text = "MIT"}}
+        license = "MIT"
         authors = [
             {{name = {_toml_string(author)}, email = {_toml_string(email)}}}
         ]
         classifiers = [
             "Development Status :: 3 - Alpha",
             "Intended Audience :: Developers",
-            "License :: OSI Approved :: MIT License",
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
