@@ -43,7 +43,7 @@ version = "0.1.0"
 description = "What it does"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = "MIT"  # SPDX expression
 dependencies = []
 
 [project.optional-dependencies]
@@ -129,8 +129,10 @@ Project Setup:
 
 Create a new project structure:
 ```bash
-python scripts/create_project.py my-library --author "Name"
+python scripts/create_project.py my-library --author "Name" --license MIT
 ```
+
+`--license` takes an SPDX identifier (default `MIT`); a LICENSE file is generated for `MIT` and `BSD-3-Clause`.
 
 ## Learn More
 

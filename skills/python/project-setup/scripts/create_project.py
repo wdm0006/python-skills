@@ -30,11 +30,70 @@ def _toml_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
+MIT_LICENSE = """\
+MIT License
+
+Copyright (c) {year}
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+BSD_3_CLAUSE_LICENSE = """\
+BSD 3-Clause License
+
+Copyright (c) {year}
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+
+LICENSE_TEMPLATES = {"MIT": MIT_LICENSE, "BSD-3-Clause": BSD_3_CLAUSE_LICENSE}
+
+
 def create_project(
     name: str,
     author: str = "Your Name",
     email: str = "you@example.com",
     description: str = "A Python library",
+    license_id: str = "MIT",
 ) -> Path:
     """Create a new Python library project structure."""
     package_name = _package_name(name)
@@ -66,14 +125,13 @@ def create_project(
         description = {_toml_string(description)}
         readme = "README.md"
         requires-python = ">=3.10"
-        license = {{text = "MIT"}}
+        license = {_toml_string(license_id)}
         authors = [
             {{name = {_toml_string(author)}, email = {_toml_string(email)}}}
         ]
         classifiers = [
             "Development Status :: 3 - Alpha",
             "Intended Audience :: Developers",
-            "License :: OSI Approved :: MIT License",
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
@@ -187,37 +245,16 @@ def create_project(
 
         ## License
 
-        MIT License
+        {license_id}
     ''').strip()
 
     (project_dir / "README.md").write_text(readme)
 
-    # Create LICENSE
-    license_text = dedent(f'''
-        MIT License
-
-        Copyright (c) {datetime.now().year}
-
-        Permission is hereby granted, free of charge, to any person obtaining a copy
-        of this software and associated documentation files (the "Software"), to deal
-        in the Software without restriction, including without limitation the rights
-        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-        copies of the Software, and to permit persons to whom the Software is
-        furnished to do so, subject to the following conditions:
-
-        The above copyright notice and this permission notice shall be included in all
-        copies or substantial portions of the Software.
-
-        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-        SOFTWARE.
-    ''').strip()
-
-    (project_dir / "LICENSE").write_text(license_text)
+    # Create LICENSE (only for licenses we have a template for)
+    license_template = LICENSE_TEMPLATES.get(license_id)
+    if license_template is not None:
+        license_text = license_template.format(year=datetime.now().year).strip()
+        (project_dir / "LICENSE").write_text(license_text)
 
     # Create .gitignore
     gitignore = dedent('''
@@ -397,6 +434,13 @@ def main():
     parser.add_argument("--author", default="Your Name", help="Author name")
     parser.add_argument("--email", default="you@example.com", help="Author email")
     parser.add_argument("--description", default="A Python library", help="Project description")
+    parser.add_argument(
+        "--license",
+        dest="license_id",
+        default="MIT",
+        help="SPDX license identifier (default: MIT). LICENSE text is generated "
+        "for MIT and BSD-3-Clause; for others add the file yourself.",
+    )
 
     args = parser.parse_args()
 
@@ -406,8 +450,11 @@ def main():
             author=args.author,
             email=args.email,
             description=args.description,
+            license_id=args.license_id,
         )
         print(f"Created project: {project_dir}")
+        if args.license_id not in LICENSE_TEMPLATES:
+            print(f"Note: no LICENSE template for {args.license_id}; add a LICENSE file.")
         print("\nNext steps:")
         print(f"  cd {args.name}")
         print("  git init")
