@@ -99,6 +99,23 @@ class CreateProjectTests(unittest.TestCase):
         self.assertIn("The above copyright notice and this permission notice", license_text)
         self.assertIn('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY', license_text)
 
+    def test_license_is_templated(self):
+        project = CREATE_PROJECT.create_project("bsd-lib", license_id="BSD-3-Clause")
+
+        with (project / "pyproject.toml").open("rb") as file:
+            metadata = tomllib.load(file)["project"]
+        self.assertEqual(metadata["license"], "BSD-3-Clause")
+        self.assertTrue((project / "LICENSE").read_text().startswith("BSD 3-Clause License\n"))
+        self.assertIn("BSD-3-Clause", (project / "README.md").read_text())
+
+    def test_unknown_license_has_no_generated_license_file(self):
+        project = CREATE_PROJECT.create_project("apache-lib", license_id="Apache-2.0")
+
+        with (project / "pyproject.toml").open("rb") as file:
+            metadata = tomllib.load(file)["project"]
+        self.assertEqual(metadata["license"], "Apache-2.0")
+        self.assertFalse((project / "LICENSE").exists())
+
     def test_generated_python_files_end_with_single_newline(self):
         project = CREATE_PROJECT.create_project("sample-lib")
 
