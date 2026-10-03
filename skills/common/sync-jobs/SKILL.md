@@ -1,6 +1,6 @@
 ---
 name: running-resumable-sync-jobs
-description: Design and review long-running batch or sync jobs that process many items against a remote API and persist checkpoint state — exit codes that report partial failure, checkpoints that are safe to resume, per-item tolerance vs. fatal abort, telling "zero" apart from "couldn't fetch", bounded retries, honest dry-runs, timezone-safe incremental cursors, and compensating reserved resources. Use when writing or reviewing a mirror/sync command, a nightly cron job, an importer, a paginated fetcher, or a background worker that consumes quota.
+description: Design and review long-running batch or sync jobs that process many items against a remote API and persist checkpoint state — exit codes that report partial failure, checkpoints that are safe to resume and written atomically, per-item tolerance vs. fatal abort, telling "zero" apart from "couldn't fetch", bounded retries, honest dry-runs, timezone-safe incremental cursors, and compensating reserved resources. Use when writing or reviewing a mirror/sync command, a nightly cron job, an importer, a paginated fetcher, or a background worker that consumes quota.
 ---
 
 # Running Resumable Sync Jobs
@@ -87,6 +87,73 @@ def apply_batch(units) -> int:
 Either report the partial count and check it in, or make the unit of work atomic
 (one transaction, one commit) so "some of it happened" is not a reachable state.
 Pick one deliberately; the default — raise and discard the count — is the bug.
+
+## Write the checkpoint file atomically, and pin its mode
+
+A checkpoint that is written in place (`os.WriteFile`, `open(path, "w")`) is
+truncated before it is rewritten. A crash, a kill, or a full disk in that window
+leaves an empty or half-written file, and the next run either fails to parse it or
+— worse — treats it as "no state" and redoes (or re-posts) everything.
+
+Write a sibling temp file in the **same directory**, flush it to disk, then rename
+over the destination. Rename within one filesystem is atomic; across filesystems it
+is a copy, so never put the temp file in `/tmp`.
+
+```go
+func saveAtomic(path string, data []byte) error {
+    tmp, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
+    if err != nil {
+        return err
+    }
+    defer os.Remove(tmp.Name())               // no-op after a successful rename
+    if _, err := tmp.Write(data); err != nil {
+        tmp.Close()
+        return err
+    }
+    if err := tmp.Sync(); err != nil {        // data on disk before the rename
+        tmp.Close()
+        return err
+    }
+    if err := tmp.Close(); err != nil {
+        return err
+    }
+    if err := os.Chmod(tmp.Name(), 0o644); err != nil { // see below
+        return err
+    }
+    return os.Rename(tmp.Name(), path)
+}
+```
+
+```python
+def save_atomic(path: Path, data: bytes) -> None:
+    fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.chmod(tmp, 0o644)
+        os.replace(tmp, path)                 # atomic, overwrites on all platforms
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+```
+
+Things this changes that are easy to miss:
+
+- **The file mode changes.** Temp-file helpers create `0600`; an in-place write
+  preserves an existing file's mode and otherwise applies the umask. Decide the mode
+  deliberately and `chmod` explicitly, or the first atomic save quietly makes a
+  shared state file unreadable to the other user or container that reads it. A test
+  that seeds a `0600` file and checks the mode after saving exposes the difference.
+- **Name temp files so directory scans ignore them.** Code that lists state files by
+  suffix (`*.json`) must not pick up an abandoned temp from a crashed run. End temps
+  in `.tmp` and keep the suffix check exact.
+- **Failure must clean up.** Remove the temp on every error path, and test that a
+  failed write leaves the previous file intact and no stray temp behind.
+- **Write the whole file or none of it.** Atomic replace protects against torn
+  writes, not against two concurrent writers; those still need a lock or a single
+  writer.
 
 ## Per-item tolerance must be decided *before* the shared error handler
 
@@ -377,6 +444,7 @@ Three details that make refunds safe:
 - [ ] Non-zero exit (or an explicit `--allow-partial`) when any item failed
 - [ ] Failure count and the failing identifiers appear in the final summary
 - [ ] Checkpoints record only completed work; partial batches report their count
+- [ ] Checkpoint written via same-dir temp + fsync + rename, mode pinned, temp cleaned on failure
 - [ ] Per-item tolerance branches *before* the shared, fatal-by-default handler
 - [ ] Skip/dead branches verified reachable (grep the handler's other callers)
 - [ ] Output written incrementally, or the cheap pass persisted before enrichment
