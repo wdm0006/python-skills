@@ -172,6 +172,41 @@ threshold is too loose" — but with no sweep over that statistic there is no
 evidence about whether *any* cutoff separates the classes on it. Those are very
 different findings, and only one of them justifies changing the number.
 
+## Check the combined rule, not only its cutoffs
+
+A rule can be inactive even when one of its inputs separates the classes:
+
+```python
+flag = score <= score_max and variation < variation_min
+```
+
+If `variation_min` is below every observed variation, the second predicate is
+false for every item. No change to `score_max` can make this rule fire. A zero
+fire rate does not establish that the score is useless; it may identify a
+blocking predicate in the conjunction.
+
+On the same labeled rows, report each predicate's fire rate and the combined
+rule's fire rate, separately for each class. Include the observed range and the
+configured cutoff for each input. Then sweep each statistic alone in its actual
+comparison direction before evaluating candidate cutoffs together:
+
+```python
+for label in ("normal", "anomalous"):
+    rows = [r for r in scored_rows if r["label"] == label]
+    assert rows, f"no scored rows for {label}"
+    score_hits = [r["score"] <= score_max for r in rows]
+    variation_hits = [r["variation"] < variation_min for r in rows]
+    joint_hits = [a and b for a, b in zip(score_hits, variation_hits)]
+    print(label, len(rows), sum(score_hits), sum(variation_hits), sum(joint_hits))
+```
+
+Use the same rows with both measurements available for this comparison, and
+report excluded rows rather than treating missing measurements as zero. A useful
+single-statistic cutoff is evidence to investigate the compound rule, not a
+reason to silently remove its other condition. Report TPR and FPR for the final
+rule; label cutoffs selected on the evaluation sample as exploratory rather than
+claiming validated performance on that same sample.
+
 ## Know whether the feature carries the decision or only the warning list
 
 Before fixing a miscalibrated feature, find out what consumes it. Pipelines
@@ -209,6 +244,8 @@ measured warning rates.
 - [ ] Score contributions decomposable, each feature family counted once
 - [ ] Threshold sweep supports both comparison directions and covers every
       statistic a threshold reads
+- [ ] Compound rules checked per predicate and jointly on the same rows; a
+      blocking cutoff distinguished from a statistic with no separation
 - [ ] Each feature classified as decision-carrying or display-only, and an
       unchanged confusion matrix explained in the change description
 
