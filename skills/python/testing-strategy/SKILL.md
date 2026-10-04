@@ -27,6 +27,28 @@ branch = true
 source = ["src/my_library"]
 ```
 
+### Test the installed package, not the source tree
+
+pytest's default `prepend` import mode puts the first directory without an
+`__init__.py` on `sys.path` — and with a layout that has a package directory
+beside compiled or generated parts (a `python-source` layout for a native
+extension, a repo-root package next to `tests/`), `import my_library` then
+resolves to the **raw source tree** instead of the installed wheel. The result is
+either a spurious `ModuleNotFoundError` (the compiled submodule only exists in the
+wheel) or, worse, a green run against code that is not what ships.
+
+Fix it in config so local runs, CI, and a teammate's checkout behave identically,
+rather than patching one workflow:
+
+```toml
+[tool.pytest.ini_options]
+addopts = "-ra -q --import-mode=importlib"
+```
+
+`importlib` mode stops pytest from mutating `sys.path`, so imports resolve only
+through the environment's installed distribution. Pair it with a non-editable
+install in CI when the build step itself is what you need to exercise.
+
 ## Test Structure
 
 ```
