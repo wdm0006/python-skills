@@ -192,6 +192,55 @@ func TestTruncateUTF8DoesNotSplitRune(t *testing.T) {
 }
 ```
 
+## Numeric input: `ParseFloat` accepts NaN/Inf, and `switch` can't see NaN
+
+`strconv.ParseFloat` happily returns `NaN`, `+Inf` and `-Inf` for the strings
+`"NaN"`, `"inf"`, `"-Infinity"`, with a nil error. Finite inputs can also
+overflow to `Inf` during arithmetic. Neither value survives `encoding/json`
+(`json: unsupported value`), and some web frameworks swallow that error and send
+an empty-body 200. Validate at both ends — the parsed value and the computed
+result — and return an error rather than a non-finite number:
+
+```go
+func finite(x float64) (float64, error) {
+    if math.IsNaN(x) || math.IsInf(x, 0) {
+        return 0, fmt.Errorf("non-finite result: %v", x)
+    }
+    return x, nil
+}
+```
+
+`NaN != NaN`, so `switch p { case 0: … case 1: … }` silently falls through for a
+NaN exponent into whatever the default/tail path is. Guard with `math.IsNaN`
+*before* any switch or early return (including an empty-input early return, or
+an invalid parameter is accepted whenever the data happens to be empty).
+
+Related numeric traps:
+
+- Summing squares overflows long before the true result does; prefer `math.Hypot`
+  or scale by the max magnitude, then rescale. General-power accumulation
+  underflows to `0` the same way. Assert these with *relative* error — a fixed
+  absolute tolerance accepts a wrong zero.
+- Validate **every** element of an auxiliary slice (weights, variances), not just
+  the prefix a `for i := range vec` loop reaches; otherwise whether the caller
+  gets an error depends on the length of an unrelated vector.
+- `-0.0` in Go source is *positive* zero (and trips staticcheck SA4026). Build a
+  negative zero with `math.Copysign(0, -1)`.
+- If `+` must survive a query parameter, remember `url.Query()` decodes it to a
+  space; test explicit-sign parsing at the parser level, not through the handler.
+
+## Linters that cap their own output
+
+golangci-lint reports at most 3 identical issues by default
+(`max-same-issues: 3`), so a red run listing three `errcheck` hits can hide
+dozens. Before fixing "the 3 shown", run `errcheck ./...` (or set
+`issues.max-same-issues: 0` temporarily) and fix them all, or the rest resurface
+one run at a time. Benchmarks and tests count: calling a `(T, error)` function as
+a bare statement in `*_bench_test.go` fails `errcheck` — use `_, err := f()` and
+`b.Fatal`. A branch cut before a lint fix landed on the base fails on files its
+own diff never touched; diff two-dot against the base tip and rebase rather than
+re-fixing.
+
 ## Shelling out to git/gh: inject a runner, don't string-match stderr
 
 CLIs that wrap `git`/`gh` by exec'ing them and classifying failures with
