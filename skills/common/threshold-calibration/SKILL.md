@@ -129,6 +129,31 @@ Two practical notes:
 - **Surface these rates in the generated report.** If the fire rates only exist
   in an ad-hoc script, the next person tuning a threshold will not have them.
 
+## Re-render reports without re-scoring the sample
+
+A reporting-only change should consume the persisted scores and their original
+run metadata. Re-running the full benchmark can change feature values because
+the scoring code, dependency versions, or model runtime have moved since the
+recorded run — even when no final classification changes. That mixes a new
+measurement with a presentation change and makes the report diff hard to assess.
+
+Use the report renderer directly, then verify that its inputs stayed byte-for-byte
+unchanged. For example, around the project's report-rendering command:
+
+```python
+from pathlib import Path
+
+inputs = [Path("results/scores.jsonl"), Path("results/run_metadata.json")]
+before = {path: path.read_bytes() for path in inputs}
+render_report(scores_path=inputs[0], metadata_path=inputs[1], output="report.md")
+assert all(path.read_bytes() == contents for path, contents in before.items())
+```
+
+If a full run already overwrote those files, restore only its generated scores
+and run metadata to the intended recorded version, then re-render. Keep intentional
+re-scoring in a separate change with its own runtime and dependency provenance;
+do not demand that today's full benchmark reproduce old scores unchanged.
+
 ## Score composition: count each family once
 
 A confidence score assembled by addition quietly weights whichever feature family
@@ -241,6 +266,8 @@ measured warning rates.
 - [ ] Per-class fire rate computed for every flag; none fires on ~all or ~none
       of both classes unexamined
 - [ ] Fire rates surfaced in the generated report, not only in a scratch script
+- [ ] Reporting-only changes re-render persisted scores; scores and original run
+      metadata stay unchanged, with intentional re-scoring reviewed separately
 - [ ] Score contributions decomposable, each feature family counted once
 - [ ] Threshold sweep supports both comparison directions and covers every
       statistic a threshold reads
