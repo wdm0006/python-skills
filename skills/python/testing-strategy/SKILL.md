@@ -512,6 +512,34 @@ old = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(old)
 print(readability(old.strip_markup(MARKDOWN)))   # what the buggy path used to yield
 ```
+## Asserting on Where Output Goes: Redirect in the Test Body
+
+A test that checks logging or CLI output went to stderr (not stdout) often builds
+a `StringIO`, patches `sys.stderr` in a **fixture**, then constructs a handler in
+the test. That fails confusingly: pytest's capture manager reinstates its own
+capture objects between the setup and call phases, so a handler built during the
+test binds pytest's stream, the `StringIO` stays empty, and the "Captured stderr
+call" section shows the record you were looking for. The same test passes under
+`-s`, which makes it look flaky.
+
+```python
+import contextlib, io, logging
+
+def test_records_go_to_stderr_not_stdout():
+    err, out = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(out):
+        configure_logging({"level": "INFO"})     # builds the handler *inside*
+        logging.getLogger("app").info("hello")
+    assert "hello" in err.getvalue()
+    assert out.getvalue() == ""                  # protocol stream stays clean
+```
+
+- Redirect **inside the test body**, and build the handler there too; it behaves
+  the same with and without `-s`.
+- To assert on *what* was logged (not where), use `caplog` and the logger name.
+- If the code under test calls `logging.basicConfig(force=True)`, restore the root
+  logger's handlers and level in a fixture teardown or every later test inherits them.
+
 ## Ambient State: Tests That Only Pass on Your Machine
 
 A test that reads state it never set — environment variables, a module-level
