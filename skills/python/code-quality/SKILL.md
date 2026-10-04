@@ -97,10 +97,11 @@ if self.max_drawdown is not None:
     enforce(self.max_drawdown)
 ```
 
-`x = x or default` is fine only when the single falsy value you mean to replace
-is an empty container (e.g. `items = items or []`). For numeric, boolean, or
-string fields where `0`, `False`, or `""` are meaningful inputs, it is a bug —
-use `x if x is not None else default`.
+`x = x or default` is fine only when no falsy value is a meaningful input — the
+domain is `None`-or-object, or the one falsy case is an empty container (e.g.
+`items = items or []`). For numeric, boolean, or string fields where `0`,
+`False`, or `""` are meaningful inputs, it is a bug — use
+`x if x is not None else default`.
 
 ```python
 # Bad: identity comparison against a literal (ruff flags this as F632)
@@ -153,8 +154,10 @@ throwaways that is real noise — delete the assignment or use a bare `_` rather
 than reverting the regex.
 
 Independently, after resolving a conflict in a module both branches edited, look
-for duplicated definitions directly — this catches shadowing the linter's
-config can't:
+for duplicated **module-level** definitions directly — this catches shadowing
+the linter's config can't. The anchored pattern is deliberate: nested `def`/
+`class` inside a class or function is indented and won't match, which is the
+scope where accidental shadowing actually costs you.
 
 ```bash
 grep -oE '^(def|class) [A-Za-z_][A-Za-z0-9_]*' module.py | sort | uniq -d
