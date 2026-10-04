@@ -83,6 +83,25 @@ run:
 Do **not** pass `args: --timeout=...` to the v2 action — the flag was removed and
 the job errors. Put the timeout under `run.timeout` in the config instead.
 
+### Pin the linter version and don't trust the capped issue list
+
+- `version: latest` on the action only tracks the newest release of the major
+  the *action* supports. A workflow on an old action major silently keeps
+  installing an end-of-life linter, and the resolved version appears only in the
+  run log (`gh run view <id> --log | grep -i golangci`), never in the workflow.
+  Pin an explicit `version: vX.Y.Z` and commit a `.golangci.yml` that names the
+  enabled linters (`default: none` + explicit `enable`), so the gate is recorded.
+- golangci-lint caps repeats of one finding (`max-same-issues`, default 3), so a
+  red run that lists three `errcheck` hits may have dozens. Run `errcheck ./...`
+  (or set `issues.max-same-issues: 0` while fixing) and clear them all, or the
+  rest resurface next run. Bare calls to `(T, error)` functions in `_test.go`
+  benchmarks are the usual bulk.
+- A branch cut before a lint fix landed on the base fails lint on a clean,
+  unrelated diff. Compare with a two-dot diff against the remote base
+  (`git diff origin/main`), then rebase rather than re-fixing the file.
+- staticcheck SA4026: Go's `-0.0` literal is *positive* zero. For a negative-zero
+  test input use `math.Copysign(0, -1)`.
+
 ## A test job with no tests is a no-op gate
 
 `go test -race ./...` exits 0 when there are zero `*_test.go` files. A repo can
@@ -252,6 +271,7 @@ Go project health:
 - [ ] go directive, setup-go version(s), and CI matrix all consistent
 - [ ] gofmt run under the same version setup-go installs (reformat committed once)
 - [ ] .golangci.yml version key matches the installed golangci-lint major (v1: none; v2: "2")
+- [ ] golangci-lint `version:` pinned to an explicit release; errcheck run uncapped before declaring lint clean
 - [ ] golangci-lint-action version paired with the config lane; timeout in run.timeout, not args
 - [ ] test job actually has *_test.go files with assertions (race gate isn't a no-op)
 - [ ] no map ranged directly into serialized/committed output (sort first)
