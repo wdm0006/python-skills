@@ -452,6 +452,15 @@ Three details that make refunds safe:
   on the UTC runner that CI uses. Set `TZ` (or construct the cursor with an
   explicit `tzinfo`) and assert the boundary unit is re-included at a negative
   offset, a positive one, and UTC. One zone proves nothing.
+- **When the job writes through git, fail one source with a scoped hook, not a
+  blanket one.** A catch-all `pre-commit` hook that always exits 1 also rejects
+  the job's own bookkeeping commit (the metadata/state commit made after the
+  per-item work), so the run dies at "failed to commit" and never reaches the
+  per-item failure path you meant to reproduce. Use a `commit-msg` hook that
+  greps the message for the one source's marker (`grep -q 'mirror from alice'
+  "$1" && exit 1`) so only that item's commits fail and the bookkeeping commit
+  goes through. Then assert: the other items completed, state and push still
+  happened, and the exit code is non-zero.
 - **Test the resume, not just the run.** Fail item K, then run again against the
   same state and assert the remaining items are attempted and the completed ones
   are not re-applied. A single-run test cannot see either checkpoint bug.
