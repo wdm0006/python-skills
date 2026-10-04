@@ -107,6 +107,9 @@ Or install a language-agnostic bundle:
 
 # Establish a finding before you publish it, and correct it after
 /plugin install writing-defect-reports@dev-skills
+
+# Make products look and feel finished — tokens, accessibility, interaction states, marketing pages
+/plugin install ui-design@dev-skills
 ```
 
 ### Alternative: Local Installation
@@ -215,6 +218,10 @@ After installation, you can verify the skills are loaded by running:
 | **guarding-destructive-operations** | Put real preconditions on operations with no undo — irreversible bulk deletes and history rewrites that are only correct in a dedicated single-purpose target, refusing rather than warning and shipping no `--force`, placing the guard ahead of the first statement with an effect so a rejected run leaves everything byte-identical, structural ownership checks (`p == base or p.startswith(base + "/")`) instead of a bare prefix that admits `base-backup/`, name validation *and* resolved-path containment as two independent checks (only the second stops a symlink inside the directory), the deliberate dry-run gap, broad excepts upstream that turn a refusal into an ordinary result shape, and mutating each half of the guard separately | — |
 | **calibrating-thresholds-and-baselines** | Check that a score-threshold-flag pipeline separates anything before trusting or tuning it — a committed reference baseline with a `created:` date and a `sample_size:` but no regeneration script in the tree (and a duplicate in-code copy that drifts), a per-character rate compared against a per-word constant so the z-score sits at −3.8 on every input, rate features confounded by item length, per-class fire rates computed off already-persisted output exposing a flag that fires on ~100% of both classes, additive confidence scores where one family contributes once per sub-feature under a single reason, threshold sweeps hardcoded to `>=` so a low-is-anomalous statistic cannot be evaluated, and stating why a display-only feature's fix leaves the confusion matrix unchanged | — |
 | **writing-defect-reports** | Establish a finding before you publish it, and correct it after — an internal anomaly promoted one layer too far into a user-visible headline that does not reproduce, reporting a branch no entry point reaches or a script nothing invokes, guards that can only match the fixture written beside them, a caveat the project's own ledger or design notes already answered, quoted figures re-measured with version/command/date because the dependency behind them is unpinned, prior notes re-verified against the integration branch rather than against the note, the narrowest injection point that reproduces a failure instead of a blanket hook that kills the run first, probe output a harness silently swallows, red checks filed as "pre-existing" under a done claim, and withdrawing a published claim in the thread where it was published | — |
+| **designing-interfaces** | Make a UI look deliberate and current instead of dated or improvised — screenshot before touching anything, audit hierarchy, type scale, spacing scale, color roles, layout and component consistency, introduce design tokens (CSS custom properties or the Tailwind theme) with no visual change before restyling, rebuild primitives with every interactive state, verify with before/after screenshots at desktop and phone width, follow platform conventions in native apps, and scope design work into single-PR issues; includes a starter token set and a modernization playbook for old server-rendered apps | — |
+| **building-accessible-interfaces** | Make UIs usable by keyboard, screen-reader, low-vision and motion-sensitive users — semantic elements before ARIA, a name for every control, visible `:focus-visible` rings and modal focus management, WCAG AA contrast measured with axe rather than eyeballed, reduced motion, 200% zoom and 44px touch targets, and an axe check in tests plus a manual keyboard pass for every UI change | — |
+| **designing-interaction-states** | Design the states screens actually spend their time in — first-run and filtered-empty states with one primary action, loading without flashes or endless spinners, forms that keep input and focus the first invalid field, error messages that say what happened and what to do, success feedback, undo over confirmation and specific danger-styled confirmations for irreversible actions, and consistent microcopy | — |
+| **designing-marketing-pages** | Design landing, pricing and comparison pages that explain the product fast and convert honestly — a plain-words headline and one primary CTA above the fold, real current product screenshots instead of stock art, specific proof and an objection-answering FAQ, pricing that shows the real price and limits, fair comparison pages, reading-tuned type and rhythm, fast responsive first loads, and no dark patterns | — |
 
 ## Plugin Bundles
 
@@ -222,18 +229,18 @@ After installation, you can verify the skills are loaded by running:
 
 - **python-library-complete** — all Python skills, plus the web-app architecture and MCP-server skills and git hygiene, for comprehensive Python development.
 - **go-projects** — `building-go-projects` + `keeping-git-repos-clean`.
-- **swift-apps** — `building-swift-apps` + `shipping-swift-apps` + `keeping-git-repos-clean`.
+- **swift-apps** — `building-swift-apps` + `shipping-swift-apps` + `designing-interfaces` + `building-accessible-interfaces` + `keeping-git-repos-clean`.
 - **shipping-swift-apps** — TestFlight/App Store releases on their own (App Store Connect API key auth, fastlane metadata lanes, headless archive and upload, build-number and version-train rules) for when the build side is already sorted.
 - **rust-crates** — `building-rust-crates` + `keeping-git-repos-clean`.
 - **scala-projects** — `building-scala-projects` + `keeping-git-repos-clean`.
-- **browser-extensions** — `building-browser-extensions` + `wiring-application-config` + `shipping-build-artifacts` + `rendering-untrusted-content` + `keeping-git-repos-clean`.
+- **browser-extensions** — `building-browser-extensions` + `wiring-application-config` + `shipping-build-artifacts` + `rendering-untrusted-content` + the four UI design skills + `keeping-git-repos-clean`.
 
 ### Narrower Python bundles
 
 - **python-library-foundations** — project setup, code quality, testing strategy.
 - **python-library-distribution** — packaging, release management, CLI development, build-artifact shipping.
 - **python-library-quality** — security audit, performance, heavy-dependency deferral, API design, untrusted-content rendering, external-behavior verification, git hygiene.
-- **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment) + untrusted-content rendering + application-config wiring.
+- **python-web-app** — web-app architecture (FastAPI, async SQLAlchemy, Stripe, Docker/Terraform deployment) + untrusted-content rendering + application-config wiring + the four UI design skills.
 - **python-mcp-servers** — MCP servers (FastMCP tool design, error contracts, event-loop-safe blocking work, packaging, testing, prompt-injection awareness) + application-config wiring.
 - **python-llm-features** — LLM-backed features (prompt surfaces, structured outputs, context budgeting, model config wiring, accuracy evaluation).
 
@@ -253,6 +260,7 @@ After installation, you can verify the skills are loaded by running:
 - **guarding-destructive-operations** — `--rebuild`/`--reset`/`--purge` commands, bulk deletes, history rewrites, and any code that turns an argument into a file path (refuse instead of warn, guard before the first mutation, structural not string-prefix classification, validate the name *and* contain the resolved path, mutate each half separately in tests).
 - **calibrating-thresholds-and-baselines** — anomaly detectors, quality/risk scores, abuse heuristics, and any pipeline that z-scores features against stored baseline constants (ask whether the baseline was measured or typed, match the feature's units and population to the constant's, compute per-class fire rates before tuning anything, count each feature family once in an additive score, sweep both comparison directions, and say when a display-only fix cannot move the confusion matrix).
 - **writing-defect-reports** — filing an issue, writing a PR or review body that asserts a defect, or triaging someone else's report (reproduce at the layer the title names, confirm the code is reachable before calling it broken, search the project's records before filing a caveat, re-measure every quoted number with its version and protocol, inject failure at the narrowest point, never file a red check as an aside, withdraw wrong claims where you published them).
+- **ui-design** — any screen, component, form, landing or pricing page, or a UI that looks dated (tokens and scales before restyling, a modernization playbook, measured contrast and keyboard access, designed empty/loading/error states, honest marketing pages, before/after screenshots on every change).
 
 Every language bundle includes **keeping-git-repos-clean** — committed-secret and dev-artifact hygiene applies regardless of language.
 

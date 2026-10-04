@@ -5,10 +5,10 @@
     "email": "will@mcginniscommawill.com"
   },
   "metadata": {
-    "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, and browser extensions",
-    "version": "2.29.0",
+    "description": "Opinionated, checklist-driven skills for professional software development across languages - Python libraries and web apps, Go projects, Swift/Apple apps, Rust crates, Scala projects, browser extensions, and UI design",
+    "version": "2.30.0",
     "homepage": "https://github.com/wdm0006/python-skills",
-    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "atomic-writes", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction", "defect-reports", "issue-writing", "reproduction", "dead-code", "retractions", "heavy-tailed", "median-vs-mean", "outliers", "effect-size", "benchmark-reporting", "github-actions", "workflow-permissions", "github-token", "fork-pull-requests", "calibration", "baselines", "false-positive-rate", "anomaly-detection", "units", "fire-rates", "mutation-testing", "equivalent-mutants"]
+    "keywords": ["python", "go", "swift", "rust", "scala", "javascript", "browser-extension", "library", "packaging", "testing", "ci", "api-design", "xss", "sanitization", "sync-jobs", "atomic-writes", "integration-testing", "api-contracts", "build-scripts", "release-artifacts", "ci-reproduction", "linting", "dev-environment", "docs-sync", "cross-repo", "product-copy", "password-security", "bcrypt", "distributed-rate-limiting", "redis", "testflight", "app-store-connect", "fastlane", "xcodebuild", "code-signing", "release-automation", "derived-metrics", "thresholds", "statistics", "nullability", "event-loop", "concurrency", "configuration", "config-validation", "settings", "defaults-merge", "merge-conflicts", "concurrent-branches", "rebasing", "hotspot-files", "generated-artifacts", "lazy-loading", "cold-start", "import-time", "model-loading", "destructive-operations", "path-traversal", "blast-radius", "text-normalization", "markdown-parsing", "readability", "reading-time", "plain-text-extraction", "defect-reports", "issue-writing", "reproduction", "dead-code", "retractions", "heavy-tailed", "median-vs-mean", "outliers", "effect-size", "benchmark-reporting", "github-actions", "workflow-permissions", "github-token", "fork-pull-requests", "calibration", "baselines", "false-positive-rate", "anomaly-detection", "units", "fire-rates", "mutation-testing", "equivalent-mutants", "ui-design", "design-tokens", "accessibility", "ux", "landing-pages"]
   },
   "plugins": [
     {
@@ -48,7 +48,11 @@
         "./skills/common/concurrent-branches",
         "./skills/common/destructive-operations",
         "./skills/common/defect-reports",
-        "./skills/common/threshold-calibration"
+        "./skills/common/threshold-calibration",
+        "./skills/common/ui-design",
+        "./skills/common/accessible-interfaces",
+        "./skills/common/interaction-states",
+        "./skills/common/marketing-pages"
       ]
     },
     {
@@ -173,6 +177,18 @@
       ]
     },
     {
+      "name": "ui-design",
+      "description": "Make products look and feel finished - design tokens and type/spacing/color scales before restyling, a modernization playbook for dated UIs, accessible controls with measured contrast, designed empty/loading/error states and microcopy, and landing/pricing pages that explain the product fast and convert honestly",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/ui-design",
+        "./skills/common/accessible-interfaces",
+        "./skills/common/interaction-states",
+        "./skills/common/marketing-pages"
+      ]
+    },
+    {
       "name": "python-llm-features",
       "description": "Build application features on top of an LLM API - prompt surfaces that drift, filtered evaluator sets that cannot silently become clean passes, model config wiring, live-model tests kept out of CI, stochastic accuracy evaluation, and truthful presentation of model output",
       "source": "./",
@@ -201,7 +217,11 @@
       "skills": [
         "./skills/python/web-app-architecture",
         "./skills/common/rendering-untrusted-content",
-        "./skills/common/app-config"
+        "./skills/common/app-config",
+        "./skills/common/ui-design",
+        "./skills/common/accessible-interfaces",
+        "./skills/common/interaction-states",
+        "./skills/common/marketing-pages"
       ]
     },
     {
@@ -262,7 +282,9 @@
         "./skills/swift/apps",
         "./skills/swift/releases",
         "./skills/common/git-hygiene",
-        "./skills/common/github-actions"
+        "./skills/common/github-actions",
+        "./skills/common/ui-design",
+        "./skills/common/accessible-interfaces"
       ]
     },
     {
@@ -307,7 +329,11 @@
         "./skills/common/build-artifacts",
         "./skills/common/rendering-untrusted-content",
         "./skills/common/git-hygiene",
-        "./skills/common/github-actions"
+        "./skills/common/github-actions",
+        "./skills/common/ui-design",
+        "./skills/common/accessible-interfaces",
+        "./skills/common/interaction-states",
+        "./skills/common/marketing-pages"
       ]
     },
     {
