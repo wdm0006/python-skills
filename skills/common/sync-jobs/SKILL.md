@@ -392,6 +392,28 @@ history by removing every tracked file is correct only in a dedicated
 single-purpose repo; run it where other content lives and it deletes that too.
 Say what will be removed, not just what will be added.
 
+## Sort anything you rebuild from a map before committing it
+
+If the job's output is a **committed** file (a mirror, a stats snapshot, a
+lockfile-like index), rebuilding a slice from a hash map is a bug in any language
+with randomized iteration (Go maps, Python sets, many JSON libraries). The content
+is right but the order changes every run, so each sync produces a large,
+unreviewable diff and "did anything actually change?" becomes unanswerable.
+
+```go
+// Bad — map iteration order is random; the file is rewritten shuffled each sync.
+for date, n := range byDate { out = append(out, Entry{date, n}) }
+
+// Good — sort on a stable key. ISO `YYYY-MM-DD` strings sort chronologically
+// as plain strings, so no time parsing is needed.
+sort.Slice(out, func(i, j int) bool { return out[i].Date < out[j].Date })
+```
+
+Apply it at every code path that rebuilds the slice (merge, rebuild, import),
+not just the one you noticed. Test it by running the merge on input whose natural
+order differs from the expected one and asserting the exact output order — and
+ideally that a second no-op sync produces a byte-identical file.
+
 ## Compensate reserved resources when the work never happens
 
 Jobs that consume quota, credits, or seats reserve *before* doing the work — the
@@ -485,6 +507,7 @@ Three details that make refunds safe:
       east and west of UTC — not just on the UTC runner
 - [ ] Incremental cursor re-includes the boundary unit; merge is idempotent
 - [ ] Dry-run mutates in-memory state identically; only writes are gated
+- [ ] Committed output rebuilt from a map is sorted on a stable key; a no-op sync is byte-identical
 - [ ] Reservations have a compensating, period-guarded, non-negative refund
 - [ ] Tests assert exit codes, sleep sequences, request counts, and a resumed run
 
