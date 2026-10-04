@@ -141,14 +141,23 @@ true for every hour of the day.
 
 ```js
 function readHour(input, name) {
-  const n = Number.parseInt(input.value, 10);
+  const raw = input.value.trim();
+  if (!/^\d+$/.test(raw)) throw new ValidationError(name);
+  const n = Number(raw);
   if (!Number.isInteger(n) || n < 0 || n > 23) throw new ValidationError(name);
   return n;
 }
 ```
 
+Validate the whole string before conversion: `parseInt('9.5', 10)` and
+`parseInt('9hours', 10)` both return `9`, which passes integer and range checks.
+`Number('')` returns `0`, so conversion alone also accepts a blank as midnight.
+The digit check rejects those inputs while preserving a legitimate `0`.
+
 Validate in the shared save path, not per-field in the markup — and report the
-failure instead of showing success.
+failure instead of showing success. Test valid boundaries `0` and `23`, and
+reject blank, fractional, trailing-text, negative, and `24` inputs; every rejected
+save must leave storage untouched and show an error.
 
 ## A throw during `DOMContentLoaded` kills the whole popup
 
