@@ -260,6 +260,34 @@ by a symlink placed inside the approved directory that points outside it — a t
 most suites don't have. If reverting one half leaves the suite green, you have a
 test gap, not a redundant check: write the test that pins it.
 
+**Test the original bug and a plausible wrong fix.** Restoring the old code
+proves the suite detects that implementation; it does not prove the fix handles
+nearby failure modes. Choose separate fixtures that distinguish each candidate
+from the intended behavior.
+
+For a function that assigns unique keys to repeated labels, restoring the
+original label-as-key logic is caught by two identical labels. A plausible wrong
+fix adds an occurrence counter but collides with a literal label that already
+contains the generated suffix:
+
+```python
+# Original bug: repeated labels overwrite each other.
+assert unique_keys(["Notes", "Notes"]) == ["Notes", "Notes (2)"]
+
+# Wrong fix: a blind counter generates an already-used literal key.
+assert unique_keys(["Notes", "Notes (2)", "Notes"]) == [
+    "Notes", "Notes (2)", "Notes (3)",
+]
+```
+
+The second fixture requires checking each generated candidate against all keys
+already assigned, not merely counting occurrences of the base label. Keep the
+first fixture too: each test explains a different regression. Mutate the original
+implementation and the counter-only implementation separately, record which test
+fails for each, then restore the correct code and re-run both. Choose mutations
+that model realistic mistakes; arbitrary breakage is not evidence of useful
+coverage.
+
 **Know what "red" looks like for the mutation you chose.** A reintroduced bug does
 not always surface as a clean assertion failure.
 
