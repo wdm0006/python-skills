@@ -301,6 +301,15 @@ not always surface as a clean assertion failure.
   the output before concluding your test didn't fire.
 - If the mutated run errors during *collection*, no test ran at all and you have
   learned nothing about the test.
+- In a compiled language, a mutation can break the **build** instead of a test:
+  neutering a guard with `if false {` can leave an import unused, and the run
+  prints a compile error and zero `FAIL` lines, so `grep -c FAIL` reads `0` and
+  looks like a survivor. Keep the dependency referenced (`if false && (cond) {`)
+  and confirm the output names a failing test, not a compiler error.
+- Confirm the mutation actually landed. On macOS, BSD `sed -i 's/a/b/' file`
+  treats the next argument as a backup suffix and can fail or do nothing, so the
+  "mutated" suite runs the unmutated code and passes. Use `perl -i -pe` (same on
+  both OSes) and check `git diff --stat` shows the edit before reading any result.
 
 **A hand-written fixture is itself a mutation — of reality.** When the same person
 authors both a parser and every fixture it is tested against, both encode the same
