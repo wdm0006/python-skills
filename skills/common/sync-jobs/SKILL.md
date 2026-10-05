@@ -268,6 +268,35 @@ result — the failure it exists to catch passes silently.
 - Better still, key the parse on an authoritative attribute (a `data-date`,
   an ID) rather than display text, so locale and wrapping can't matter.
 
+## Harden the request itself when you fetch HTML
+
+Fetching a public web page (no API) with a library's convenience call fails in
+three quiet ways, all fixed in the request rather than the parser:
+
+- **No timeout.** Many stdlib/convenience clients (`http.Get`, `urllib` without
+  `timeout=`) wait forever on a stalled connection, so one dead page hangs a
+  nightly job. Use an explicit client with a deadline, held in one package-level
+  variable so tests can swap it.
+- **Default client User-Agent.** Some sites answer the stock agent string of a
+  language runtime with a 403 or a bot page that parses to "zero rows". Send a
+  descriptive UA.
+- **Locale-dependent text.** A parser keyed on English display text returns
+  zero on a localized page — and zero is indistinguishable from "quiet period".
+  Pin `Accept-Language` on the request. This narrows the failure; it does not
+  replace keying on a machine-readable attribute (see above).
+
+```go
+var scrapeClient = &http.Client{Timeout: 30 * time.Second}
+
+req, _ := http.NewRequest("GET", url, nil)
+req.Header.Set("User-Agent", "my-sync-job page fetcher")
+req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+resp, err := scrapeClient.Do(req)
+```
+
+Probe the live endpoint once with the stock client to confirm it really is
+rejected before adding headers you cannot justify.
+
 ## Bound every retry, and count per unit of work
 
 A `continue` on a "retry" signal, inside a pagination loop, with no counter,
