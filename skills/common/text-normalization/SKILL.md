@@ -149,6 +149,33 @@ or a slug with a disambiguating suffix — and carry the display heading as a fi
 Then audit downstream: any dict comprehension over the sections and any
 `processed_keys`-style dedup guard was written assuming uniqueness too.
 
+### A generated suffix can collide with a literal heading
+
+A per-heading occurrence counter is not enough: `## Notes`, another `## Notes`,
+and a literal `## Notes (2)` can still produce the same key twice. Allocate each
+key against **all keys already used**, at the point sections are first created:
+
+```python
+used_keys = set()
+
+def allocate_section_key(heading):
+    candidate = heading
+    suffix = 2
+    while candidate in used_keys:
+        candidate = f"{heading} ({suffix})"
+        suffix += 1
+    used_keys.add(candidate)
+    return candidate
+```
+
+Keep the original heading separately for display. Unique headings retain their
+original keys unless a prior allocation already claimed that key. Test repeated
+headings and literal suffixed headings in both orders; assert every body survives
+under a distinct key. Reverting to heading-only keys catches the original collapse;
+replacing the loop with a per-heading counter must fail the literal-suffix case.
+The ordinary duplicate-heading fixture alone cannot distinguish the correct fix
+from that plausible wrong fix.
+
 ## Write down which lossiness is deliberate
 
 Normalizers are intentionally lossy in places. A stripper may drop list markers
