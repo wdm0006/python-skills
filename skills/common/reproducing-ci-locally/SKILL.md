@@ -134,6 +134,15 @@ invent is not CI's.
   Python newer than CI's matrix, a pinned dependency with no wheel for that
   version gets built from source and fails on a compiler error that has nothing
   to do with your change.
+- **Locked and unlocked installs resolve different versions.** If CI runs
+  `pip install -e ".[dev]"` (no lockfile) while a local `uv run` syncs from the
+  lockfile, an unpinned dependency is old locally and new on the runner. A test
+  asserting a version-sensitive value (a readability score, a formatted
+  string) then passes under the lock and goes red in CI — or the reverse, if
+  `uv run` silently swaps your hand-built environment for the locked one. Before
+  calling a failure pre-existing or unrelated, note *which* install produced it
+  (`importlib.metadata.version("<pkg>")`, not a stale `__version__`), and reproduce
+  with the install CI uses.
 - **Extras differ.** If CI installs `[dev,web]` and `make install` installs
   `[dev]`, the full suite errors at collection locally on an import CI has.
 
