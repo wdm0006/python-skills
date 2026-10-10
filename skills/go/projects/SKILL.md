@@ -248,6 +248,17 @@ Related numeric traps:
 - If `+` must survive a query parameter, remember `url.Query()` decodes it to a
   space; test explicit-sign parsing at the parser level, not through the handler.
 
+## Mutation-testing a Go guard: the build can fail instead of the test
+
+To prove a test catches a deleted guard, you mutate the guard and expect a
+`--- FAIL`. In Go the mutation can instead break the *build*: neutering
+`if math.IsNaN(x) { … }` to `if false { … }` can leave the `math` import unused,
+and `go test` reports `imported and not used` with no test failures at all. A
+`grep -c -- '--- FAIL'` then reads 0, which looks like a surviving mutant. Keep
+the identifiers referenced — `if false && math.IsNaN(x) {` — and check that the
+output contains a FAIL line, not just that the count changed.
+
+
 ## Linters that cap their own output
 
 golangci-lint reports at most 3 identical issues by default
