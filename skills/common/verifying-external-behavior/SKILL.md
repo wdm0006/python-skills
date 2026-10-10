@@ -1,6 +1,6 @@
 ---
 name: verifying-external-behavior
-description: Confirms what a third-party library, remote API, build backend, or scraped document actually does before writing code that depends on it — throwaway probes that run in seconds, permissive clients that forward wrong arguments instead of rejecting them, per-endpoint docs that don't generalize, response shapes that make a "fast path" always-false, fakes that encode your assumption rather than the service's behavior, and dry-runs that skip the step that fails. Use when integrating a new dependency or endpoint, writing a tolerated-status or error branch, choosing a client argument name, testing against a fake, or reviewing code that asserts an upstream contract.
+description: Confirms what a third-party library, remote API, build backend, or scraped document actually does before writing code that depends on it — throwaway probes that run in seconds, permissive clients that forward wrong arguments instead of rejecting them, per-endpoint docs that don't generalize, response shapes that make a "fast path" always-false, fakes that encode your assumption rather than the service's behavior, dry-runs that skip the step that fails, and large inputs that were silently read only in part. Use when integrating a new dependency or endpoint, writing a tolerated-status or error branch, choosing a client argument name, testing against a fake, or reviewing code that asserts an upstream contract.
 ---
 
 # Verifying External Behavior
@@ -171,6 +171,35 @@ uv build                      # actually builds → catches them
 More generally: if a mode exists specifically to be cheap, ask which step it
 bought that discount by skipping, and whether your bug lives there.
 
+## A big input can be partial without saying so
+
+Before drawing a conclusion from a large dataset, file, or mirrored copy of one,
+establish that you read **all** of it, and that the source you read **is** all of it.
+
+**The reader aborts mid-stream.** Streaming parsers have hidden size limits. Python's
+`csv` module raises `_csv.Error: field larger than field limit (131072)` on the first
+oversized field — possibly minutes into a multi-gigabyte file. If your loop catches the
+error, or you were aggregating as you went, you are left with a plausible-looking partial
+result. Raise the limit up front (`csv.field_size_limit(sys.maxsize)`) and assert the
+row count you processed against the count the source advertises.
+
+**The convenient copy is flagged partial.** Hosted dataset viewers, parquet
+conversions, and API "preview" endpoints often cover only a prefix of the data, and say
+so in a metadata field (`"partial": true`) that nothing forces you to read. A prefix of
+a file sorted by group (domain, model, attack type) is a biased sample, not a smaller
+random one: any list of categories you derive from it ("the 4 generators in this
+dataset") is just the first groups. Read the metadata flag, and when the file is
+grouped, locate where each group starts before sampling.
+
+```python
+import csv, sys
+csv.field_size_limit(sys.maxsize)          # else aborts mid-file, long after you started
+n = sum(1 for _ in csv.DictReader(open(path, newline="")))
+assert n == EXPECTED_ROWS, f"read {n}, source says {EXPECTED_ROWS}"
+```
+
+Record the processed count next to every statistic computed from the data.
+
 ## Some verified behaviour is not yours to fix
 
 A probe sometimes proves the upstream system is simply wrong, or surprising, for
@@ -196,6 +225,7 @@ Before shipping code that depends on an external system:
 - [ ] Fakes validated against the real service at least once
 - [ ] Failure paths exercised against a real failure (dead port, revoked token), not a mock
 - [ ] Verified with the real build/install, not a dry-run
+- [ ] Large inputs: rows read matches the source's advertised count, and no "partial" flag applies
 - [ ] Every tolerated-status or defensive branch is either reproduced or labelled defensive
 - [ ] Findings recorded with command, output, and date
 ```
