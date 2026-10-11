@@ -536,6 +536,34 @@ Size the tolerance against the bug's own gap rather than your confidence: if the
 buggy and fixed paths differ by ~29 points, `pytest.approx(42.80, abs=1.0)` is
 both a real value assertion and tolerant of a dependency bump.
 
+### Tiny nonzero results need relative tolerance
+
+A fixed absolute tolerance can hide total underflow: an expected `1e-200` and
+an incorrect `0.0` differ by less than `1e-6`. Even `pytest.approx`'s default
+absolute tolerance accepts zero at that scale. Disable the absolute allowance
+when a nonzero result must retain its magnitude:
+
+```python
+@pytest.mark.parametrize("magnitude", [1e-200, 1e200])
+def test_power_norm_preserves_single_value(magnitude):
+    # For a one-element vector, the norm is |x| at either exponent.
+    for exponent in (3, 4):
+        result = power_norm([magnitude], exponent)
+        assert math.isfinite(result)
+        assert result == pytest.approx(magnitude, rel=1e-12, abs=0.0)
+```
+
+These fixtures distinguish two failures in an unscaled power sum: tiny terms
+underflow to zero, while large terms overflow even though the final norm is
+representable. Keep a separate exact-zero case; relative error is undefined
+when the expected value is zero. Use an absolute allowance only when it reflects
+an intentional error budget near zero.
+
+To verify this regression test, temporarily restore the unscaled accumulation
+and confirm a named test fails. Also check that replacing the result with zero
+fails the tiny-value assertion; a passing assertion there means the tolerance
+has erased the behavior the test claims to protect.
+
 **To quote the "before" number in the test's comment, load the old module
 directly** — you do not need to check out the old tree:
 
