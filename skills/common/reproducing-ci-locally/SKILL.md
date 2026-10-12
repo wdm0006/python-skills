@@ -229,6 +229,21 @@ If the failure reproduces on the base, say so with that evidence. If the cause i
 an unpinned dependency, the red check will move with the date of the install, not
 with your diff — see "Pin what gates the build" above.
 
+**A red check on files your diff never touched may be a stale base.** If the
+branch was cut before a lint/format/test fix landed on the base, CI fails on the
+inherited problem even though your own change is clean. Tell the two apart by
+comparing against the base *tip*, not the merge-base:
+
+```bash
+git fetch origin
+git diff origin/main --stat     # two-dot: what differs from the base as it is now
+git diff origin/main...HEAD     # three-dot: only what your branch added
+```
+
+If the failing file shows up in the two-dot diff but not the three-dot one, the
+base moved under you: rebase (or merge the base in) instead of re-fixing the
+file, which would only collide with the fix already on the base.
+
 Two traps in the log itself:
 
 - A step gated on an event (`if: github.event.action == 'opened'`) is skipped
@@ -258,5 +273,6 @@ Running:
 Fixing:
 - [ ] Divergence fixed in shared config (manifest/addopts), not only in the workflow
 - [ ] Checked which jobs are actually required before treating a red as blocking
+- [ ] Red on an untouched file: two-dot diff against the base tip; rebase if the base already fixed it
 - [ ] Waited for the real run; any red either fixed here or proven on the base commit
 ```
