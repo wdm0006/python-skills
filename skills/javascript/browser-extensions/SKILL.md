@@ -159,6 +159,24 @@ failure instead of showing success. Test valid boundaries `0` and `23`, and
 reject blank, fractional, trailing-text, negative, and `24` inputs; every rejected
 save must leave storage untouched and show an error.
 
+## A stored deadline must be a usable `Date`, not just a number
+
+Snooze/pause features persist an epoch-millisecond deadline and compare it to
+`Date.now()`. Storage hands back whatever was written, so validate on read:
+
+```js
+const MAX_DATE_MS = 8.64e15;           // largest time a JS Date can represent
+function readDeadline(raw) {
+  return Number.isSafeInteger(raw) && Math.abs(raw) <= MAX_DATE_MS ? raw : null;
+}
+const paused = (d) => d !== null && d > Date.now();   // strict: expiry instant is "not paused"
+```
+
+A finite but oversized value (`1e20`) passes `Number.isFinite`, then
+`new Date(raw)` is `Invalid Date` and the popup renders "Paused until Invalid Date"
+forever. `null`/`NaN`/strings must read as "not paused", never as a deadline. Test
+the exact-expiry boundary (`deadline === now` is expired) and an over-range value.
+
 ## A throw during `DOMContentLoaded` kills the whole popup
 
 Popup init typically loads state *and* binds listeners in one handler. If the
@@ -290,6 +308,7 @@ MV3 extension health:
 - [ ] selection/computation is pure; persistence is a separate awaited call
 - [ ] manual entry points pass the explicit gate-bypass flag; alarms keep the default
 - [ ] settings validated in JS (Number.isInteger + range), not by inert HTML min/max
+- [ ] stored deadlines validated as safe integers within Date range; expiry uses strict `>`
 - [ ] popup binds listeners before loading state; state load degrades to defaults
 - [ ] chrome mock: reset reinstalls default implementations; async responses honored
 - [ ] at least one test gates a write to prove the handler awaits it
