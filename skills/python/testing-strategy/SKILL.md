@@ -709,6 +709,58 @@ runs afterward. A business-hours branch then follows whatever the runner's local
 time happens to be, so the suite is green during the day and red at night. Drive
 the pending work deterministically instead of sleeping inside a frozen-clock test.
 
+## Prove Async Completion Ordering
+
+An immediately resolved mock can hide a missing `await`: the side effect finishes
+before the test checks the response anyway. Call counts prove an operation was
+started, not that it completed. Hold the operation pending, assert that success
+is still pending, then release it and check the result.
+
+Gate the **last operation that success promises**. If rescheduling clears an old
+schedule and then creates a new one, gating only `clear` proves nothing about
+whether `create` is awaited. Likewise, a completed storage write does not prove
+that a subsequent notification was delivered.
+
+```python
+# Illustrative contract: handle_save() awaits publish() before returning success.
+def test_success_waits_for_publish(monkeypatch):
+    import asyncio
+    from my_library import service
+
+    async def scenario():
+        entered = asyncio.Event()
+        release = asyncio.Event()
+
+        async def gated_publish(*args, **kwargs):
+            entered.set()
+            await release.wait()
+
+        monkeypatch.setattr(service, "publish", gated_publish)
+        task = asyncio.create_task(service.handle_save())
+        try:
+            # Bound the wait so a missing call fails instead of hanging.
+            await asyncio.wait_for(entered.wait(), timeout=1)
+            await asyncio.sleep(0)  # yield to runnable tasks; no wall-clock delay
+            assert not task.done(), "success returned before publish completed"
+            release.set()
+            assert await asyncio.wait_for(task, timeout=1) == {"success": True}
+        finally:
+            release.set()
+            if not task.done():
+                task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+    asyncio.run(scenario())
+```
+
+Keep the handler real and replace only its external boundary. If completion
+means persisted state, let the gated fake apply the write **after** release,
+rather than changing its in-memory store before waiting. Add a rejection case
+at the same boundary: failed completion must not produce success, and the
+exception must be handled according to the public error contract. Verify the
+ordering test turns red when the final operation is scheduled without awaiting
+it; reverting an await on an earlier operation tests a different claim.
+
 ## Checklist
 
 ```
