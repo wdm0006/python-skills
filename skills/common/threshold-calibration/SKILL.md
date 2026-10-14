@@ -175,6 +175,32 @@ or emit one reason per increment so the arithmetic in the score matches the
 narrative beside it. Log the per-indicator contributions when the score is built;
 a score you cannot decompose cannot be tuned.
 
+## Verify saved scores before replaying a flag-layer change
+
+Saved features and z-scores let you compare score-composition changes without
+re-running expensive feature extraction. But saved flags may come from an older
+implementation than the base you are comparing against. **First replay the base
+flag function and compare it with the saved output**, including reasons and
+confidence, not just the final boolean:
+
+```python
+mismatches = []
+for row in scored_rows:
+    replayed = base_generate_flags(row["features"], row["z_scores"])
+    if replayed != row["flags"]:
+        mismatches.append(row["id"])
+assert not mismatches, f"saved flags differ from base replay: {mismatches}"
+```
+
+If this check passes, replay the changed function on the same inputs. If it
+fails, do not compare stored confidence values against newly computed ones and
+attribute the entire delta to your change. Generate fresh base and changed
+results with the same corpus, feature extractor, dependencies, and configuration,
+varying only the flag implementation; keep both outputs in scratch directories.
+For a score-layer-only change, run only the affected analysis rather than loading
+unrelated expensive models. Report the comparison's actual provenance, and leave
+committed benchmark results alone unless refreshing them is part of the change.
+
 ## Sweep every statistic a threshold reads, in both directions
 
 A threshold sweep that hardcodes its comparison cannot evaluate half your
@@ -269,6 +295,8 @@ measured warning rates.
 - [ ] Reporting-only changes re-render persisted scores; scores and original run
       metadata stay unchanged, with intentional re-scoring reviewed separately
 - [ ] Score contributions decomposable, each feature family counted once
+- [ ] Flag-layer replay first reproduces saved output under the base code; if
+      it differs, comparison uses fresh paired results with only that layer varied
 - [ ] Threshold sweep supports both comparison directions and covers every
       statistic a threshold reads
 - [ ] Compound rules checked per predicate and jointly on the same rows; a
