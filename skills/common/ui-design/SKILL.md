@@ -128,6 +128,7 @@ finish and can't be reviewed.
 - Restyling screen by screen without tokens, which recreates the inconsistency.
 - Swapping CSS frameworks as a "design fix" — it changes the plumbing, not the design.
 - Gradients, shadows and animation added to compensate for weak hierarchy.
+- A thick colored stripe down one edge of every card, alert or panel to signal category or state. It is the most recognizable generic-template tell. Keep one uniform border (or none) on every card and carry state with a dot, chip, icon or text label — which also survives for color-blind users.
 - Light grey text on white to look "clean" (it fails contrast and reads as disabled).
 - Centering everything; long centered paragraphs are hard to read.
 - Designing only the happy path at desktop width.
