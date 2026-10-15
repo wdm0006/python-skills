@@ -105,6 +105,27 @@ hidden costs revealed at checkout, no confirmshaming ("No thanks, I don't like s
 money"), cancellation as easy as signup. Every claim on the page must be true of the
 shipped product today — check copy against the live app before publishing.
 
+### Separate development, distribution, and claimability
+
+A feature on the default branch is not evidence that a visitor can use it.
+Before updating copy or replacing screenshots, record three separate facts:
+
+| State | Evidence to check |
+|-------|-------------------|
+| Implemented | The feature exists in the current source tree. |
+| Distributed | The version/build available through the page's download or store CTA includes it. |
+| Claimable today | That distributed build exposes it to the audience and platform the claim addresses. |
+
+For example, a redesigned dashboard may be merged while the store still serves
+an older interface. Keep the current page's screenshots aligned with the store
+build; retain captures of the redesign as unpublished launch assets. They are
+premature for current copy, not stale assets to discard. Even inclusion in a
+build is insufficient if the advertised audience cannot access the feature.
+
+Record the checked version/build and verification date with the claim evidence.
+Recheck distribution before publishing a prepared launch draft; a source merge
+alone must not promote future copy into present-tense claims.
+
 ## Review checklist
 
 - [ ] A stranger can say what it is and who it's for after 5 seconds above the fold
@@ -113,4 +134,4 @@ shipped product today — check copy against the live app before publishing.
 - [ ] Proof is real and specific; FAQ covers price, privacy, export, cancellation
 - [ ] Pricing shows the real price and limits
 - [ ] Phone layout checked; Lighthouse performance and accessibility reviewed
-- [ ] Every claim verified against the shipped product
+- [ ] Every claim and screenshot verified against the build available through the CTA, for its advertised audience
