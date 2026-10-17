@@ -18,8 +18,11 @@
 
 ## Starter token set (CSS)
 
-Drop into the global stylesheet and adjust the brand hue. Values are a sound default,
-not a brand.
+Drop into the global stylesheet and adjust the brand hue. This is a restrained
+utility starting point. For a game or playful consumer app, define additional
+role tokens such as `--color-play-surface`, `--color-reward`, `--font-display` and
+`--shadow-pressable`; keep those choices consistent across components instead of
+forcing every product into the single-accent palette below.
 
 ```css
 :root {

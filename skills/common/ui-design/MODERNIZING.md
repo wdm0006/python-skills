@@ -14,7 +14,9 @@ An app reads as dated for a short list of reasons, nearly all fixable without a
 rewrite:
 
 - Default browser or early-Bootstrap styling: serif body text, blue underlined links
-  everywhere, gradients and bevels, heavy borders on every element.
+  everywhere, gradients and bevels, heavy borders with no consistent role.
+  Consistent outlines and solid offset shadows can be intentional in a game or
+  playful consumer interface; preserve that character when fixing drift.
 - Dense, small text with tight line height and no whitespace.
 - Too many colors and font sizes, chosen per page over the years.
 - Fixed-width desktop layout that does not reflow on a phone.
