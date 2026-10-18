@@ -86,6 +86,29 @@ contrasting fill and offset shadow, and its score a reward accent while keeping
 instructions on a quiet, readable surface. Hierarchy still needs one obvious
 primary action. Expressiveness changes styling, not features or product scope.
 
+Other audiences need their own register, not a default framework theme:
+
+- **Professional B2B tools** should stay calm but carry a real identity: a
+  distinctive palette with one signature accent, a display face for headings and
+  key numerals, and a custom mark. A stock component-library theme with a
+  swapped primary color reads as unfinished.
+- **Developer-facing products** should look developer-made: a dark theme with
+  monospaced type for code, identifiers and most chrome, instead of a light
+  clean-SaaS look. Check contrast on the dark surfaces, not just the light ones.
+- **Consumer products with a theme** should lean into it: illustrated scenes,
+  dividers and textures drawn from the subject, with bold display type, rather
+  than a generic dashboard that happens to have the subject's name on it.
+- **Ornament** (blobs, squiggles, shapes) is fine when it is designed: one
+  consistent shape language and outline weight, cropped by its container,
+  asymmetric but balanced, and never placed over text or controls.
+- **Cleanup removes noise, not color.** When tidying a playful screen, fix
+  alignment, spacing and clutter but keep the large saturated surfaces and
+  display type; flattening it to white and cream turns a character into a
+  template.
+- **Keep an existing logo as shipped** in mockups and redesign targets. A
+  restyle changes the surrounding system; replacing the mark is a separate,
+  explicit brand decision.
+
 ## Step 3 — Tokens first, restyle second
 
 Before changing how any screen looks, introduce **design tokens** — named values
