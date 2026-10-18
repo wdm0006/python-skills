@@ -125,6 +125,16 @@ side. Check: the hierarchy squint test, nothing overflowing at 390px, focus ring
 visible when tabbing, dark mode if supported. Attach the before/after pair to the
 PR — reviewers approve design changes by looking, not by reading CSS diffs.
 
+## App chrome and dense views
+
+The frame around the content is judged as hard as the content itself.
+
+- **Sidebar:** in an app shell, make it a full-bleed rail attached to the left, top and bottom viewport edges, with one background step against the page. A rounded box floating inside a margin wastes width and reads as a widget, not a frame.
+- **Footer:** one slim row (about 48px) of minimal text and a few links. Tall multi-column footers belong on marketing pages, not in a product, and even there they should be earned.
+- **Dense lists and boards:** single-line titles that truncate with a tooltip, compact rows, small buttons, and horizontal scroll inside a board rather than wrapping cards into tall stacks. Density is a hierarchy choice: keep the one primary action per row visible and demote the rest to a menu.
+- **Chrome follows the product's character:** a playful product's header and footer should carry the same outlines, accents and shadows as its content (an outlined floating pill header, a colored or ink footer), not a flat neutral bar that makes the page look like two designs stitched together.
+- **Brand marks are inputs, not design targets:** a restyle uses the shipped logo as-is. Rework the layout, color and type around it; never redraw or "refresh" it as a side effect.
+
 ## Native apps
 
 On iOS and macOS, follow the platform (Apple's Human Interface Guidelines) rather
