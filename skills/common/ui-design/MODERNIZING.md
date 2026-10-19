@@ -77,6 +77,20 @@ widths, including affected focus, hover, checked and theme states. A cleanup
 should preserve the computed appearance; then apply the intended restyle to the
 rule that actually owns the property.
 
+Screenshots miss states and sub-pixel differences, so back a pure deduplication with
+a computed-style diff. Drive the page in a headless browser at one fixed width, in
+each theme, with animations and transitions disabled. For every element (and its
+`::before`/`::after` when they have `content`), dump `getComputedStyle` into JSON,
+once on the base commit and once on the branch, and diff the files. Repeat across
+each screen state (first-run, populated, running, error) and with hover, focus,
+disabled and invalid forced on representative elements. An empty diff means the
+cleanup changed nothing; any entry is a block that was not redundant. Also run a
+structural scan of the stylesheet (for example with a CSS parser) and confirm that
+no selector is still defined twice within the same at-rule context.
+
+Do not pixel-diff regions that show live data such as clocks or countdowns; they
+differ even between two runs of the same commit.
+
 ## Slicing it into PRs
 
 One step above is usually one PR; step 6 is one PR per screen. Each PR:
