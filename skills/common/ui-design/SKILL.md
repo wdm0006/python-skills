@@ -95,6 +95,13 @@ Other audiences need their own register, not a default framework theme:
 - **Developer-facing products** should look developer-made: a dark theme with
   monospaced type for code, identifiers and most chrome, instead of a light
   clean-SaaS look. Check contrast on the dark surfaces, not just the light ones.
+- **Financial and quantitative workbenches** should be dark and very dense:
+  compact rows, small type, many figures per screen, because the job is scanning
+  numbers. Use tabular (fixed-width) numerals and right-align numeric columns so
+  digits line up, keep decimals consistent per column, and reserve color for
+  sign and state (gain/loss, alert) rather than decoration. Never rely on red
+  versus green alone: add a sign, arrow or label. Whitespace-heavy "clean"
+  layouts waste the screen the user came to read.
 - **Consumer products with a theme** should lean into it: illustrated scenes,
   dividers and textures drawn from the subject, with bold display type, rather
   than a generic dashboard that happens to have the subject's name on it.
