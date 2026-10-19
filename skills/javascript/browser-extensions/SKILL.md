@@ -192,6 +192,11 @@ usually what you want, so state it deliberately rather than discovering it. In a
 click handler, clear the clicked id *before* awaiting `chrome.action.openPopup()`,
 and catch that call: it rejects when there is no active window to attach to.
 
+Action buttons (`buttons` on a `basic` notification) are not rendered on every
+OS/Chrome combination. Treat them as a shortcut, never the only route: the body
+click must still reach every action, and a button handler such as snooze must
+re-check pause/session state itself when it reuses a code path that skips it.
+
 ## Your chrome mock is part of the system under test
 
 A hand-rolled `chrome` mock decides which bugs are reachable. Four failure modes,
@@ -286,6 +291,23 @@ a named assertion failure — still red, just unreadable. And a `tests/setup.js`
 that replaces `global.console` swallows probe output even under `--verbose`; write
 to a temp file when you need to see inside a run.
 
+## Smoke-testing the unpacked popup in a real browser
+
+Jest proves logic; a browser pass proves the popup renders and binds. Load the
+unpacked extension in a persistent-context browser driver and open
+`chrome-extension://<id>/popup.html`. Three traps:
+
+- **Do not use string predicates** such as `page.wait_for_function("...")`: they
+  are evaluated with `eval` and violate the extension's CSP. Use locator
+  assertions, or poll `locator.inner_text()` from the host script. Never relax
+  the extension CSP to make verification pass.
+- **Entrance animations wash out screenshots.** A tab switch re-triggers a
+  fade-in; wait for it to finish (or disable animations) before a full-page
+  capture, and never pixel-diff regions that show a live clock or countdown.
+- **Wait on the observable, not on a storage value that may not change.** With
+  one eligible item, a "pick another" action writes the same value back, so wait
+  for the button label to return to idle instead.
+
 ## PR-comment CI steps need two permissions
 
 A workflow step that comments on a pull request via the issues API needs **both**
@@ -314,5 +336,7 @@ MV3 extension health:
 - [ ] at least one test gates a write to prove the handler awaits it
 - [ ] multi-step effects are tested by gating the terminal promise, not only an earlier step
 - [ ] fake timers never swapped for real timers mid-test
+- [ ] notification buttons are optional shortcuts; the body click reaches every action
+- [ ] popup smoke test uses locator waits (no string predicates) and settled animations
 - [ ] PR-comment workflow step has issues: write AND pull-requests: write
 ```
