@@ -155,6 +155,32 @@ side. Check: the hierarchy squint test, nothing overflowing at 390px, focus ring
 visible when tabbing, dark mode if supported. Attach the before/after pair to the
 PR — reviewers approve design changes by looking, not by reading CSS diffs.
 
+### Consolidating CSS without changing the design
+
+Stacked restyles often leave the same selector defined several times. Editing
+the first block can have no visible effect because a later block wins. Before
+retinting or consolidating a component, inspect every definition and the winning
+declarations in browser DevTools.
+
+- Scan with a CSS parser (such as PostCSS), grouping repeated selectors by their
+  enclosing at-rule context. A selector in a dark-mode or narrow-screen media
+  query is not a duplicate of its base rule. Repeated rules can also be deliberate;
+  preserve cascade order when consolidating declarations.
+- For a cleanup intended to preserve appearance, compare base and branch at the
+  same viewport, theme, data and UI state. Dump `getComputedStyle(element)` for
+  matching elements, plus `::before` and `::after` when their `content` is present.
+  This catches a changed winning declaration even when a screenshot looks close.
+- Cover light/dark themes and the relevant empty, active, paused and settings
+  screens, including hover, focus, disabled and invalid controls. Disable
+  animations for the comparison; settling one default screenshot is insufficient.
+- Keep screenshots as a layout check, but mask or freeze live clocks and
+  countdowns before pixel comparison. A base-versus-base capture reveals which
+  differences are nondeterministic rather than caused by the cleanup.
+
+An empty duplicate-selector report proves only structural cleanup. Matching
+computed styles across the exercised states and matching layouts provide the
+evidence that the cleanup preserved the design.
+
 ## App chrome and dense views
 
 The frame around the content is judged as hard as the content itself.
