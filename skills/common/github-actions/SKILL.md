@@ -151,7 +151,7 @@ Most `setup-*` actions have caching built in — prefer it over hand-rolled
 
 # Node
 - uses: actions/setup-node@v4
-  with: { node-version: '20', cache: 'npm' }
+  with: { node-version: '24', cache: 'npm' }
 
 # Go
 - uses: actions/setup-go@v5
