@@ -216,6 +216,53 @@ multipliers. Test broadly, but deliberately:
 - Test the versions you actually support. Dropping an EOL runtime is free minutes.
 - Prefer Linux cells; add macOS/Windows cells only for genuinely OS-specific code.
 
+### Preserve the required check when splitting jobs
+
+Branch protection and rulesets require check names, not the work a job used to
+do. Turning a required `test` job into matrix checks such as `test (3.12)` and
+`test (3.13)` can leave the original `test` requirement waiting forever. Inspect
+the configured requirements before renaming or splitting jobs; preserve the
+exact required name with a small aggregate job:
+
+```yaml
+jobs:
+  test-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest
+
+  test:
+    name: test                 # exact existing required check name
+    needs: [test-matrix]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the matrix to succeed
+        env:
+          RESULT: ${{ needs.test-matrix.result }}
+        run: test "$RESULT" = success
+```
+
+`always()` makes the aggregate run after a failed dependency; the explicit result
+check rejects failure, cancellation and skipping. A bare success step would
+publish a green gate even when the matrix failed. Include every job the old gate
+promised to verify in `needs`, and check each result. Do not put workflow-level
+path filters on this required gate: a workflow that never starts cannot publish
+its aggregate check.
+
+Verify both a passing matrix and a deliberately failing cell on a disposable
+branch, then confirm the PR reports the original required check name. See
+[GitHub's required-check troubleshooting guidance](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)
+for dependency and workflow-skipping behavior.
+
 ## Scheduled workflows bill around the clock
 
 A `schedule:` cron runs whether or not anyone touched the repo — so it bills
