@@ -100,7 +100,7 @@ explicit.** A function that picks a random item should return
 Pure selection is trivially testable, and the write can no longer be silently
 skipped.
 
-## One code path, two entry points — pass a flag
+## Share reminder delivery only when the side effects match
 
 A "show something now" routine usually serves both a scheduled alarm (which must
 respect quiet hours / weekends) and a manual button (which must not). Do not fork
@@ -114,12 +114,25 @@ async function showReminder(skipTimeCheck = false) {
 }
 
 // alarm handler: showReminder();        → gated
-// user action:   showReminder(true);    → always fires
+// manual reminder: showReminder(true);  → schedule bypassed
 ```
 
-Every new user-initiated entry point has to pass `true` — audit them when you add
-one, because the failure ("my button does nothing at 9pm") only reproduces
-off-hours.
+Use the bypass only for a manual action that explicitly requests the same
+reminder delivery. It bypasses the schedule, not every policy: pause and active
+session checks need their own deliberate handling.
+
+A catalog's "select this item" action has different side effects. Reusing
+`showReminder(true)` would send an unwanted notification and update random
+repeat-avoidance history. Give selection its own handler: validate integer
+category/item indices and bounds before reading session state, reject a valid
+future session deadline, then await only the selected-item write. Exact session
+expiry permits selection; use the deadline validation below.
+
+Test the distinction at the handler boundary: a manual reminder works off-hours;
+a catalog selection writes the chosen item without notifying or changing
+repeat-avoidance history; invalid indices and an active session leave storage
+untouched. Sharing a pure lookup helper is useful; sharing an effectful pipeline
+is correct only when the requested effects match.
 
 ## HTML input constraints are inert; validate in JS
 
@@ -328,7 +341,8 @@ MV3 extension health:
 - [ ] numeric settings read with ?? (0 is valid), never ||
 - [ ] storage writes re-read first and rebuild over DEFAULTS; nested objects merged explicitly
 - [ ] selection/computation is pure; persistence is a separate awaited call
-- [ ] manual entry points pass the explicit gate-bypass flag; alarms keep the default
+- [ ] manual reminder delivery bypasses only the intended schedule gate; alarms keep the default
+- [ ] catalog selection validates indices and session state, without notification or repeat-history effects
 - [ ] settings validated in JS (Number.isInteger + range), not by inert HTML min/max
 - [ ] stored deadlines validated as safe integers within Date range; expiry uses strict `>`
 - [ ] popup binds listeners before loading state; state load degrades to defaults
