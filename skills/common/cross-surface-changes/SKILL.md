@@ -181,6 +181,15 @@ Two rules make it survive:
 - **When two ledgers cover the same fact, cite the more rigorously derived one** —
   a measured benchmark row over a read-the-source row — so the weaker claim can't
   outlive its replacement.
+- **Keep dated observations out of the ledger.** Facts that change on their own
+  (current rating, latest released version, a listing's category order) are not
+  claims. Record them in a separate section with the date seen, marked
+  non-citable. Promoting one to a stable identifier guarantees it rots silently
+  in every sentence that quotes it.
+- **Quote the measurement protocol beside every measured figure** (split or
+  walk-forward, warm-up, seed, package version), in the copy as well as the proof
+  artifact. Two surfaces quoting the same metric under different protocols read
+  as a regression to anyone comparing them.
 
 A repo-level check that every factual sentence carries a citation turns this from
 a habit into a gate.
@@ -212,4 +221,5 @@ Across repo boundaries:
 Wording:
 - [ ] Overloaded product terms have written definitions and canonical labels
 - [ ] Factual claims cite a stable ledger identifier; identifiers are append-only
+- [ ] Volatile facts are dated non-citable observations; measured figures carry their protocol
 ```
