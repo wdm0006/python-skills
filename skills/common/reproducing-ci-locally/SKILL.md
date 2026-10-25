@@ -160,6 +160,13 @@ If you prefer `uv run`, pass `--no-sync`. And prefix with `env -u VIRTUAL_ENV`
 when a shell profile exports one — otherwise the run is silently redirected into
 an unrelated environment and its results mean nothing.
 
+The same shape applies to credentials: a stale `GITHUB_TOKEN`/`GH_TOKEN` exported
+by the shell profile takes precedence over a working stored login, so `gh` reports
+"invalid token" even though `gh auth status` also lists a good keyring account.
+Run the command with the variables unset instead of re-authenticating or editing
+credentials: `env -u GITHUB_TOKEN -u GH_TOKEN gh pr checks`. Do this when you are
+reading CI status to confirm a run, not only when pushing.
+
 ## Fix divergence in shared config, not in the workflow
 
 When you find a difference, ask where the fix belongs. A flag added to the
@@ -264,6 +271,7 @@ Environment:
 - [ ] venv created explicitly at CI's runtime version, with CI's extras
 - [ ] Tools driven from that venv (`.venv/bin/python -m …` or `--no-sync`)
 - [ ] `env -u VIRTUAL_ENV` when a shell profile exports one
+- [ ] `env -u GITHUB_TOKEN -u GH_TOKEN gh …` when `gh` rejects a token but a stored login works
 - [ ] Gating linter/formatter/toolchain pinned; local run uses the pinned version
 
 Running:
