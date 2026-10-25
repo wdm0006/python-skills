@@ -709,6 +709,34 @@ runs afterward. A business-hours branch then follows whatever the runner's local
 time happens to be, so the suite is green during the day and red at night. Drive
 the pending work deterministically instead of sleeping inside a frozen-clock test.
 
+**Pin the timezone, and test the days that are not 24 hours long.** Code that
+groups by local calendar day, computes "midnight today", or adds `24 * 3600`
+seconds is correct on most days and wrong on a DST transition (a 23- or 25-hour
+day). A frozen clock does not help: the same instant lands on a different local
+day depending on the runner's zone, so the test passes on a UTC CI box and on a
+developer laptop for different reasons. Choose a zone with DST, a date on a
+transition, and assert exact per-day values.
+
+The process zone is read once at startup in many runtimes (Node, C-library
+`localtime`), so changing the environment variable inside the test is too late.
+Run the code under test in a child process with the zone set:
+
+```python
+def test_daily_totals_on_spring_forward_day():
+    env = {**os.environ, "TZ": "America/New_York"}   # 2025-03-09 has 23 hours
+    out = subprocess.run(
+        ["node", "summarize.js", "fixtures/dst_week.json"],
+        env=env, capture_output=True, text=True, check=True,
+    ).stdout
+    assert json.loads(out)["2025-03-09"] == 7        # exact, not "> 0"
+```
+
+In pure Python, prefer passing an explicit `ZoneInfo` into the function; where the
+code uses the ambient zone, set `TZ` and call `time.tzset()` (POSIX only) in a
+fixture and restore it afterward. Also write the midnight case: an event at
+exactly 00:00 local belongs to the new day, and a future event must not leak into
+today's total.
+
 ## Prove Async Completion Ordering
 
 An immediately resolved mock can hide a missing `await`: the side effect finishes
@@ -778,7 +806,8 @@ Testing:
       value / pins the bug), and every file embedding the old value updated
 - [ ] Values from third-party computations asserted differentially, or measured
       and pinned with a tolerance sized to the bug's gap — never estimated
-- [ ] No ambient state read unpinned (env vars, module globals, CWD, clock)
+- [ ] No ambient state read unpinned (env vars, module globals, CWD, clock, timezone)
+- [ ] Local-day logic tested on a DST-transition day under a pinned `TZ`
 - [ ] Coverage > 85%
 - [ ] Tests run in CI
 ```
