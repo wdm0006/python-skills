@@ -320,6 +320,16 @@ unpacked extension in a persistent-context browser driver and open
 - **Wait on the observable, not on a storage value that may not change.** With
   one eligible item, a "pick another" action writes the same value back, so wait
   for the button label to return to idle instead.
+- **A step that only records is not a guard.** A smoke step that logs "what
+  happened" (a reminder replaced the running exercise, the open popup still shows
+  the old count) and then prints PASS keeps passing after the bug is fixed *and*
+  after it regresses. Every PASS label must come from an assertion on the fixed
+  behavior; keep genuinely exploratory observations under a different label that
+  cannot turn the run green. Also keep asserted message text in one place shared
+  with the UI: when validation copy changes (e.g. "hour" becomes "time"), a
+  harness holding a literal copy fails with the old string and gets dismissed as
+  noise. Never read a harness exit status as release sign-off until each step's
+  assertion is known to fail when its fix is reverted.
 
 ## PR-comment CI steps need two permissions
 
