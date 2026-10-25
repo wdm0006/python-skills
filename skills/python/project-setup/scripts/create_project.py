@@ -181,7 +181,7 @@ def create_project(
 
     # Create __init__.py
     init_py = dedent(f'''
-        {f"{description}."!r}
+        {json.dumps(f"{description}.")}
 
         __version__ = "0.1.0"
     ''').strip()
