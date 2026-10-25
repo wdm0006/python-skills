@@ -72,6 +72,9 @@ Or install a language-agnostic bundle:
 # Verify third-party libraries, APIs, build backends, and scraped documents
 /plugin install verifying-external-behavior@dev-skills
 
+# Run selected agent-qa web tests and inspect results and memory
+/plugin install agent-qa-testing@dev-skills
+
 # Build and verify release artifacts
 /plugin install shipping-build-artifacts@dev-skills
 
@@ -202,6 +205,7 @@ After installation, you can verify the skills are loaded by running:
 
 | Skill | Description | Based On |
 |-------|-------------|----------|
+| **agent-qa-testing** | Run selected natural-language web tests with agent-qa, advanced memidex memory, and self-improvement; validate selection, inspect recorded outcomes, and report the evidence for the requested flow | [agent-qa CLI](https://vostride.com/docs/agent-qa/cli) |
 | **rendering-untrusted-content** | Render stored/authored/imported content into HTML without shipping XSS — enumerating autoescape bypasses (`\|safe`, `Markup`, `innerHTML`), sanitizing Markdown output with an allowlist (Markdown preserves raw HTML by design), keeping table-cell `style` so alignment survives, escaping on both the server and the DOM, and sanitization tests that assert on the rendered prose rather than the JSON-LD copy | — |
 | **keeping-git-repos-clean** | Prevent, detect, and remediate committed secrets and dev artifacts — .gitignore, `git rm --cached`, history scrubbing, credential rotation. Bundled into every language's plugin. | [Guide to Python Libraries](https://mcginniscommawill.com/guides/python-library-development/) |
 | **running-github-actions-efficiently** | Build GitHub Actions workflows that gate the intended work — focused triggers, pinned toolchains, explicit permissions, reproducible local commands, and jobs that fail when their checks fail | — |
@@ -246,6 +250,7 @@ After installation, you can verify the skills are loaded by running:
 
 ### Language-agnostic
 
+- **agent-qa-testing** — existing agent-qa browser tests: validate and select a flow, execute within the requested scope, and inspect run evidence and memory. Requires an installed agent-qa CLI; live runs need its browser and model provider.
 - **resumable-sync-jobs** — batch/sync jobs, cron tasks, importers, and paginated fetchers (partial-failure exit codes, resumable checkpoints, bounded retries, quota compensation).
 - **verifying-external-behavior** — integrating a dependency, endpoint, or build backend (probe the exact call, inspect outbound parameters, validate fakes against the real service, skip the dry-run shortcut).
 - **shipping-build-artifacts** — build/package scripts, `dist/` copy steps, committed compiled assets, and release workflows that upload a zip or installer (fail on missing inputs, bound size both ways, rebuild-and-diff committed bundles, verify the artifact before publishing).
