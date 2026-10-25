@@ -27,3 +27,17 @@ jobs:
       # under plain stdlib unittest with nothing installed.
       - name: Run the test suite with unittest
         run: uv run --no-project python -m unittest discover -s tests
+
+  scaffold-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      # A freshly generated library must pass its own lint, tests and build,
+      # and its built wheel must import from outside the project directory.
+      - name: Smoke-test a scaffolded library
+        run: bash tests/smoke_scaffold.sh
