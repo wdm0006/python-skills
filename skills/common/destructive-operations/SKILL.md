@@ -91,6 +91,31 @@ The same distinction in Python is `Path(p) == base or base in Path(p).parents`,
 not `p.startswith(str(base))`. Any time a check compares paths as strings, ask
 what a sibling with a longer name does to it.
 
+## Test recovery against the target your setup command creates
+
+A dedicated-target guard can be correct while the product's recovery workflow is
+unusable. Setup may generate a tracked scheduler workflow or configuration file
+outside the owned state directory. Routine runs work, but the first rebuild
+refuses the very repository the tool created.
+
+Exercise the lifecycle, not just a hand-built state-only fixture:
+
+1. Create a disposable target through the real setup/scaffolding path, including
+   optional scheduled-operation files, and track what the instructions tell the
+   user to commit.
+2. Run the recovery preflight or real rebuild there. A successful ordinary run
+   or dry-run is insufficient when neither reaches the destructive guard.
+3. Assert the intended recovery outcome and the fate of the generated files. If
+   recovery refuses, verify nothing changed and document an actionable recovery
+   procedure that preserves those files.
+
+Do not solve this by allowing an entire configuration directory through the
+guard. Permission to accept a path is not a promise to preserve it: a later
+remove-all step can still delete every newly admitted file. Any exception needs
+an explicit ownership and preservation policy, plus a test that unrelated files
+remain rejected. Otherwise keep the refusal and provide a separate safe recovery
+procedure; a scaffold should not silently invalidate its own recovery contract.
+
 ## Name validation and resolved containment are two checks, not one
 
 When a public argument selects a file — a baseline name, a template id, a report
