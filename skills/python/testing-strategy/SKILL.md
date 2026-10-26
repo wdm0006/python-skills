@@ -227,6 +227,33 @@ assert result.overall_score < 100
 it pass documents the bug as acceptable. Assert the *correct* behavior and let it
 fail until the bug is fixed (use `xfail(strict=True)` to track it without red CI).
 
+### Smoke observations are not regression assertions
+
+A smoke harness can exercise a broken interaction, record its output, and print
+`PASS` because no exception occurred. A screenshot or a logged status proves the
+scenario ran; it does not prove the behavior is correct. Read the assertions
+behind each PASS label before citing a smoke run as regression coverage.
+
+```python
+# BAD — records stale UI just as happily as correct UI.
+observations["completion_text"] = status.inner_text()
+
+# GOOD — checks the promised result in the same still-open view.
+expect(status).to_have_text("1 completed today")
+```
+
+After fixing a previously observed defect, promote the observation to an
+assertion of the intended behavior. For example, if a background reminder must
+not replace an exercise during an active session, capture its identity, trigger
+the reminder, wait for the handler to complete, and assert the identity is
+unchanged. Reloading the view before checking completion would hide a failure to
+refresh the already-open view.
+
+Verify that restoring the old behavior fails that assertion. Keep exploratory
+observations labelled as observations, and report them separately from checked
+outcomes; a historical known-issue scenario does not become a regression guard
+merely because the product fix merged.
+
 ## Prove the Test Can Fail: Mutate the Fix
 
 Every regression test makes an implicit claim — *this would have caught the bug*.
