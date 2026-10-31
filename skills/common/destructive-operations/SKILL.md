@@ -161,6 +161,18 @@ explicit about it:
 Say which one you chose in the PR description; a reviewer cannot tell from the
 diff whether the dry-run gap is intentional.
 
+The converse gap is a preview that is *too incremental*. If the real run resets
+state before its main loop (clears per-item counters, drops a checkpoint, empties
+a "already done" set) and the dry-run skips that reset because it "mutates
+state", the loop sees the old state and reports only the deltas — a preview of a
+full rebuild that looks like a routine incremental run. Rule: any *in-memory*
+state change the real run performs before the preview-able loop must also happen
+in the dry-run, and only the *persistent* effects (writes, history rewrites,
+deletes) sit behind the `!dry_run` check. Put the reset in one shared
+"prepare" step both modes call, so the two cannot drift. Test it by asserting the
+dry-run output for a rebuild on an already-synced fixture lists the full set of
+items, not zero.
+
 ## Know what the caller does with your refusal
 
 Tightening validation only helps if the new error reaches somebody. A broad
@@ -213,6 +225,7 @@ integration test asserts on `result["error"]`, not on `pytest.raises`.
 - [ ] Caller-supplied names are validated *and* resolved-path contained
 - [ ] Every entry point routes through both checks, including internal helpers
 - [ ] The dry-run/preview gap is intentional and stated
+- [ ] Pre-loop in-memory resets run in dry-run too (shared prepare step); only persistence is gated
 - [ ] Tests mutate each half of the guard independently
 - [ ] A sibling-name (`x-backup/`) and a symlink fixture both exist
 - [ ] Refusal tests assert the target is unchanged, not just that an error was raised
