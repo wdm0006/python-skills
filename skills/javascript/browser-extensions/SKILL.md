@@ -172,6 +172,36 @@ failure instead of showing success. Test valid boundaries `0` and `23`, and
 reject blank, fractional, trailing-text, negative, and `24` inputs; every rejected
 save must leave storage untouched and show an error.
 
+## Export only preferences, and download the reviewed snapshot
+
+A preferences export is a separate data contract from `chrome.storage`. Build it
+with a pure allowlist serializer; do not dump storage or spread the stored object
+and delete today's known runtime keys. New session/history fields must stay out
+of the export without requiring another exclusion.
+
+```js
+function buildPreferencesExport(settings) {
+  return { workStartHour: settings.workStartHour,
+           workEndHour: settings.workEndHour };
+}
+
+// Prepare the review, then retain the exact serialized payload.
+const reviewedJson = JSON.stringify(buildPreferencesExport(settings), null, 2);
+preview.textContent = reviewedJson;
+// The Download handler creates its Blob from reviewedJson, not a fresh read.
+```
+
+If storage changes while the review is open, re-reading it on Download silently
+exports something the user never reviewed. Keep the reviewed string until the
+review is dismissed or explicitly regenerated.
+
+Test the serializer with extra runtime/history fields and assert the whole
+exported object, not just that preference keys are present. Change storage after
+preparing the preview and assert the downloaded Blob's text equals the reviewed
+string. In jsdom, provide `URL.createObjectURL` and spy on
+`HTMLAnchorElement.prototype.click` to inspect the payload without relying on
+unsupported navigation.
+
 ## A stored deadline must be a usable `Date`, not just a number
 
 Snooze/pause features persist an epoch-millisecond deadline and compare it to
