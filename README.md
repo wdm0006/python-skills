@@ -16,6 +16,21 @@ First, add this repository as a plugin marketplace in Claude Code:
 
 ### Step 2: Install the Bundles You Need
 
+#### Choose a starting bundle
+
+Pick the row closest to your task, then run that bundle's command from the install examples below (listed under "Install a per-language bundle" and "Or install a narrower Python bundle"). Bundles overlap and shared procedures may already be included in more than one; the manifest `.claude-plugin/marketplace.json` is the authority on exact membership.
+
+| Task | Starting bundle | What it contains | Try this request after installing |
+|---|---|---|---|
+| Start a Python library | `python-library-foundations` | Project setup, code quality and testing guidance. | "Set up a new Python library called `acme-parser` with tests, linting and CI." |
+| Improve an existing library | `python-library-quality` | Security, performance, lazy-dependency, API design, destructive-operation, git hygiene and GitHub Actions guidance, plus external-behavior verification and untrusted-content rendering. | "Review this library's public API and flag security and performance risks." |
+| Build a Python web app | `python-web-app` | A FastAPI/Postgres reference architecture, plus configuration, untrusted-content rendering and UI design guidance. | "Plan the structure for a FastAPI app with login and Stripe billing." |
+| Expose Python tools through MCP | `python-mcp-servers` | FastMCP server design, plus cross-surface consistency and configuration guidance. | "Wrap this command-line tool as an MCP server with clear error handling." |
+| Build an Apple app | `swift-apps` | Swift/Xcode build and CI guidance, TestFlight/App Store release guidance, plus git hygiene, Actions and UI design. | "Set up unsigned CI builds for my Xcode project." |
+| Build a browser extension | `browser-extensions` | Manifest V3 guidance, plus configuration, build artifacts, rendering, git hygiene, Actions and UI guidance. | "Review my service worker's message handling and chrome.storage usage." |
+
+[Jump to the install examples](#step-2-install-the-bundles-you-need) for the commands.
+
 Install a per-language bundle:
 
 ```
