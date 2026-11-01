@@ -48,7 +48,7 @@ cli = ["click>=8.0"]
 
 ## Common Patterns
 
-```python
+```python fragment
 # File I/O with stdin/stdout support
 @click.argument('input', type=click.File('r'), default='-')
 @click.argument('output', type=click.File('w'), default='-')

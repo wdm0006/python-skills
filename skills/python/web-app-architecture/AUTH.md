@@ -71,7 +71,7 @@ def test_verification_does_not_apply_creation_policy(monkeypatch):
 Also test every public creation entry point rejects an over-limit value. Those
 tests catch duplicated validation that later drifts away from the central rule.
 
-```python
+```python fragment
 # api/deps.py
 async def current_user(...) -> User | None: ...        # may be anonymous
 async def require_user(user=Depends(current_user)) -> User:

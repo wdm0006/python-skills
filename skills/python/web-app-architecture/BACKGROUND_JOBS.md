@@ -85,7 +85,7 @@ in which a fast-failing worker writes its terminal status *first* and the submit
 request then overwrites it with `processing` — permanently, since nothing will run
 again to correct it.
 
-```python
+```python fragment
 # BAD — the worker may finish before line 2, and failure is indistinguishable
 # from success.
 await queue.enqueue(job)

@@ -1,3 +1,4 @@
+import ast
 import re
 import unittest
 from pathlib import Path
@@ -33,11 +34,72 @@ def relative_links(markdown_file):
             yield target
 
 
+def python_fences(text):
+    """Yield (fence index, info tokens, source) while tracking every language.
+
+    Space-indented list fences are supported; remove the opening indentation
+    from code lines. Pipe-prefixed table cells and blockquotes are skipped.
+    Fences on the same line as a list marker are also skipped.
+    Indices are one-based across all fenced blocks in the file.
+    """
+    fence = None
+    index = 0
+    for line in text.splitlines(keepends=True):
+        if fence is None:
+            opening = re.match(r"^( *)(`{3,}|~{3,})([^\n]*)$", line.rstrip("\r\n"))
+            if opening is None:
+                continue
+            indent, fence, info = opening.groups()
+            info = info.split()
+            index += 1
+            source = []
+        elif re.fullmatch(r" *" + re.escape(fence[0]) + "{" + str(len(fence)) + r",}[ \t]*", line.rstrip("\r\n")):
+            if info and info[0] == "python":
+                yield index, info, "".join(source)
+            fence = None
+        else:
+            source.append(line[len(indent):] if line.startswith(indent) else line)
+    if fence is not None and info and info[0] == "python":
+        yield index, info, "".join(source)
+
+
 class SkillContentTests(unittest.TestCase):
     def skill_files(self):
         files = sorted(SKILLS.glob("*/*/SKILL.md"))
         self.assertTrue(files)
         return files
+
+    def test_python_fence_scanner_tracks_delimiters_and_indentation(self):
+        text = (
+            "````markdown\n```python\nnot python!\n```\n````\n"
+            "```bash\necho hello\n```\n"
+            "1. Example:\n\n   ```python\n   if True:\n       value = 1\n   ```\n"
+            "~~~python fragment\nexcept Exception:\n~~~\n"
+            "| ```python |\n| broken! |\n| ``` |\n"
+            "> ```python\n> broken!\n> ```\n"
+            "```python\nvalue = 2\n````\n"
+            "```python\nvalue = 3\n"
+        )
+        self.assertEqual(list(python_fences(text)), [
+            (3, ["python"], "if True:\n    value = 1\n"),
+            (4, ["python", "fragment"], "except Exception:\n"),
+            (5, ["python"], "value = 2\n"),
+            (6, ["python"], "value = 3\n"),
+        ])
+
+    def test_python_fences_parse(self):
+        """Parse Python examples; only ``python fragment`` opts out.
+
+        Intentional partial statements use that exact info string so Markdown
+        still displays Python code. See python_fences for container handling.
+        """
+        files = sorted(SKILLS.rglob("*.md"))
+        self.assertTrue(files)
+        for markdown_file in files:
+            for index, info, source in python_fences(markdown_file.read_text()):
+                with self.subTest(file=str(markdown_file.relative_to(ROOT)), fence=index):
+                    if info != ["python", "fragment"]:
+                        ast.parse(source, filename=str(markdown_file.relative_to(ROOT)))
 
     def test_frontmatter_has_name_and_description(self):
         for skill_file in self.skill_files():

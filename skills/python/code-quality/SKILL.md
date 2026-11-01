@@ -103,7 +103,7 @@ domain is `None`-or-object, or the one falsy case is an empty container (e.g.
 `False`, or `""` are meaningful inputs, it is a bug — use
 `x if x is not None else default`.
 
-```python
+```python fragment
 # Bad: identity comparison against a literal (ruff flags this as F632)
 if name is not "":   # CPython interning makes it *sometimes* work — never rely on it
 
@@ -320,7 +320,7 @@ output.
 
 ## Pythonic Idioms
 
-```python
+```python fragment
 # Iteration
 for item in items:           # Not: for i in range(len(items))
 for i, item in enumerate(items):  # When index needed
