@@ -126,6 +126,32 @@ Record the checked version/build and verification date with the claim evidence.
 Recheck distribution before publishing a prepared launch draft; a source merge
 alone must not promote future copy into present-tense claims.
 
+### Keep stable claims separate from dated observations
+
+A claim ledger lets copy cite verified facts without duplicating their evidence.
+Give each reusable claim a stable identifier, record its evidence in the ledger,
+and cite that identifier from the copy. Append new identifiers; never renumber or
+reuse one that existing content cites.
+
+Keep facts that change independently of a code change in a separate, dated
+observation section: store ratings, the latest released version and release date,
+and listing category order. Do not give these observations evergreen claim IDs.
+A citation preserves provenance; it does not keep the fact current.
+
+```text
+Claim ledger
+C1: Data is stored on the device. Evidence: verified storage behavior of build 7.
+
+Dated observations (not reusable claim evidence)
+2026-06-12: Store listing shows version 2.4 and a 4.6 rating.
+```
+
+If a page needs a volatile fact, verify it again for publication and present it
+with an as-of date and source, or omit it. Do not promote an observation into a
+stable claim merely to satisfy a copy citation check. Keeping the two sections
+separate makes the next refresh explicit instead of letting an old observation
+survive indefinitely behind a valid-looking citation.
+
 ## Review checklist
 
 - [ ] A stranger can say what it is and who it's for after 5 seconds above the fold
@@ -135,3 +161,4 @@ alone must not promote future copy into present-tense claims.
 - [ ] Pricing shows the real price and limits
 - [ ] Phone layout checked; Lighthouse performance and accessibility reviewed
 - [ ] Every claim and screenshot verified against the build available through the CTA, for its advertised audience
+- [ ] Reusable claims have stable evidence IDs; volatile facts are rechecked and dated, not cited as evergreen claims
