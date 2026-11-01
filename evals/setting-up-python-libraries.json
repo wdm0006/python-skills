@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "skill": "setting-up-python-libraries",
+  "positive_prompts": [
+    "Create a new Python library called acme-utils with pytest, ruff and CI ready to go.",
+    "Convert my setup.py and requirements.txt project to a modern pyproject.toml with uv.",
+    "Add a Makefile and pre-commit hooks for linting and testing to my Python package."
+  ],
+  "negative_prompts": [
+    {"prompt": "Write property-based tests with Hypothesis for my parser module.", "expected_skill": "testing-python-libraries"},
+    {"prompt": "Build a wheel and publish my library to PyPI with trusted publishing.", "expected_skill": "packaging-python-libraries"},
+    {"prompt": "Bump the version to 2.0.0 and update the changelog for the release.", "expected_skill": "managing-python-releases"}
+  ],
+  "rubric": [
+    "Runs skills/python/project-setup/scripts/create_project.py (or equivalent steps) from a scratch parent directory, producing a src-layout package directory",
+    "pyproject.toml exists with [project] metadata, a build backend, and a src/<package>/py.typed marker",
+    "A tests/ directory exists and the generated test passes when pytest is run",
+    "Ruff lint and format checks pass on the generated project",
+    ".github/workflows contains a CI workflow that runs lint and tests",
+    "The helper is not run inside the skills repository checkout, leaving no stray generated directory"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "skill": "reproducing-ci-locally",
+  "positive_prompts": [
+    "The lint job fails in CI but passes on my machine; help me reproduce it locally.",
+    "Before I push this branch, run the same checks CI will run.",
+    "CI is red on a file I never touched; work out why it differs from my local run."
+  ],
+  "negative_prompts": [
+    {"prompt": "Our CI bill is too high; reduce wasted runner minutes and duplicate runs.", "expected_skill": "running-github-actions-efficiently"},
+    {"prompt": "A workflow step that comments on pull requests fails with a 403.", "expected_skill": "permissioning-ci-workflows"},
+    {"prompt": "Resolve the merge conflicts between my branch and main.", "expected_skill": "concurrent-branches"}
+  ],
+  "rubric": [
+    "The commands run locally are taken from the workflow file (working directory, flags, env, interpreter version), not assumed from a Makefile",
+    "The tool version CI resolves is identified and the same version is used locally",
+    "If an earlier gate step short-circuits later ones, it is unblocked so the following steps are also run",
+    "The final report states the exit status of each reproduced step and whether the run is green",
+    "A red result is not explained away without a reproduction or a cited log line"
+  ]
+}

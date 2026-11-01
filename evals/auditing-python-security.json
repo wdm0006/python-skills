@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "skill": "auditing-python-security",
+  "positive_prompts": [
+    "Audit my Python library for security vulnerabilities before we release.",
+    "Set up Bandit, pip-audit and detect-secrets scanning in CI for this package.",
+    "Check this code for SQL injection, command injection and unsafe pickle loading."
+  ],
+  "negative_prompts": [
+    {"prompt": "Render user-submitted Markdown as HTML without allowing script injection in my web page.", "expected_skill": "rendering-untrusted-content"},
+    {"prompt": "I accidentally committed a .env file; remove it from the repo and fix the ignore rules.", "expected_skill": "keeping-git-repos-clean"},
+    {"prompt": "Do a general health review of my library covering structure, docs and tests.", "expected_skill": "reviewing-python-libraries"}
+  ],
+  "rubric": [
+    "Runs skills/python/security-audit/scripts/security_scan.py (or the individual scanners) against the target project path",
+    "Reports which scanners ran and which did not; a scanner that was unavailable is reported as not run, never as a clean result",
+    "Findings are listed with severity and file location, with blocking findings (high severity, vulnerable dependencies, detected secrets) called out separately",
+    "Each reported injection or deserialization issue includes a concrete remediation",
+    "When asked to wire CI, a workflow step invokes the scan and fails the job on blocking findings"
+  ]
+}
