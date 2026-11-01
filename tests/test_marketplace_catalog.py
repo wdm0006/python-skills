@@ -83,6 +83,38 @@ class MarketplaceCatalogTests(unittest.TestCase):
         )
 
         self.assertEqual(expected - set(complete["skills"]), set())
+    def test_readme_plus_joined_bundle_lists_match_manifest_membership(self):
+        """Gate README bundle bullets written as `a` + `b` + ... against skills[].
+
+        Scope: only bullets in "Plugin Bundles" whose text after the dash is a
+        pure `+`-joined list of backticked frontmatter names. Prose-only
+        bullets (narrower Python, language-agnostic) are not checked.
+        """
+        section = re.search(r"^## Plugin Bundles\n(?P<body>.*?)(?=^## )", self.readme, re.M | re.S)
+        self.assertIsNotNone(section, "README 'Plugin Bundles' section not found")
+        plugins = {plugin["name"]: plugin for plugin in self.manifest["plugins"]}
+        names_to_paths = {
+            read_frontmatter_name(skill_file): f"./{skill_file.parent.relative_to(ROOT)}"
+            for skill_file in (ROOT / "skills").glob("*/*/SKILL.md")
+        }
+        name = r"`[a-z0-9-]+`"
+        pattern = rf"^- \*\*(?P<bundle>[^*]+)\*\* — (?P<list>{name}(?: \+ {name})*)\.$"
+        checked = 0
+        for match in re.finditer(pattern, section.group("body"), re.M):
+            bundle = match.group("bundle")
+            with self.subTest(bundle=bundle):
+                self.assertIn(bundle, plugins)
+                listed = set()
+                for skill_name in re.findall(r"`([^`]+)`", match.group("list")):
+                    self.assertIn(skill_name, names_to_paths, f"{bundle}: unknown skill {skill_name}")
+                    listed.add(names_to_paths[skill_name])
+                self.assertEqual(
+                    listed,
+                    set(plugins[bundle]["skills"]),
+                    f"{bundle}: README list differs from marketplace.json skills[]",
+                )
+                checked += 1
+        self.assertGreaterEqual(checked, 5, "expected the +-joined language bundles to be parsed")
 
 
 if __name__ == "__main__":

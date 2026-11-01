@@ -228,12 +228,12 @@ After installation, you can verify the skills are loaded by running:
 ### Per-language
 
 - **python-library-complete** — all Python skills, plus the web-app architecture and MCP-server skills and git hygiene, for comprehensive Python development.
-- **go-projects** — `building-go-projects` + `keeping-git-repos-clean`.
-- **swift-apps** — `building-swift-apps` + `shipping-swift-apps` + `designing-interfaces` + `building-accessible-interfaces` + `keeping-git-repos-clean`.
+- **go-projects** — `building-go-projects` + `keeping-git-repos-clean` + `running-github-actions-efficiently`.
+- **swift-apps** — `building-swift-apps` + `shipping-swift-apps` + `designing-interfaces` + `building-accessible-interfaces` + `keeping-git-repos-clean` + `running-github-actions-efficiently`.
 - **shipping-swift-apps** — TestFlight/App Store releases on their own (App Store Connect API key auth, fastlane metadata lanes, headless archive and upload, build-number and version-train rules) for when the build side is already sorted.
-- **rust-crates** — `building-rust-crates` + `keeping-git-repos-clean`.
-- **scala-projects** — `building-scala-projects` + `keeping-git-repos-clean`.
-- **browser-extensions** — `building-browser-extensions` + `wiring-application-config` + `shipping-build-artifacts` + `rendering-untrusted-content` + the four UI design skills + `keeping-git-repos-clean`.
+- **rust-crates** — `building-rust-crates` + `keeping-git-repos-clean` + `running-github-actions-efficiently`.
+- **scala-projects** — `building-scala-projects` + `keeping-git-repos-clean` + `running-github-actions-efficiently`.
+- **browser-extensions** — `building-browser-extensions` + `wiring-application-config` + `shipping-build-artifacts` + `rendering-untrusted-content` + `designing-interfaces` + `building-accessible-interfaces` + `designing-interaction-states` + `designing-marketing-pages` + `keeping-git-repos-clean` + `running-github-actions-efficiently`.
 
 ### Narrower Python bundles
 
