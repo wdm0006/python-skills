@@ -229,7 +229,7 @@ empty-result fixture already in your suite, which keeps passing while now
 exercising the failure branch. The distinction you are drawing is *unmeasured*
 vs. *measured zero*, and only `is None` draws it.
 
-```python
+```python fragment
 if not referrers:            # Bad — a target with no referrers is not a failure
 if referrers is None:        # Good
 ```

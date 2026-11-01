@@ -46,7 +46,7 @@ so you can refactor internals freely.
   and signals intent to readers and tools. Everything not in `__all__` is fair
   game to change.
 
-```python
+```python fragment
 __all__ = ["encode", "decode", "Encoder"]
 
 def encode(...): ...

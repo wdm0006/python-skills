@@ -212,7 +212,7 @@ guards one exception at a time.
 
 Analysis entry points are often wrapped so a caller never sees a traceback:
 
-```python
+```python fragment
 except Exception as e:
     return {"error": f"Analysis failed: {e}", "features": {}, "flags": {"suspicious": False}}
 ```

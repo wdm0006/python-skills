@@ -2,7 +2,7 @@
 
 ## Fixture Scopes
 
-```python
+```python fragment
 @pytest.fixture  # function scope (default) - runs per test
 @pytest.fixture(scope="class")    # per test class
 @pytest.fixture(scope="module")   # per test file

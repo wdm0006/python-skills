@@ -21,7 +21,7 @@ doesn't cover — and then port the guarantees, don't skip them.
 
 The reader indexes one section; the defaults declare another:
 
-```python
+```python fragment
 # consumer
 cache_cfg = config["cache"]         # section name that exists nowhere
 store = ResultStore(cache_cfg)

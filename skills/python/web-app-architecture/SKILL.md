@@ -59,7 +59,7 @@ A module-level `app` (a factory is fine but unnecessary), routers registered in 
 loop, cross-cutting concerns as middleware, and a health check that proves the DB
 is reachable. Full template in **[STACK.md](STACK.md)**.
 
-```python
+```python fragment
 # main.py (shape)
 app = FastAPI(docs_url=None if settings.is_prod else "/docs")
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, ...)

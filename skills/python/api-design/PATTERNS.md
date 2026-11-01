@@ -22,7 +22,7 @@ free to evolve. Put everything after `*` that isn't an obvious positional.
 
 ```python
 # Bad: boolean trap, order-dependent, unreadable at the call site
-def connect(host, 5432, True, False, 30):
+def connect(host, port=5432, tls=True, retry=False, timeout=30):
     ...
 
 # Good: one clear positional, the rest keyword-only
@@ -166,7 +166,7 @@ progressive disclosure pattern in SKILL.md).
 tokens = tokenize(text)
 
 # ...and the knobs exist when needed, without changing the simple path.
-tokens = tokenize(text, *, lowercase=False, max_len=512, strip_accents=True)
+tokens = tokenize(text, lowercase=False, max_len=512, strip_accents=True)
 ```
 
 Defaults should encode the safest, most common intent. A caller who reads only
