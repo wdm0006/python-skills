@@ -220,6 +220,35 @@ A finite but oversized value (`1e20`) passes `Number.isFinite`, then
 forever. `null`/`NaN`/strings must read as "not paused", never as a deadline. Test
 the exact-expiry boundary (`deadline === now` is expired) and an over-range value.
 
+## Calendar summaries need calendar-boundary tests
+
+A local activity calendar groups by local day, not by elapsed 24-hour buckets.
+Test the actual popup summarizer rather than a second implementation of its date
+math. Launch it in a Node child process with an explicit timezone so the test does
+not inherit the developer's or CI runner's zone:
+
+```js
+const result = spawnSync(process.execPath, ['tests/calendar-probe.cjs'], {
+  env: { ...process.env, TZ: 'America/New_York' },
+  encoding: 'utf8',
+});
+expect(result.status).toBe(0);
+expect(JSON.parse(result.stdout)).toEqual(expectedDailyTotals);
+```
+
+Import `spawnSync` from `node:child_process`. The probe loads the production
+summarizer and emits its result as JSON; keep assertions in the parent so a probe
+failure cannot look like an empty successful summary. Fix the summarizer's notion
+of "now" inside that process as well; setting `TZ` does not freeze time.
+
+Use distinct values for records just before midnight, exactly at midnight,
+within today, and later than the fixed current instant. Assert the entire daily
+result: a matching grand total can hide a record assigned to the wrong day.
+Test midnight inclusion and future exclusion separately so an implementation
+that drops both cannot pass. Include a spring-forward date such as 2025-03-09
+in that zone, whose local day is 23 hours; a UTC-only fixture cannot expose
+subtracting a fixed 24 hours to find the previous local midnight.
+
 ## A throw during `DOMContentLoaded` kills the whole popup
 
 Popup init typically loads state *and* binds listeners in one handler. If the
