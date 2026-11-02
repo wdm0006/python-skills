@@ -68,8 +68,10 @@ absent from storage, code that spreads a local variable persists a **partial**
 settings record — and the next reader's `stored || DEFAULTS` keeps the truthy
 partial, so a missing nested key throws.
 
-Re-read inside the write path, and rebuild over the defaults rather than over
-whatever snapshot you happen to be holding:
+Re-read inside the write path to avoid carrying an old selection-time snapshot,
+and rebuild over the defaults rather than over whatever snapshot you happen to
+be holding. This narrows the stale-read window; it does **not** make the update
+atomic:
 
 ```js
 async function persistLastIndex(category, index) {
@@ -93,6 +95,18 @@ Two things that snippet is doing deliberately:
   `DEFAULTS.enabledCategories` — it is the same object, typically a module
   global shared by worker and popup. Mutating the stored copy later reaches back
   and rewrites your defaults for the rest of the process.
+
+A fresh read still races: worker A reads, popup B saves, then A writes its
+whole object and overwrites B's change. Awaiting A's `set` proves completion,
+not isolation. If both contexts can update the same key, route their writes
+through one owner and serialize the **whole read–merge–write sequence** there;
+serializing only `set` leaves both callers free to read the same old value.
+Every writer must use that route, including the popup's save handler.
+
+Test this with a controlled interleaving: hold A after its read, request B's
+save, then release A and await both acknowledgements. Assert the final settings
+contain both independent changes. A synchronous storage mock or a test that
+places B's save only *before* A's fresh read cannot expose the remaining race.
 
 The cleanest version of this rule: **make selection pure and persistence
 explicit.** A function that picks a random item should return
