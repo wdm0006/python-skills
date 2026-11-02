@@ -200,6 +200,13 @@ standard navigation and list patterns, 44pt minimum touch targets. "Looks like a
 good Apple app" beats "looks like our website". The fundamentals above still apply
 — hierarchy, spacing rhythm, consistency — expressed through platform styles.
 
+**Cover every platform the product ships on.** When a product runs on desktop and
+phone (or Mac and iPhone), a design target, mockup or restyle issue must include
+each one. A single-platform mock leaves the other to be improvised in code and
+drift from the intended language. Share the tokens and visual identity across
+platforms, but design each layout natively: a desktop sidebar and dense table do
+not shrink into a phone screen, they become a tab bar or stack and a card list.
+
 ## Scoping design work into issues
 
 Design improvements are legitimate, valuable issues — an app that looks abandoned
