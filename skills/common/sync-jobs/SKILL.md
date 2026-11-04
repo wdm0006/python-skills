@@ -394,6 +394,27 @@ Two rules:
   the units you compare at — the remote's own `YYYY-MM-DD` string, or an
   explicitly-UTC instant — so no later reader has to guess what it meant.
 
+## A trailing window needs a backfill entry point
+
+An incremental sync that only ever fetches "the last N days" (or "since the
+cursor") can never recover history older than that window: a first run, a
+widened scope, a wiped checkpoint, or a source that was added late all stay
+permanently incomplete. Worse, the full-history fetcher often already exists but
+is wired to a *different* path (for example, importing a second account), so the
+primary account has no way to reach it.
+
+- Give the primary path an explicit, opt-in full-history mode (`--full-history`,
+  `--since <date>`) that reuses the same fetcher, checkpointing and idempotent
+  merge as the incremental path. Do not make it implicit on "cursor missing"
+  alone if that could trigger an unexpected quota-heavy run.
+- Confirm the routing by experiment rather than by reading names: run the real
+  command against a stub of the remote and record which fetch function and which
+  date range it requested.
+- A destructive rebuild guard (see the dedicated-repository check) may reject
+  the very scaffolding that scheduled operation adds, such as a workflow file
+  tracked in the same repository. Decide the recovery story for scheduled
+  runs explicitly; do not loosen the guard wholesale.
+
 ## Dry-run must perform every in-memory mutation the real run does
 
 Gate persistence and external side effects. Never gate the in-memory state
@@ -535,6 +556,7 @@ Three details that make refunds safe:
 - [ ] Cursor comparisons normalize both sides to one named zone, and are tested
       east and west of UTC — not just on the UTC runner
 - [ ] Incremental cursor re-includes the boundary unit; merge is idempotent
+- [ ] Older history is reachable from the primary path via an explicit backfill mode
 - [ ] Dry-run mutates in-memory state identically; only writes are gated
 - [ ] Committed output rebuilt from a map is sorted on a stable key; a no-op sync is byte-identical
 - [ ] Reservations have a compensating, period-guarded, non-negative refund
