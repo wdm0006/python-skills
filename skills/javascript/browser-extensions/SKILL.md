@@ -370,6 +370,21 @@ time and a time-of-day branch follows whatever hour CI runs at — green by day,
 red at night. Stay on fake timers and drain microtasks in a loop instead of
 awaiting a real `setTimeout`.
 
+**Event helpers fire and forget.** A mock's `onAlarm._trigger(name)` (or any
+`onX._trigger`) calls listeners synchronously and discards the promises they
+return, so an assertion on the line after it races the handler's async work. For
+deterministic async assertions, take the registered listener and await it
+directly:
+
+```js
+const listener = chrome.alarms.onAlarm.addListener.mock.calls[0][0];
+await listener({ name: 'reminder' });      // resolves only when the handler does
+expect(chrome.notifications.create).toHaveBeenCalledTimes(1);
+```
+
+Under `jest.useFakeTimers()` `setImmediate` is faked too, so
+`await new Promise(setImmediate)` hangs; use the microtask-drain loop above.
+
 Two smaller traps: throwing from `chrome.notifications.create` is the cheapest way
 to drive a handler's rejection path, but if the handler ever stops awaiting or
 catching it, Jest dies with an unhandled rejection and worker crashes rather than
