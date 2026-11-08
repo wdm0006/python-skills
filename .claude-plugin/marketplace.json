@@ -52,7 +52,8 @@
         "./skills/common/ui-design",
         "./skills/common/accessible-interfaces",
         "./skills/common/interaction-states",
-        "./skills/common/marketing-pages"
+        "./skills/common/marketing-pages",
+        "./skills/common/agent-qa-testing"
       ]
     },
     {
@@ -116,6 +117,15 @@
       "strict": false,
       "skills": [
         "./skills/common/verifying-external-behavior"
+      ]
+    },
+    {
+      "name": "agent-qa-testing",
+      "description": "Run selected agent-qa web tests, inspect recorded outcomes and memidex memory, and report evidence for the requested browser flow.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/common/agent-qa-testing"
       ]
     },
     {
