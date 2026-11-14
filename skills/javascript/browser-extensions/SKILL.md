@@ -216,6 +216,16 @@ string. In jsdom, provide `URL.createObjectURL` and spy on
 `HTMLAnchorElement.prototype.click` to inspect the payload without relying on
 unsupported navigation.
 
+**Omission is not reset.** If the serializer leaves out inactive optional fields
+(say a quiet-period pair that is unset) and the import/restore writer merges the
+payload over existing settings, then "restore defaults" built as
+`write(buildPreferencesExport(DEFAULTS))` silently keeps whatever optional value
+the user had — the omitted keys are never overwritten. A recovery path must write
+those fields explicitly (`quietStart: null, quietEnd: null`), not rely on the
+serializer's shape. Test it from a state where the optional pair is *active*, and
+assert it is cleared. Likewise, a "clear corrupt saved list" action fixes only that
+list; it does not restore preferences, so don't label or test it as a full reset.
+
 ## A stored deadline must be a usable `Date`, not just a number
 
 Snooze/pause features persist an epoch-millisecond deadline and compare it to
@@ -442,6 +452,7 @@ MV3 extension health:
 - [ ] manual reminder delivery bypasses only the intended schedule gate; alarms keep the default
 - [ ] catalog selection validates indices and session state, without notification or repeat-history effects
 - [ ] settings validated in JS (Number.isInteger + range), not by inert HTML min/max
+- [ ] "restore defaults" explicitly clears optional fields the export serializer omits
 - [ ] stored deadlines validated as safe integers within Date range; expiry uses strict `>`
 - [ ] popup binds listeners before loading state; state load degrades to defaults
 - [ ] chrome mock: reset reinstalls default implementations; async responses honored
