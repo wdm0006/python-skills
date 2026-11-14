@@ -196,6 +196,37 @@ silently replaced by the default on the next read — while the UI says "saved".
 Declarative constraints that nothing evaluates (an HTML `min`/`max` on a form
 that is never submitted) are inert; enforce the range in code.
 
+## A compact export is not a reset payload
+
+An allowlist serializer may omit inactive optional settings. That is useful for
+portable exports, but unsafe for a reset passed through a merge-based writer:
+**omitted means preserve the stored value, not restore the default.** Resetting
+with an export of the defaults can therefore leave an optional feature enabled
+while the UI reports success.
+
+Keep patch, replacement, and reset semantics explicit. If the writer preserves
+omitted keys, send the schema's explicit clearing value for every setting the
+reset promises to clear. `null` is suitable only when the schema accepts it as
+disabled; otherwise use the declared default or the writer's deletion operation.
+For example, a nullable pair of schedule boundaries must both be cleared:
+
+```python
+stored = {"theme": "dark", "quiet_start": "22:00", "quiet_end": "07:00"}
+compact_defaults = {"theme": "system"}  # serializer omits inactive boundaries
+
+assert {**stored, **compact_defaults}["quiet_start"] == "22:00"  # still active
+reset_payload = {**compact_defaults, "quiet_start": None, "quiet_end": None}
+assert {**stored, **reset_payload} == {
+    "theme": "system", "quiet_start": None, "quiet_end": None,
+}
+```
+
+Test the real reset entry point with non-default state already stored, then
+reload through the normal reader and assert the feature is disabled. An empty
+store cannot expose this bug. Separately confirm that an ordinary partial
+update still preserves omitted settings; making every omission clear a key
+would fix reset by breaking patch semantics.
+
 ## Bootstrap ordering: don't swallow the loader's own warnings
 
 When config configures logging, the order is fixed:
