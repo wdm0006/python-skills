@@ -59,6 +59,27 @@ screenshots are the most common accuracy bug on product sites.
   support, what happens when you cancel.
 - Never fabricate testimonials, user counts, logos or ratings.
 
+### Keep measured proof attached to its protocol
+
+A benchmark number is a claim about a particular evaluation, not a timeless
+property of the product. Before rewriting copy around new results, re-verify the
+claim evidence, re-run the proof measurement when a refresh is intended, then
+update the copy that consumes it. Writing copy first preserves the very numbers
+the refresh was meant to replace.
+
+Put the identifying protocol beside each measured figure wherever it appears,
+not only in a linked report: package version, split versus walk-forward evaluation,
+warmup, and seed when applicable. For example:
+
+```text
+Median processing time: 18 ms per item
+Version 2.3; held-out split; 100 warmup items; seed 17.
+```
+
+Two pages quoting results from different protocols can look like a regression
+even when both numbers are correct. Link the full evidence from the local caption;
+a stable claim ID does not replace the context needed to interpret the number.
+
 ## Pricing pages
 
 - 2–4 plans in columns; recommended plan visually marked; monthly/annual toggle that
@@ -158,6 +179,7 @@ survive indefinitely behind a valid-looking citation.
 - [ ] One primary CTA, repeated at the end, labelled with the outcome
 - [ ] Real, current product screenshots
 - [ ] Proof is real and specific; FAQ covers price, privacy, export, cancellation
+- [ ] Measured proof refreshed before dependent copy; evaluation protocol shown beside each figure
 - [ ] Pricing shows the real price and limits
 - [ ] Phone layout checked; Lighthouse performance and accessibility reviewed
 - [ ] Every claim and screenshot verified against the build available through the CTA, for its advertised audience
