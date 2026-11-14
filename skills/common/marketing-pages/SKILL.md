@@ -51,6 +51,26 @@ and answer "what does it look like?". Use crisp, current captures with realistic
 device frame or same shadow and radius). Retake them when the UI changes — stale
 screenshots are the most common accuracy bug on product sites.
 
+### Sample data is part of the claim
+
+A screenshot can imply a result even when its caption makes no performance
+promise. In financial or quantitative products, extreme returns and near-perfect
+win records look like evidence of likely outcomes, even when the data is invented.
+A "sample data" label does not make an exaggerated result representative.
+
+Define a screenshot-data brief before capturing: plausible values, a mix of
+outcomes, and any prohibited extremes. Use the same brief for new drafts and
+screenshots already on the public page or store listing. For example, show a
+portfolio with ordinary gains and losses rather than an unbroken series of wins;
+show the interface's ability to explain results rather than a spectacular result.
+Do not invent a universal "safe" return or win-rate cutoff: the sample must fit
+what the product can substantiate for its audience.
+
+Keep synthetic demonstration data distinct from measured proof. If a figure is
+presented as an actual result, attach its evidence and evaluation protocol as
+below; otherwise make its illustrative role clear and avoid copy that treats it
+as a benchmark or expected outcome.
+
 ## Proof and objections
 
 - Specific beats general: "Used by 1,200 teams" beats "Loved by teams".
@@ -177,7 +197,7 @@ survive indefinitely behind a valid-looking citation.
 
 - [ ] A stranger can say what it is and who it's for after 5 seconds above the fold
 - [ ] One primary CTA, repeated at the end, labelled with the outcome
-- [ ] Real, current product screenshots
+- [ ] Real, current product screenshots; sample values are representative, including on existing public listings
 - [ ] Proof is real and specific; FAQ covers price, privacy, export, cancellation
 - [ ] Measured proof refreshed before dependent copy; evaluation protocol shown beside each figure
 - [ ] Pricing shows the real price and limits
