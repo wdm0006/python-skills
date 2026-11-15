@@ -1,6 +1,6 @@
 # Skill evaluation scenarios
 
-One JSON file per skill, recording what a correct activation and a correct run look like. This directory is a pilot (three skills). There is no runner yet and nothing here calls a model; `tests/test_eval_scenarios.py` validates the files structurally.
+One JSON file per skill, recording what a correct activation and a correct run look like. This directory is a pilot (three skills). There is no runner and nothing here calls a model; `trial.py` below records and reports a reviewer's observations; `tests/test_eval_scenarios.py` validates the files structurally.
 
 ## File format (`schema_version` 1)
 
@@ -63,3 +63,39 @@ All other prompts remain activation-only; they have no procedure fixture yet. Th
 ### Fixture validation is not agent success
 
 `tests/test_eval_fixtures.py` checks deterministic facts only: each prompt and rubric text still exists in its scenario, starting-file hashes are unchanged, the materializer is repeatable and refuses unsafe requests, and the `ci-gate-mismatch` reproduction behaves as documented (local command exits 0, the workflow command exits 1, aligned configuration plus the code fix exit 0, using pinned `ruff==0.9.10` through `uvx`; skipped when `uv` is absent). It never runs an agent. A passing suite says the inputs are intact, not that any skill works; no success rate is measured or claimed here. Changing a fixture file means regenerating its hashes in `fixture.json` and re-reading the affected trials.
+
+## Trial worksheets and reports
+
+`evals/trial.py` is a stdlib-only helper with two operations. It makes no network calls, launches no agent and executes nothing from a scenario.
+
+```bash
+# 1. Write an unscored worksheet to a NEW file outside evals/ (existing files are never overwritten)
+uv run --no-project --python 3.12 python evals/trial.py init /tmp/trial-1.json \
+  --trial-id trial-1 --client "<client and version>" --model "<model and version>" --reviewer "<name or handle>"
+
+# 2. Edit the worksheet by hand while reviewing a trial (see below)
+
+# 3. Validate and report (text by default; --check-current notes scenarios edited since the trial)
+uv run --no-project --python 3.12 python evals/trial.py report /tmp/trial-1.json
+uv run --no-project --python 3.12 python evals/trial.py report /tmp/trial-1.json --format json
+```
+
+`init` fills `trial_date` (today) and `catalog_commit` (`git rev-parse HEAD`) unless given as `--trial-date` / `--catalog-commit`. Provenance fields still empty are listed; `report` refuses a worksheet that lacks any of `trial_id`, `trial_date`, `catalog_commit`, `client`, `model`, `reviewer`. Keep worksheets out of `evals/` (it refuses that location) so they are never read as scenario files, and do not commit real transcripts.
+
+The worksheet snapshots each scenario (content plus hashes) and assigns case ids `<skill>/p<N>` (positive prompt N) and `<skill>/n<N>` (negative prompt N). Reports read only that snapshot, so an old worksheet stays reportable after scenarios change.
+
+Per case, set `activation`:
+
+- `status`: `pending` (not yet recorded), `observed`, or `unobserved` (could not tell which skill activated).
+- `activated_skills`: every skill you saw activate (list all of them; extra skills are kept and do not fail a case). Only with `observed`, which also needs `evidence` (a transcript excerpt or log reference).
+
+For positive cases, set each rubric record's `status` to `pass`, `fail`, `not-applicable` or `unscored`. `pass`/`fail` need `evidence`; `not-applicable` needs `na_reason`. Rubrics are scenario-wide, so mark items a given prompt does not call for (for example CI artifacts when only a scaffold was requested) `not-applicable`.
+
+Reading the report:
+
+- Activation passes when a positive case shows the expected skill, or a negative case shows its `expected_skill` and not the skill under evaluation. `unobserved` and `pending` cases are never passes and are excluded from the observed denominator, with their counts shown.
+- Procedure is summarised separately: scored items passed, passed out of all applicable items (unscored counts as not passed), failed, unscored, and not-applicable (visibly excluded). A case with unscored items and no failure is `incomplete`; a case with only not-applicable items is `undefined`.
+- A zero denominator prints `undefined`, never 100%.
+- Everything reported is what the reviewer recorded. It is not automatic proof of agent behavior, and one trial is not a success rate.
+
+`tests/test_eval_trials.py` runs the helper on a mixed-result worksheet with exact expected counts. No model or network access is needed.
