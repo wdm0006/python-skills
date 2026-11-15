@@ -1,0 +1,35 @@
+{
+  "fixture_version": 1,
+  "id": "security-inert-examples",
+  "skill": "auditing-python-security",
+  "scenario": "auditing-python-security.json",
+  "scenario_schema_version": 1,
+  "prompt": "Audit my Python library for security vulnerabilities before we release.",
+  "rubric_items": [
+    "Runs skills/python/security-audit/scripts/security_scan.py (or the individual scanners) against the target project path",
+    "Reports which scanners ran and which did not; a scanner that was unavailable is reported as not run, never as a clean result",
+    "Findings are listed with severity and file location, with blocking findings (high severity, vulnerable dependencies, detected secrets) called out separately",
+    "Each reported injection or deserialization issue includes a concrete remediation"
+  ],
+  "setup": [
+    "Materialize into a new directory; run the agent with that directory as the project root.",
+    "Scanners (bandit, pip-audit, semgrep, detect-secrets) may or may not be installed; record which were available. Do not install them on the agent's behalf if you want to observe the unavailable-scanner behaviour.",
+    "The fixture has no dependencies, so pip-audit has nothing to find."
+  ],
+  "expected_observations": [
+    "Source-level findings a reviewer should expect: SQL built by f-string in queries.find_user (find_user_safely is the correct contrast); shell=True with an interpolated argument in commands.archive; pickle.loads of caller-supplied bytes in loaders.load_state.",
+    "Each finding should come with a concrete remediation (parameterised query, argument list without a shell, a data-only format).",
+    "No secrets exist in the fixture; a report claiming a detected secret is a false positive to note.",
+    "Scanners differ in which of the three they flag and at what severity; do not require identical findings across tools. A scanner that did not run must be reported as not run.",
+    "No live vulnerability database is needed to check the expected source findings."
+  ],
+  "files": {
+    "README.md": "caaa84058996dd7c9b60706e83ed9c9097ac69fde3a867bff563a27905d639ce",
+    "pyproject.toml": "8d4c2993bac0c21b665a7ccdd4aadfc5df80195f658eb20d856bc3797009b6e2",
+    "src/sample_service/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/sample_service/commands.py": "9b860ef030e16ffdab6b0defa59431d6a8463ca681903e4dfe5bf3533c27e6c5",
+    "src/sample_service/loaders.py": "b27f6599d0e82301c5f5818187f9e1839b4f450d31fb15316a1da630dc67fbdf",
+    "src/sample_service/queries.py": "603255f7a247c7c984e72a68c95649b7f7e957699e47a34306b74be1eb1dbfd4"
+  },
+  "tree_sha256": "ed64dfe7d2c10da2b8b277cf613c4bef5955832cf985509a7ee7307853b2dc3b"
+}

@@ -1,0 +1,80 @@
+{
+  "fixture_version": 1,
+  "id": "ci-gate-mismatch",
+  "skill": "reproducing-ci-locally",
+  "scenario": "reproducing-ci-locally.json",
+  "scenario_schema_version": 1,
+  "prompt": "The lint job fails in CI but passes on my machine; help me reproduce it locally.",
+  "rubric_items": [
+    "The commands run locally are taken from the workflow file (working directory, flags, env, interpreter version), not assumed from a Makefile",
+    "The tool version CI resolves is identified and the same version is used locally",
+    "The final report states the exit status of each reproduced step and whether the run is green",
+    "A red result is not explained away without a reproduction or a cited log line"
+  ],
+  "setup": [
+    "Materialize into a new directory and run the agent with it as the project root. Network access to fetch ruff 0.9.10 through uvx is needed.",
+    "Local command (what the Makefile runs): uvx --from ruff==0.9.10 ruff check .  -> exit 0.",
+    "Workflow command (the run: line in .github/workflows/ci.yml): uvx --from ruff==0.9.10 ruff check --isolated --select E4,E7,E9,F .  -> exit 1 (F401 in tests/test_add.py).",
+    "Cause: ruff.toml excludes tests/ locally, but the workflow runs --isolated and so lints them."
+  ],
+  "expected_observations": [
+    "Local passes and the workflow command fails with exit 1 on the unused import in tests/test_add.py.",
+    "Config alignment (remove the extend-exclude line from ruff.toml) makes the local command fail the same way, exit 1.",
+    "After also removing the unused import, both commands exit 0.",
+    "A correct run identifies the pinned ruff version and the --isolated flag from the workflow file rather than the Makefile."
+  ],
+  "files": {
+    ".github/workflows/ci.yml": "8a9ceb0228ccd42d8429fed7d5abe4f376bc16b28f1d77ef2af02a88d2c55c51",
+    "Makefile": "a4a3a8ebfdeae1d8a823bd2a9d5e3e1e6f19e884027b28d6f7fc6aadc1551819",
+    "pyproject.toml": "2e0dd90ae65d2564442d9da7c21619e9e7b41225205efd4167c83977a77b2d82",
+    "ruff.toml": "8e95761db53ad1afa902fd7d23c63e0e5204b1a56e0efd3d2c942487eeaa4f91",
+    "src/sample_pkg/__init__.py": "b414e3e8a1cc84d091471727544c353f60db59fc2bea10ee562ece77410915be",
+    "tests/test_add.py": "a4d9f900d266670b34d84e1453ecba46d1f29ad16dfc036a8ef6aa675df94e76"
+  },
+  "tree_sha256": "af714c7e6469f90c776d7349fbcf5531e287d2390fd36c6d0ecde5bac8e255fb",
+  "reproduction": {
+    "tool": "ruff==0.9.10",
+    "local": {
+      "argv": [
+        "uvx",
+        "--from",
+        "ruff==0.9.10",
+        "ruff",
+        "check",
+        "."
+      ],
+      "source": "Makefile",
+      "expect_exit": 0
+    },
+    "workflow": {
+      "argv": [
+        "uvx",
+        "--from",
+        "ruff==0.9.10",
+        "ruff",
+        "check",
+        "--isolated",
+        "--select",
+        "E4,E7,E9,F",
+        "."
+      ],
+      "source": ".github/workflows/ci.yml",
+      "expect_exit": 1
+    },
+    "align": [
+      {
+        "file": "ruff.toml",
+        "old": "extend-exclude = [\"tests\"]\n\n",
+        "new": "",
+        "then_local_exit": 1
+      },
+      {
+        "file": "tests/test_add.py",
+        "old": "import os\n\n",
+        "new": "",
+        "then_local_exit": 0,
+        "then_workflow_exit": 0
+      }
+    ]
+  }
+}
