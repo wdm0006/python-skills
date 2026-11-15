@@ -1,0 +1,31 @@
+{
+  "fixture_version": 1,
+  "id": "setup-clean-parent",
+  "skill": "setting-up-python-libraries",
+  "scenario": "setting-up-python-libraries.json",
+  "scenario_schema_version": 1,
+  "prompt": "Create a new Python library called acme-utils with pytest, ruff and CI ready to go.",
+  "rubric_items": [
+    "Runs skills/python/project-setup/scripts/create_project.py (or equivalent steps) from a scratch parent directory, producing a src-layout package directory",
+    "pyproject.toml exists with [project] metadata, a build backend, and a src/<package>/py.typed marker",
+    "A tests/ directory exists and the generated test passes when pytest is run",
+    "Ruff lint and format checks pass on the generated project",
+    ".github/workflows contains a CI workflow that runs lint and tests",
+    "The helper is not run inside the skills repository checkout, leaving no stray generated directory"
+  ],
+  "setup": [
+    "Materialize into a new directory outside the skills repository checkout; that directory is the scratch parent.",
+    "Start the agent with its working directory at the materialized directory, with the skill installed, and give it the prompt verbatim.",
+    "Do not pre-install anything. Python 3.12 and uv are assumed available."
+  ],
+  "expected_observations": [
+    "Before the trial the parent contains only PARENT.md: no pyproject.toml, src/ or acme_utils/ directory.",
+    "After the trial a new child directory (for example acme-utils/) holds the generated package; PARENT.md is untouched.",
+    "Assess each listed rubric item against that child directory and the transcript; the generated project's own pytest and ruff commands give the exit statuses.",
+    "Nothing is generated inside the skills repository checkout."
+  ],
+  "files": {
+    "PARENT.md": "e5cc0a4345ad2f72ff023755638ac74a36479f6cad263b989d4b0918da6cdd0d"
+  },
+  "tree_sha256": "58452dcdf2c4bc178b5695c0a3846993ab3d637ac5078427c9050d093bdc0586"
+}

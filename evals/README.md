@@ -34,3 +34,32 @@ Bump `schema_version` for any change that alters how a file must be read.
 2. For positive prompts, run the agent in a scratch project and check the `rubric` items against the resulting files and command transcript. This scores the procedure.
 
 The two scores should be reported separately and versioned with the model and catalog commit. Live-model runs are opt-in and must stay out of default CI.
+
+## Scratch fixtures for procedure trials
+
+`evals/fixtures/<fixture-id>/` holds a small, versioned set of starting projects so reviewers run a procedure trial on the same inputs. Each has `fixture.json` (metadata) and `files/` (the starting tree). Scenario files above are unchanged (schema version 1); a fixture refers to its scenario by file name, the exact prompt text and the exact rubric item text.
+
+| Fixture | Skill | Prompt (exact) |
+|---|---|---|
+| `setup-clean-parent` | `setting-up-python-libraries` | Create a new Python library called acme-utils with pytest, ruff and CI ready to go. |
+| `security-inert-examples` | `auditing-python-security` | Audit my Python library for security vulnerabilities before we release. |
+| `ci-gate-mismatch` | `reproducing-ci-locally` | The lint job fails in CI but passes on my machine; help me reproduce it locally. |
+
+All other prompts remain activation-only; they have no procedure fixture yet. The insecure code in `security-inert-examples` is inert: never called, no payloads, no credentials. Do not import or run it.
+
+### Manual trial workflow
+
+1. Materialize into a NEW directory outside this checkout (existing destinations and unknown or unsafe fixture ids are refused before anything is written; nothing is executed or installed):
+
+   ```bash
+   uv run --no-project --python 3.12 python evals/fixtures/materialize.py ci-gate-mismatch /tmp/trial-ci-1
+   ```
+
+   It prints the fixture id and `tree_sha256`.
+2. Follow the fixture's `setup` list, give the agent the `prompt` verbatim with the skill installed, and let it work in that directory.
+3. Compare the result with the fixture's `expected_observations` and score the listed `rubric_items` from the resulting files and transcript. For `setup-clean-parent`, assess the generated child directory against those scaffold rubric items.
+4. Record with the trial: fixture id, `tree_sha256`, the catalog commit, the agent client and model version, and which rubric items were observed, not observed, or not assessable. Worksheets and reports (proposed separately) can adopt these fields unchanged.
+
+### Fixture validation is not agent success
+
+`tests/test_eval_fixtures.py` checks deterministic facts only: each prompt and rubric text still exists in its scenario, starting-file hashes are unchanged, the materializer is repeatable and refuses unsafe requests, and the `ci-gate-mismatch` reproduction behaves as documented (local command exits 0, the workflow command exits 1, aligned configuration plus the code fix exit 0, using pinned `ruff==0.9.10` through `uvx`; skipped when `uv` is absent). It never runs an agent. A passing suite says the inputs are intact, not that any skill works; no success rate is measured or claimed here. Changing a fixture file means regenerating its hashes in `fixture.json` and re-reading the affected trials.

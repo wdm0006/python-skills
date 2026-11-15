@@ -1,0 +1,9 @@
+name: ci
+on: [pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uvx --from ruff==0.9.10 ruff check --isolated --select E4,E7,E9,F .
