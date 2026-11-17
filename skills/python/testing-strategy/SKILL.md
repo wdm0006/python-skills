@@ -515,6 +515,28 @@ falls back to 60 seconds when a header is missing, a fixture that omits the head
 passes on both. Supply a value that makes the legitimate result distinct — a reset
 header five seconds out — so the extra wait is visible.
 
+**Random selection is not sampling without replacement.** A picker that avoids
+only the previous item may legitimately return `A, B, A`. Requiring every item
+in a routine to be distinct makes the test flaky and silently demands a stronger
+product contract. Assert the promised invariant instead:
+
+```python
+# BAD — a valid later repeat fails this assertion.
+assert len(set(picks)) == len(picks)
+
+# GOOD — for a catalog with at least two eligible items, only neighbors must differ.
+assert len(picks) == requested_count
+assert all(item in eligible_items for item in picks)
+assert all(left != right for left, right in zip(picks, picks[1:]))
+```
+
+Use controlled random choices that attempt to repeat the previous item so the
+test deterministically exercises repeat avoidance; a lucky random run is not
+coverage. Include a later repeat in the fixture to keep `A, B, A` legal. Test the
+single-eligible-item case separately: repetition is unavoidable there, and the
+picker must still return rather than retry forever. Confirm that removing the
+repeat-avoidance logic makes the controlled multi-item test fail.
+
 **Record the sequence, not the fact.** A no-op stub answers "did it sleep?" and
 nothing else. Collect the arguments instead and assert the whole call sequence;
 that is what catches one extra call in the middle.
