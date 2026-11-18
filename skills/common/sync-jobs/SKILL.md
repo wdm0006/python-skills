@@ -88,6 +88,38 @@ Either report the partial count and check it in, or make the unit of work atomic
 (one transaction, one commit) so "some of it happened" is not a reachable state.
 Pick one deliberately; the default — raise and discard the count — is the bug.
 
+## Decoding persisted data is not validation
+
+A file can be valid JSON and still poison a resumed run or a status report.
+Treat saved source data as an input boundary, even when the job originally
+wrote it: files can be edited, imported, or left behind by older versions.
+Before calculating totals or pending work, validate the record's meaning:
+
+- **Identity matches the requested source.** A file selected by one account's
+  name must not silently accept a different embedded account identity. Pass the
+  expected identity into the loader and compare using the service's identity
+  rules.
+- **Dates and counts are valid.** Parse real calendar dates, not just a
+  `YYYY-MM-DD` shape, and require non-negative integer counts. Reject booleans
+  where the language treats them as integers.
+- **Record keys are unique.** Two rows for the same source/day can inflate totals
+  or make pending-work arithmetic disagree with a later map-based merge. Reject
+  duplicates unless the format explicitly defines how they combine; do not let
+  each reader invent its own sum-or-last-write policy.
+
+Put these checks in one shared loader/validator used by sync, import, and status
+(including machine-readable status). A status command that independently decodes
+JSON bypasses the guard and can confidently report a corrupted total even when
+sync correctly refuses the same file. Atomic writes prevent torn files; they do
+not establish these semantic invariants.
+
+Test through the real command boundary with an offline remote stub: seed a file
+with a mismatched identity, an impossible date, a negative count, and duplicate
+dates **in separate cases**. Assert non-zero exit, a diagnostic identifying the
+file and invalid field/key, no normal success total, and no state mutation. Keep
+a valid zero-count record as a control. A single file containing every defect
+only proves that the first validation check ran.
+
 ## Write the checkpoint file atomically, and pin its mode
 
 A checkpoint that is written in place (`os.WriteFile`, `open(path, "w")`) is
