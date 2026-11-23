@@ -45,9 +45,27 @@ rather than patching one workflow:
 addopts = "-ra -q --import-mode=importlib"
 ```
 
-`importlib` mode stops pytest from mutating `sys.path`, so imports resolve only
-through the environment's installed distribution. Pair it with a non-editable
-install in CI when the build step itself is what you need to exercise.
+`importlib` mode stops pytest from adding test directories to `sys.path`; it
+**does not guarantee that imports come from the installed wheel**. The current
+working directory can still expose a source package, and an editable install can
+redirect imports to another checkout through an import hook.
+
+When verifying what ships, install the wheel non-editably into a fresh environment
+and run from outside the source tree. Assert a real public symbol is reachable
+and inspect the production module's location, not merely whether import succeeds:
+
+```bash
+python -m venv /tmp/wheel-check-env
+/tmp/wheel-check-env/bin/python -m pip install /absolute/path/to/dist/my_library-1.0.0-py3-none-any.whl
+cd /tmp
+/tmp/wheel-check-env/bin/python -c 'import my_library; from my_library import encode; print(my_library.__file__); assert callable(encode)'
+```
+
+Confirm the printed path is inside that environment's installed package, not a
+checkout. Apply the same location check when running a base-commit control with
+an existing environment: exporting the base to a temporary directory does not
+prove that an editable import hook actually selected it. A control that imports
+the working branch cannot establish that a failure predates the change.
 
 ## Test Structure
 
