@@ -184,11 +184,22 @@ one does not — it is truthy, so the reader keeps it and throws on the first
 nested key, and the corruption is sticky across restarts. Read-modify-write
 rules:
 
-1. **Re-read** immediately before writing, so a concurrent writer's change isn't
-   lost.
+1. **Re-read** immediately before writing to avoid persisting an old snapshot.
+   This narrows the stale-read window; it does not prevent concurrent lost updates.
 2. **Merge over the full defaults**, spelling out nested keys, so the persisted
    object is always complete.
 3. **Await the write** — a worker or page that is torn down mid-write loses it.
+
+If multiple callers update the same stored object, a fresh read still permits
+A-read → B-write → A-write: A overwrites B's change. Awaiting the write proves
+completion, not isolation. Use a transaction or serialize the whole
+read–merge–write operation through one owner that every writer uses; a lock
+around only the final write is too late.
+
+Test with a controlled interleaving: hold A after its read, request B's update,
+then release A and await both operations. Assert that both independent changes
+survive in the final object. A test that places B's update only before A's fresh
+read proves snapshot freshness, not protection against concurrent writes.
 
 Validate user-entered values before they reach storage, too. A field parsed with
 a bare `int()`/`parseInt()` yields `None`/`NaN`, serializes to `null`, and is
