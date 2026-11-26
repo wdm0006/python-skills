@@ -204,6 +204,31 @@ success by resolving an empty `server/` package that shadows the real `server.py
 — a broken wheel that still "imports." Assert a real symbol is reachable
 (`from server import main; main`), not merely that an import name resolves.
 
+**Observation-only smoke steps are not regression checks.** A harness can record
+that an active session was replaced, or that an open view still shows an old
+counter, then print `PASS` because the scenario completed without an exception.
+Screenshots and logged values help diagnosis; they do not assert correctness.
+When a known defect is fixed, promote its observation step into an assertion on
+the promised behavior rather than keeping the old known-issue label:
+
+```python
+# BAD — records stale UI just as happily as updated UI.
+observed = read_completion_count()
+print(f"PASS: completion count observed as {observed}")
+
+# GOOD — keep the view open across completion to exercise the refresh path.
+before = read_completion_count()
+complete_session_and_wait_for_ui()
+assert read_completion_count() == before + 1
+```
+
+Exercise the actual trigger: reopening the view can hide a missing live refresh,
+and a session-preservation check must deliver the scheduled event while the
+session is active. Assert the relevant state survives that event. Keep diagnostic
+observations labelled as observations, and reserve `PASS` for a checked contract.
+Verify the updated check fails with the fix reverted; an unchanged green smoke
+run cannot establish that the repaired behavior is protected.
+
 **Forgotten mock → silent real network calls.** A test missing its `httpx_mock`
 fixture hits the live API: slow, flaky, rate-limited, and silently exercising
 nothing deterministic. Add `--disable-socket` (pytest-socket) so any unmocked
