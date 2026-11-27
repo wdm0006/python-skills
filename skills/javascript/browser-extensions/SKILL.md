@@ -273,6 +273,33 @@ that drops both cannot pass. Include a spring-forward date such as 2025-03-09
 in that zone, whose local day is 23 hours; a UTC-only fixture cannot expose
 subtracting a fixed 24 hours to find the previous local midnight.
 
+## Schedule projections need every tick, including the repeated hour
+
+A schedule test that checks only count, first, and last can miss an altered
+interior tick. Assert the complete ordered epoch-millisecond array returned by
+the production projector, with independently written expected instants. Reuse
+the explicit-timezone child-process pattern above and freeze its current time.
+
+For a cadence intended to include both occurrences of the fall-back hour, a
+fixture in `America/New_York` can span these instants:
+
+```js
+const expectedTicks = [
+  '2025-11-02T00:00:00-04:00',
+  '2025-11-02T01:00:00-04:00',
+  '2025-11-02T01:00:00-05:00', // same wall-clock label, a distinct instant
+  '2025-11-02T02:00:00-05:00',
+].map((iso) => Date.parse(iso));
+expect(actualTicks).toEqual(expectedTicks); // actualTicks comes from production
+```
+
+Choose the expected ticks according to the scheduler's intended cadence; this
+fixture encodes an elapsed-hour cadence, not a universal rule for wall-clock
+recurrences. Comparing formatted `01:00` labels would hide which occurrence was
+scheduled. Assert exact local-midnight ownership in daily projections too: a
+tick at midnight belongs to the new local day, even when its UTC date differs.
+A spring-forward-only fixture does not exercise the repeated-hour case.
+
 ## A throw during `DOMContentLoaded` kills the whole popup
 
 Popup init typically loads state *and* binds listeners in one handler. If the
