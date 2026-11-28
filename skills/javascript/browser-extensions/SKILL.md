@@ -429,6 +429,29 @@ unpacked extension in a persistent-context browser driver and open
   noise. Never read a harness exit status as release sign-off until each step's
   assertion is known to fail when its fix is reverted.
 
+## Shortcut dispatch is not installed key-binding verification
+
+Calling a registered command listener proves dispatch and worker behavior, not
+that Chrome delivers the advertised key combination. Keep that integration test:
+
+```js
+const onCommand = chrome.commands.onCommand.addListener.mock.calls[0][0];
+await onCommand('pause-reminders');
+expect((await chrome.storage.local.get('paused')).paused).toBe(true);
+```
+
+This checks the illustrative command's state change without relying on a physical
+keystroke. It cannot establish the installed shortcut. For that, load the extension
+in Chrome, inspect its assigned binding at `chrome://extensions/shortcuts`, remap
+it there if needed, and press the assigned combination to verify the user-visible
+effect. Record the tested binding and environment with the result; do not infer
+an installed binding from the manifest's suggested key alone.
+
+Report the two results separately: "command dispatch and state verified" versus
+"installed shortcut verified in Chrome". If a browser check was unavailable,
+say that the installed binding remains unverified. A green dispatch test must not
+be cited as end-to-end keyboard coverage.
+
 ## PR-comment CI steps need two permissions
 
 A workflow step that comments on a pull request via the issues API needs **both**
@@ -461,5 +484,6 @@ MV3 extension health:
 - [ ] fake timers never swapped for real timers mid-test
 - [ ] notification buttons are optional shortcuts; the body click reaches every action
 - [ ] popup smoke test uses locator waits (no string predicates) and settled animations
+- [ ] command dispatch tests distinguished from installed bindings checked at chrome://extensions/shortcuts
 - [ ] PR-comment workflow step has issues: write AND pull-requests: write
 ```
